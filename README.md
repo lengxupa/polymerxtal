@@ -7,6 +7,12 @@ polymerXtal
 
 In this work, we present PolymerXtal, a software designed to build and analyze molecular-level polymer crystal structures. PolymerXtal provides a standardized process to generate polymer crystal structure based on monomer, tacticity, helicity, chiriality and unit cell information and analyze the crystallinity in polymer systems with given atom trajectories. These features have allowed PolymerXtal to lead further investigations of semi-crystalline polymers where the birthplace of the important physics in play and promote future research endeavors in the area of crystalline polymer simulations.
 
+This repository is currently under development. To do a developmental install, download this repository and type
+
+`pip install -e .`
+
+in the repository directory.
+
 ### Copyright
 
 Copyright (c) 2020, Tongtong Shen
