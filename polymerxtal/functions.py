@@ -16,23 +16,32 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def calculate_distance(rA, rB):
     # This function calculates the distance between two points given as numpy arrays.
+    if isinstance(rA,np.ndarray) is False or isinstance(rB,np.ndarray) is False:
+        raise TypeError("rA and rB must be numpy arrays")
     d=(rA-rB)
     dist=np.linalg.norm(d)
+    if dist == 0.0:
+        raise Exception("Two atoms are located in the same point in space")
     return dist
 
 def open_pdb(f_loc):
     # This function reads in a pdb file and returns the atom names and coordinates.
-    with open(f_loc) as f:
+    
+    with open(file_location) as f:
         data = f.readlines()
-    c = []
-    sym = []
-    for l in data:
-        if 'ATOM' in l[0:6] or 'HETATM' in l[0:6]:
-            sym.append(l[76:79].strip())
-            c2 = [float(x) for x in l[30:55].split()]
-            c.append(c2)
-    coords = np.array(c)
-    return sym, coords
+
+    coordinates = []
+    symbols = []
+    for line in data:
+        if 'ATOM' in line[0:6] or 'HETATM' in line[0:6]:
+            symbols.append(line[76:79].strip())
+            atom_coords = [float(x) for x in line[30:55].split()]
+            coordinates.append(coords)
+
+    coords = np.array(coordinates)
+    symbols = np.array(symbols)
+
+    return symbols, coords
 
 atomic_weights = {
     'H': 1.00784,
