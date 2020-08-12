@@ -15,14 +15,36 @@ from mpl_toolkits.mplot3d import Axes3D
 #%matplotlib notebook
 
 def calculate_distance(rA, rB):
+    """Calculate the distance between two points.
+
+    Parameters
+    ----------
+    rA, rB : np.ndarray
+        The coordinates of each point.
+
+    Returns
+    -------
+    distance : float
+        The distance between the two points.
+    
+    Examples
+    --------
+    >>> r1 = np.array([0, 0, 0])
+    >>> r2 = np.array([0, 0.1, 0])
+    >>> calculate_distance(r1, r2)
+    0.1
+    """
     # This function calculates the distance between two points given as numpy arrays.
     if isinstance(rA,np.ndarray) is False or isinstance(rB,np.ndarray) is False:
         raise TypeError("rA and rB must be numpy arrays")
-    d=(rA-rB)
-    dist=np.linalg.norm(d)
-    if dist == 0.0:
+
+    dist_vec = (rA - rB)
+    distance = np.linalg.norm(dist_vec)
+    
+    if distance == 0.0:
         raise Exception("Two atoms are located in the same point in space")
-    return dist
+        
+    return distance
 
 def open_pdb(f_loc):
     # This function reads in a pdb file and returns the atom names and coordinates.
