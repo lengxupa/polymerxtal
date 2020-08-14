@@ -6,6 +6,26 @@ import numpy as np
 from .measure import calculate_distance
 from .atom_data import atomic_weights
 
+class Molecule:
+    def __init__(self, name, charge, symbols):
+        self.name = name
+        self.charge = charge
+        self.symbols = symbols
+        self.num_atoms = len(symbols)
+
+    @property
+    def symbols(self):
+        return self._symbols
+        
+    @symbols.setter
+    def symbols(self, symbols):
+        self._symbols = symbols
+        self.num_atoms = len(symbols)
+
+    def __str__(self):
+        return f'name: {self.name}\ncharge: {self.charge}\nsymbols: {self.symbols}'
+
+
 def build_bond_list(coordinates, max_bond=1.5, min_bond=0):
     """Calculate bonds in a molecule base on a distance criteria.
 
