@@ -1,5 +1,9 @@
 language: python
 
+branches:  # limit Travis CI runs to events on the master branch
+  only:
+    - master
+
 # Run jobs on container-based infrastructure, can be overridden per job
 
 matrix:
