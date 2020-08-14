@@ -1,4 +1,4 @@
-polymerXtal
+PolymerXtal
 ==============================
 [//]: # (Badges)
 [![Travis Build Status](https://travis-ci.com/lengxupa/polymerXtal.svg?branch=master)](https://travis-ci.com/lengxupa/polymerXtal)
