@@ -10,8 +10,8 @@ import shutil
 import numpy as np
 
 
-def calc_polymer(mass, nm, p_type, p_fra, custom=0):
-    p = p_type.split('-')[0]
+def calc_polymer(mass, nm, polymer_type, p_fra, custom=0):
+    p = polymer_type.split('-')[0]
     wunits = {
         'PS': 104.1,
         'PE': 28.0516,
@@ -173,33 +173,6 @@ def read_dump(ifile, multiframe=0):
             for i, j in enumerate([(eval(k) if k[0].isdigit or k[0] == '-' else k) for k in ln]):
                 Dir[timestep][current][cid][dump[i]] = j
             Dir[timestep][current]['id'] += 1
-    return Dir
-
-
-def read_data(ifile):
-    Dir = {}
-    Box = {}
-    Masses = {}
-    src = open(ifile, 'r')
-    a = 1
-    s = ''
-    for line in src.readlines():
-        if a:
-            a = 0
-            continue
-        ln = line.split('#')[0].split()
-        if ln:
-            if len(ln) > 1 and ln[0].isdigit() and (not ln[1].isdigit()) and (not s):
-                Dir[' '.join(ln[1:])] = eval(ln[0])
-            if len(ln) == 4 and ln[2][1:] == 'lo' and ln[3][1:] == 'hi':
-                Dir[ln[2]] = eval(ln[0])
-                Dir[ln[3]] = eval(ln[1])
-            if not (ln[0][0].isdigit() or ln[0][0] == '-'):
-                s = ' '.join(ln)
-                Dir[s] = {}
-            if s and (ln[0][0].isdigit() or ln[0][0] == '-'):
-                Dir[s][eval(ln[0])] = [eval(i) for i in ln[1:]]
-    src.close()
     return Dir
 
 
@@ -768,205 +741,6 @@ def writeghostdata(ifile):
     write_data(Dir, 'ghost_grain.data', v=0, a=1)
 
 
-def generatelatchinput(p_custom_input):
-    p_type_custom = {}
-    src = open('../' + p_custom_input)
-    des = open('in.txt', 'w')
-    des.write('#\n')
-    des.write('\n')
-    des.write("# You shouldn't need this line if you build PolymerModeler\n")
-    des.write('data_dir latch #/home/ben/work/PolymerModeler/src/latch/data\n')
-    des.write('\n')
-    des.write('# Use this scale to extend VdW radii when searching for bonds\n')
-    des.write('bond_scale 1.2 \n')
-    des.write('\n')
-    des.write('# Temperature (K)\n')
-    des.write('temperature 300\n')
-    des.write('\n')
-    des.write('# Make bonds of this length (in Angstroms) along the backbone\n')
-    des.write('backbone_bond_length 1.53\n')
-    des.write('\n')
-    des.write('# Atoms connected by fewer than this many bonds do NOT feel pair interactions\n')
-    des.write('bond_cutoff 4\n')
-    des.write('\n')
-    n_m = 0
-    n_c = 0
-    p_type_custom['nm'] = 0
-    p_type_custom['nc'] = 0
-    for line in src.readlines():
-        ln = line.split('#')[0]
-        l = ln.split()
-        if len(l) < 1:
-            continue
-        if l[0] == 'monomer_type':
-            if len(l) > 1:
-                p_type_custom['nm'] = int(l[1])
-                if p_type_custom['nm'] < 1:
-                    print('Please specify a positive number of custom monomer types you wish to build')
-                    return False
-            else:
-                print('Please specify a positive number of custom monomer types you wish to build')
-                return False
-        if l[0] == 'monomer':
-            if 'monomer' not in p_type_custom:
-                p_type_custom['monomer'] = {}
-            n_m += 1
-            if n_m <= p_type_custom['nm']:
-                p_type_custom['monomer'][n_m] = {}
-                if len(l[1:]) == 3:
-                    p_type_custom['monomer'][n_m]['info'] = l[1:]
-                    if not os.path.exists('../' + l[1]):
-                        print('Could not find monomer PDB File %s' % l[1])
-                        return False
-                    elif int(l[2]) == int(l[3]):
-                        print('Monomer tail atom should not be the same with the head atom')
-                        return False
-                    else:
-                        des.write('#monomer: name PDB head tail\n')
-                        des.write('monomer m%d ../%s %d %d\n' % (n_m, l[1], int(l[2]), int(l[3])))
-                        des.write('\n')
-                        des.write('# Let all backbone torsions rotate when monomer m1 is used in a chain\n')
-                        des.write('torsion all free \n')
-                        des.write('\n')
-                else:
-                    print('Please specify monomer %d information with monomer PDB file, head atom & tail atom' % n_m)
-                    return False
-            else:
-                print('More monomer input than specified, Please change accordingly')
-                return False
-        if l[0] == 'torsion':
-            if 'torsion' not in p_type_custom['monomer'][n_m]:
-                p_type_custom['monomer'][n_m]['torsion'] = {}
-            if len(l) > 2:
-                p_type_custom['monomer'][n_m]['torsion'][l[1]] = l[2:]
-                if int(l[2]) < 0 or int(l[2]) > 3:
-                    print('Please specify backbone torsion angle probabilities type')
-                    print('Starting with backbone atom 3, specify whether the torsion should change, and, if so, how.')
-                    print('Values for specification:')
-                    print('  0: no change')
-                    print('  1: uniform probability for all angles')
-                    print('  2: energy levels associated with specific angless')
-                    print('  3: probability associated with specific angles')
-                    return False
-                elif int(l[2]) == 2 or int(l[2]) == 3:
-                    if len(l) > 3:
-                        if not os.path.exists('../' + l[3]):
-                            print('Could not find file %s' % l[3])
-                            return False
-                    elif int(l[2]) == 2:
-                        print('Please specify file for energy levels associated with specific angles')
-                        return False
-                    elif int(l[2]) == 3:
-                        print('Please specify file for probability associated with specific angles')
-                        return False
-            else:
-                print('Please specify backbone torsion angle probabilities information')
-                return False
-        if l[0] == 'chain_stereo':
-            if len(l) > 1:
-                p_type_custom['nc'] = int(l[1])
-                if p_type_custom['nc'] < 1:
-                    print('Please specify a positive number of custom polymer chain types you wish to build')
-                    return False
-                elif len(l[2:]) == 2 * p_type_custom['nc']:
-                    if 'chain' not in p_type_custom:
-                        p_type_custom['chain'] = {}
-                    for i in range(p_type_custom['nc']):
-                        if int(l[2 * i + 2]) not in p_type_custom['chain']:
-                            p_type_custom['chain'][int(l[2 * i + 2])] = {}
-                        p_type_custom['chain'][int(l[2 * i + 2])]['probability'] = eval(l[2 * i + 3])
-                else:
-                    print('Please specify Distribution of %d chain types' % p_type_custom['nc'])
-                    return False
-            else:
-                print('Please specify a positive number of custom polymer chain types you wish to build')
-                return False
-        if l[0] == 'chain_type':
-            if 'chain' not in p_type_custom:
-                p_type_custom['chain'] = {}
-            n_c += 1
-            if len(l[1:]) > 1:
-                if n_c not in p_type_custom['chain']:
-                    p_type_custom['chain'][n_c] = {}
-                if 'arrangement' not in p_type_custom['chain'][n_c]:
-                    p_type_custom['chain'][n_c]['arrangement'] = {}
-                if int(l[1]) == 0:
-                    if int(l[2]) < 1:
-                        print('Please specify a positive number of monomers in first pattern for chain type %d' % n_c)
-                        return False
-                    elif int(l[2]) != len(l[3:]):
-                        print('Please specify a sequence of %d monomer(s) as repeated pattern for chain type %d' %
-                              (int(l[2]), n_c))
-                        return False
-                    else:
-                        p_type_custom['chain'][n_c]['arrangement'] = {'type': 0, 'len': int(l[2]), 'sequence': l[3:]}
-                elif int(l[1]) == 1:
-                    if p_type_custom['nm'] != len(l[2:]):
-                        print('Please specify %d probabilities of each monomer arrangement' % int(l[2]))
-                        return False
-                    else:
-                        p_type_custom['chain'][n_c]['arrangement'] = {'type': 1, 'sequence': l[2:]}
-                else:
-                    print('Please specify chain type %d information with arrangement: 0 = pattern, 1 = probability' %
-                          n_c)
-                    return False
-            else:
-                print('Please specify chain type %d information with arrangement: 0 = pattern, 1 = probability' % n_c)
-                return False
-    src.close()
-    des.write('# Pattern of monomers used to make chains\n')
-    des.write('stereo s1 pattern 1 m1\n')
-    des.write('\n')
-    des.write('# System density in g/cm^3\n')
-    des.write('density 0.5\n')
-    des.write('\n')
-    des.write('# Build this many chains\n')
-    des.write('chains 0\n')
-    des.write('\n')
-    des.write('# Chains have this many monomers\n')
-    des.write('monomers 0\n')
-    des.write('\n')
-    des.write('#exclude invert slab <real> <real> <real> <real> <real> <real>\n')
-    des.write('\n')
-    des.write('# Distribution of chain types: all chains of type s1\n')
-    des.write('chain_stereo 1 s1 1.0\n')
-    des.write('\n')
-    des.write('# Size of system grid\n')
-    des.write('grid_size 6.0\n')
-    des.write('\n')
-    des.write('# Chain packing algorithm\n')
-    des.write('sample monte_carlo\n')
-    des.write('\n')
-    des.write('# Sample this many Monte Carlo configurations\n')
-    des.write('configs 50\n')
-    des.write('\n')
-    des.write('# Energy expression: Lennard-Jones\n')
-    des.write('energy LJ\n')
-    des.write('\n')
-    des.write('# Energy cutoff (Angstroms)\n')
-    des.write('energy_cutoff 6.0\n')
-    des.write('\n')
-    des.write('# RNG seed; if commented out, or zero, use current time\n')
-    des.write('#rng_seed 0\n')
-    des.write('\n')
-    des.write('# Output\n')
-    des.write('# Write an output PDB file with NON-periodic atomic positions\n')
-    des.write('#write unwrapped_pdb\n')
-    des.write('#write wrapped_pdb | unwrapped_pdb | wrapped_xyz | unwrapped_xyz\n')
-    des.write('\n')
-    des.write("# Write intermediate files for input to Chunyu's code\n")
-    des.write('write intermediate\n')
-    des.write('\n')
-    des.write('# Log output messages to this file; default is stdout\n')
-    des.write('#log_file <path>\n')
-    des.write('\n')
-    des.write('# Log status messages to this file; default is stdout\n')
-    des.write('#status_file <path>\n')
-    des.write('\n')
-    des.close()
-    return p_type_custom
-
-
 def read_latchout(ifile, Dir={}):
     src = open(ifile)
     m_flag = 0
@@ -1007,7 +781,7 @@ def read_latchout(ifile, Dir={}):
     return Dir
 
 
-def writepolymodfile(p_type_custom, ofile1):
+def writepolymodfile(polymer_type_custom, ofile1):
     mw = {}
     des = open(ofile1, 'w')
     des.write('#\n')
@@ -1018,34 +792,34 @@ def writepolymodfile(p_type_custom, ofile1):
     des.write('mctemp  # Temperature (K)\n')
     des.write('\n')
     des.write('# Elements: atomic type indices for all monomers\n')
-    des.write('%d                    # Number of atom types\n' % p_type_custom['atom_type'])
+    des.write('%d                    # Number of atom types\n' % polymer_type_custom['atom_type'])
     atom_type = {}
     a_id = 0
-    for i in range(p_type_custom['nm']):
-        for j in range(len(p_type_custom['monomer'][i + 1]['info'])):
-            if p_type_custom['monomer'][i + 1]['info'][j][0] not in atom_type:
+    for i in range(polymer_type_custom['nm']):
+        for j in range(len(polymer_type_custom['monomer'][i + 1]['info'])):
+            if polymer_type_custom['monomer'][i + 1]['info'][j][0] not in atom_type:
                 a_id += 1
-                atom_type[a_id] = p_type_custom['monomer'][i + 1]['info'][j][0]
-                atom_type[p_type_custom['monomer'][i + 1]['info'][j][0]] = a_id
+                atom_type[a_id] = polymer_type_custom['monomer'][i + 1]['info'][j][0]
+                atom_type[polymer_type_custom['monomer'][i + 1]['info'][j][0]] = a_id
     ofile = open('str2lammps/types/custom_atom_type.dat', 'w')
-    for i in range(p_type_custom['atom_type']):
+    for i in range(polymer_type_custom['atom_type']):
         des.write('%s                    # Type %d element\n' % (atom_type[i + 1].split('_')[0], (i + 1)))
         ofile.write('%d %s\n' % ((i + 1), atom_type[i + 1]))
     ofile.close()
     des.write('\n')
     des.write('# Number of monomers\n')
-    des.write('%d  # Number of monomer types\n' % p_type_custom['nm'])
+    des.write('%d  # Number of monomer types\n' % polymer_type_custom['nm'])
     des.write('\n')
-    for i in range(p_type_custom['nm']):
+    for i in range(polymer_type_custom['nm']):
         des.write('# Monomer: z-matrix\n')
         des.write('%d                    # Number of atoms in z-matrix (lengths in A, angles in degrees)\n' %
-                  len(p_type_custom['monomer'][i + 1]['info']))
-        for j in range(len(p_type_custom['monomer'][i + 1]['info'])):
+                  len(polymer_type_custom['monomer'][i + 1]['info']))
+        for j in range(len(polymer_type_custom['monomer'][i + 1]['info'])):
             des.write(
-                str(atom_type[p_type_custom['monomer'][i + 1]['info'][j][0]]) + ' ' +
-                ' '.join(p_type_custom['monomer'][i + 1]['info'][j][1:]) + '\n')
+                str(atom_type[polymer_type_custom['monomer'][i + 1]['info'][j][0]]) + ' ' +
+                ' '.join(polymer_type_custom['monomer'][i + 1]['info'][j][1:]) + '\n')
         des.write('%d                    # Number of backbone atoms, z-matrix top\n' %
-                  p_type_custom['monomer'][i + 1]['torsion']['len'])
+                  polymer_type_custom['monomer'][i + 1]['torsion']['len'])
         des.write('\n')
         des.write('# Monomer: backbone torsion angle probabilities\n')
         des.write('# Starting with backbone atom 3, specify whether the torsion should change, \n')
@@ -1056,23 +830,23 @@ def writepolymodfile(p_type_custom, ofile1):
         des.write('#   2: energy levels associated with specific angles\n')
         des.write('#   3: probability associated with specific angles\n')
         des.write('\n')
-        if 'all' in p_type_custom['monomer'][i + 1]['torsion']:
-            for j in range(p_type_custom['monomer'][i + 1]['torsion']['len'] - 2):
-                tor_type = int(p_type_custom['monomer'][i + 1]['torsion']['all'][0])
+        if 'all' in polymer_type_custom['monomer'][i + 1]['torsion']:
+            for j in range(polymer_type_custom['monomer'][i + 1]['torsion']['len'] - 2):
+                tor_type = int(polymer_type_custom['monomer'][i + 1]['torsion']['all'][0])
                 des.write('%d                    # Torsion %d specification\n' % (tor_type, (j + 3)))
                 if tor_type == 2 or tor_type == 3:
-                    src = open('../' + p_type_custom['monomer'][i + 1]['torsion']['all'][1])
+                    src = open('../' + polymer_type_custom['monomer'][i + 1]['torsion']['all'][1])
                     for line in src.readlines():
                         des.write(line)
                     src.close()
                     des.write('\n')
         else:
-            for j in range(p_type_custom['monomer'][i + 1]['torsion']['len'] - 2):
-                if str(j + 3) in p_type_custom['monomer'][i + 1]['torsion']:
-                    tor_type = int(p_type_custom['monomer'][i + 1]['torsion'][str(j + 3)][0])
+            for j in range(polymer_type_custom['monomer'][i + 1]['torsion']['len'] - 2):
+                if str(j + 3) in polymer_type_custom['monomer'][i + 1]['torsion']:
+                    tor_type = int(polymer_type_custom['monomer'][i + 1]['torsion'][str(j + 3)][0])
                     des.write('%d                    # Torsion %d specification\n' % (tor_type, (j + 3)))
                     if tor_type == 2 or tor_type == 3:
-                        src = open('../' + p_type_custom['monomer'][i + 1]['torsion'][str(j + 3)][1])
+                        src = open('../' + polymer_type_custom['monomer'][i + 1]['torsion'][str(j + 3)][1])
                         for line in src.readlines():
                             des.write(line)
                         src.close()
@@ -1091,30 +865,30 @@ def writepolymodfile(p_type_custom, ofile1):
     des.write('1.53\n')
     des.write('\n')
     des.write('# Monomer arrangements\n')
-    des.write('%d                    # Number of monomer arrangements\n' % p_type_custom['nc'])
-    for i in range(p_type_custom['nc']):
+    des.write('%d                    # Number of monomer arrangements\n' % polymer_type_custom['nc'])
+    for i in range(polymer_type_custom['nc']):
         mw[i] = 0
-        if p_type_custom['chain'][i + 1]['arrangement']['type']:
+        if polymer_type_custom['chain'][i + 1]['arrangement']['type']:
             des.write('1                    # Arrangement: 0 = pattern, 1 = probability\n')
             des.write('%s              # Probability of monomer(s)\n' %
-                      (' '.join(p_type_custom['chain'][i + 1]['arrangement']['sequence'])))
-            l = len(p_type_custom['chain'][i + 1]['arrangement']['sequence'])
+                      (' '.join(polymer_type_custom['chain'][i + 1]['arrangement']['sequence'])))
+            l = len(polymer_type_custom['chain'][i + 1]['arrangement']['sequence'])
             for j in range(l):
-                mw[i] += p_type_custom['monomer'][j + 1]['mass'] * float(
-                    p_type_custom['chain'][i + 1]['arrangement']['sequence'][j])
+                mw[i] += polymer_type_custom['monomer'][j + 1]['mass'] * float(
+                    polymer_type_custom['chain'][i + 1]['arrangement']['sequence'][j])
         else:
             des.write('0                    # Arrangement: 0 = pattern, 1 = probability\n')
             des.write('%d                    # Number of monomers in first pattern\n' %
-                      p_type_custom['chain'][i + 1]['arrangement']['len'])
+                      polymer_type_custom['chain'][i + 1]['arrangement']['len'])
             des.write('%s              # Repeat...\n' %
-                      (' '.join(p_type_custom['chain'][i + 1]['arrangement']['sequence'])))
-            l = p_type_custom['chain'][i + 1]['arrangement']['len']
-            for j in p_type_custom['chain'][i + 1]['arrangement']['sequence']:
-                mw[i] += p_type_custom['monomer'][int(j)]['mass'] / l
+                      (' '.join(polymer_type_custom['chain'][i + 1]['arrangement']['sequence'])))
+            l = polymer_type_custom['chain'][i + 1]['arrangement']['len']
+            for j in polymer_type_custom['chain'][i + 1]['arrangement']['sequence']:
+                mw[i] += polymer_type_custom['monomer'][int(j)]['mass'] / l
     r_mw = 0
-    for i in range(p_type_custom['nc']):
-        des.write('%f ' % p_type_custom['chain'][i + 1]['probability'])
-        r_mw += mw[i] * p_type_custom['chain'][i + 1]['probability']
+    for i in range(polymer_type_custom['nc']):
+        des.write('%f ' % polymer_type_custom['chain'][i + 1]['probability'])
+        r_mw += mw[i] * polymer_type_custom['chain'][i + 1]['probability']
     des.write('             # Probabilities of each monomer arrangement\n')
     des.write('\n')
     des.write('# System\n')
@@ -1270,108 +1044,11 @@ def write_minimize(ofile, X6file, afile):
 
 def main(args):
 
-    datafile = args['datafile'][0]
-    Dir_RDX = read_data('../' + datafile)
-    potential_headfile = args['potential_headfile'][0]
-    potentialfile = args['potentialfile'][0]
-    if 'include' in args:
-        for f in args['include']:
-            os.system('cp ../%s .' % f)
+    args = complete_args(args)
 
-    # Check element input
-    e_flag = 0
-    elementlist = []
-    if 'element' in args:
-        if len(args['element']) > 0:
-            num_element = int(eval(args['element'][0]))
-            if num_element == Dir_RDX['atom types']:
-                print('%d element types:' % num_element)
-            else:
-                print('Error: number of element types does not match with the grain datafile')
-                return False
-            if len(args['element']) == (1 + num_element):
-                e_flag = 1
-                elementlist = args['element'][1:]
-                print(elementlist)
-        else:
-            print('Please specify number of element types followed by a sequence of the element(s)')
-            return False
-    if not e_flag:
-        return False
 
-    #g_type='RDX'
-    #g_types=['RDX']
-    #if 'g_type' in sys.argv:
-    #g_type=args[args.index('g_type')+1]
-    #if g_type not in g_types:
-    #print('Grain type does not exists in our system, Please check README for all incoporated grain types')
-    #return False
-    #else:
-    #print('Grain type: RDX')
-    #else:
-    #print('Default grain type: RDX')
 
-    #os.system('cp g_types/'+g_type+'/* .')
-    output = 'polymer_%s' % (datafile.split('/')[-1])
-    if 'output' in args:
-        if len(args['output']) == 1:
-            output = args['output'][0]
-            print('Output file %s' % output)
-        else:
-            print('Please define an output name')
-            return False
-    else:
-        print('Default output file %s' % output)
-
-    p_type = 'PS-ata'
-    f_pcustom = 0
-    p_types = [
-        'PS-ata', 'PS-iso', 'PS-syn', 'PE', 'PMMA-ata', 'PMMA-iso', 'PMMA-syn', 'PP-ata', 'PP-iso', 'PP-syn', 'POM',
-        'PTFE', 'PVC'
-    ]
-    if 'p_type' in args:
-        if len(args['p_type']) == 1:
-            p_type = args['p_type'][0]
-            if len(p_type.split(
-                    '-')) == 1 and p_type != 'PE' and p_type != 'POM' and p_type != 'PTFE' and p_type != 'PVC':
-                p_type += '-ata'
-                print(
-                    'Default tacticity: atactic, if you need to specify tacticity, please use syntax: p_type {polymer}-iso, for example, p_type PS-iso'
-                )
-            if p_type not in p_types:
-                if p_type == 'custom':
-                    print('Please specify an input file of custom polymer you will to build')
-                    return False
-                else:
-                    print(
-                        'Polymer type does not exists in our system, Please check README for all incoporated grain types'
-                    )
-                    return False
-            else:
-                print('Polymer type: ' + p_type)
-        elif len(args['p_type']) > 1 and args['p_type'][0] == 'custom':
-            p_type = args['p_type'][0]
-            if not os.path.exists('p_types/custom'):
-                os.mkdir('p_types/custom')
-            f_pcustom = 1
-            p_custom_input = args['p_type'][1]
-        else:
-            print('Please specify a polymer type')
-            return False
-    else:
-        print('Default polymer type: PS-ata')
-
-    mw = 0
-    if f_pcustom:
-        p_type_custom = generatelatchinput(p_custom_input)
-        if p_type_custom:
-            os.system('latch/latch in.txt > out.txt')
-            p_type_custom = read_latchout('out.txt', Dir=p_type_custom)
-            mw = writepolymodfile(p_type_custom, 'p_types/custom/file.txt')
-        else:
-            return False
-
-    os.system('cp p_types/' + p_type + '/* .')
+    os.system('cp polymer_types/' + polymer_type + '/* .')
 
     # Get number of chains, molecules
     p_fra = .05
@@ -1468,7 +1145,7 @@ def main(args):
     print('Grain Radius:', D)  #'Coordinates cylinder: ', coord,
     GD = D
 
-    nc = calc_polymer(mass, nm, p_type, p_fra, custom=mw)
+    nc = calc_polymer(mass, nm, polymer_type, p_fra, custom=mw)
 
     # Get new cell for polymod
     # Run polymod
@@ -1482,18 +1159,12 @@ def main(args):
 
         shutil.copy('atoms.dat', './str2lammps/types')
         shutil.copy('bonds.dat', './str2lammps/types')
-        p = p_type.split('-')[0]
+        p = polymer_type.split('-')[0]
         shutil.copy('./str2lammps/types/%s_atom_type.dat' % p, './str2lammps/types/atom_type.dat')
         shutil.copy('./str2lammps/types/%s_atom_type.dat' % p, '%s_atom_type.dat' % p)
         shutil.copy('bond_type.dat', './str2lammps/types')
 
         addatomtype('%s_atom_type.dat' % p, 'atom_type.dat', elementlist)
-
-        #os.system('cp atoms.dat /str2lammps/types')
-        #os.system('cp bonds.dat /str2lammps/types')
-        #p=p_type.split('-')[0]
-        #os.system('cp /str2lammps/types/%s_atom_type.dat /str2lammps/types/atom_type.dat' %p)
-        #os.system('cp bond_type.dat /str2lammps/types')
 
         # Str2Lammps
         os.chdir('./str2lammps/')
