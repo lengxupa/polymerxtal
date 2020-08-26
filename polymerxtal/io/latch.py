@@ -2,8 +2,9 @@
 Functions for manipulating Polymer Modeler files.
 """
 
+
 def generate_latch_input(polymer_custom_input):
-	polymer_custom_output = polymer_custom_input+'_latch.in'
+    polymer_custom_output = polymer_custom_input + '_latch.in'
     polymer_type_custom = {}
     src = open(polymer_custom_input)
     des = open(polymer_custom_output, 'w')
@@ -64,7 +65,8 @@ def generate_latch_input(polymer_custom_input):
                         des.write('torsion all free \n')
                         des.write('\n')
                 else:
-                    print('Please specify monomer %d information with monomer PDB file, head atom & tail atom' % num_monomer)
+                    print('Please specify monomer %d information with monomer PDB file, head atom & tail atom' %
+                          num_monomer)
                     return False
             else:
                 print('More monomer input than specified, Please change accordingly')
@@ -127,14 +129,19 @@ def generate_latch_input(polymer_custom_input):
                     polymer_type_custom['chain'][num_chain]['arrangement'] = {}
                 if int(l[1]) == 0:
                     if int(l[2]) < 1:
-                        print('Please specify a positive number of monomers in first pattern for chain type %d' % num_chain)
+                        print('Please specify a positive number of monomers in first pattern for chain type %d' %
+                              num_chain)
                         return False
                     elif int(l[2]) != len(l[3:]):
                         print('Please specify a sequence of %d monomer(s) as repeated pattern for chain type %d' %
                               (int(l[2]), num_chain))
                         return False
                     else:
-                        polymer_type_custom['chain'][num_chain]['arrangement'] = {'type': 0, 'len': int(l[2]), 'sequence': l[3:]}
+                        polymer_type_custom['chain'][num_chain]['arrangement'] = {
+                            'type': 0,
+                            'len': int(l[2]),
+                            'sequence': l[3:]
+                        }
                 elif int(l[1]) == 1:
                     if polymer_type_custom['num_monomer'] != len(l[2:]):
                         print('Please specify %d probabilities of each monomer arrangement' % int(l[2]))
@@ -146,7 +153,8 @@ def generate_latch_input(polymer_custom_input):
                           num_chain)
                     return False
             else:
-                print('Please specify chain type %d information with arrangement: 0 = pattern, 1 = probability' % num_chain)
+                print('Please specify chain type %d information with arrangement: 0 = pattern, 1 = probability' %
+                      num_chain)
                 return False
     src.close()
     des.write('# Pattern of monomers used to make chains\n')
@@ -200,5 +208,3 @@ def generate_latch_input(polymer_custom_input):
     des.write('\n')
     des.close()
     return polymer_custom_output, polymer_type_custom
-
-

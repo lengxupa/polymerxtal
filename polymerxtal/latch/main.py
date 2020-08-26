@@ -1,6 +1,9 @@
 import time 
 
+from .system import PolymerSystem
+
 def main():
 	done = 0
-	start = time.time()
-	
+	timer = time.time()
+	sys = PolymerSystem()
+	params = Params()

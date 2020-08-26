@@ -1,0 +1,16 @@
+# See DREIDING (Mayo et al., J. Phys. Chem 94 8897-8909 (1990)) for R0
+# table; the values shown below represent an average for various 
+# hybridizations (e.g. the C value is an average of C_2, C_3, and C_R)
+#
+#               equil bond radius
+# element   mass     R0      LJ_R0    LJ_D0
+#  name     amu       A        A     kcal/mol
+    H      1.0079   0.330    3.195    0.0152
+    C     12.0107   0.713    3.8983   0.0951
+    N     14.0067   0.656    3.6621   0.0774
+    O     15.9994   0.610    3.4046   0.0957
+    F     18.9984   0.611    3.4720   0.0725
+    S     32.065    1.040    4.0300   0.3440
+    Cl    35.453    0.997    3.9503   0.2833
+    Si    28.086    0.937    4.27     0.31
+

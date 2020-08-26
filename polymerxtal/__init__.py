@@ -17,6 +17,7 @@ from .subject import System
 from .observer import XYZ_observer, energy_observer
 from .move_type import Translator, Rotator
 from .particle import Sphere, Gay_Berne, Cluster
+from .latch import PolymerSystem, Params
 
 # Handle versioneer
 from ._version import get_versions
