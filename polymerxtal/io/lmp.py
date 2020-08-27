@@ -5,35 +5,52 @@ Functions for manipulating LAMMPS files.
 import os
 
 def read_data(data_file):
+    """Read information from a LAMMPS data file
+
+    Parameters
+    ----------
+    data_file : str
+        The path of the data file to read
+
+    Returns
+    -------
+    data_dir : dict
+        Data from the LAMMPS data file as a dictionary.
+    """
+
+    # This function would be easier to unit test if it took in a string instead of a file.
     data_dir = {}
     box = {}
     masses = {}
-    data_src = open(data_file, 'r')
-    skip_line = 1
-    feature = ''
-    for line in data_src.readlines():
-        if skip_line:
-            skip_line = 0
-            continue
-        ln = line.split('#')[0].split()
-        if ln:
-            if len(ln) > 1 and ln[0].isdigit() and (not ln[1].isdigit()) and (not feature):
-                data_dir[' '.join(ln[1:])] = eval(ln[0])
-            if len(ln) == 4 and ln[2][1:] == 'lo' and ln[3][1:] == 'hi':
-                data_dir[ln[2]] = eval(ln[0])
-                data_dir[ln[3]] = eval(ln[1])
-            if not (ln[0][0].isdigit() or ln[0][0] == '-'):
-                feature = ' '.join(ln)
-                data_dir[feature] = {}
-            if feature and (ln[0][0].isdigit() or ln[0][0] == '-'):
-                data_dir[feature][eval(ln[0])] = [eval(i) for i in ln[1:]]
-    data_src.close()
+    with open(data_file, 'r') as data_src:
+        skip_line = 1
+        feature = ''
+        for line in data_src.readlines():
+            if skip_line:
+                skip_line = 0
+                continue
+
+            # ln will have 0 length if line is comment.
+            ln = line.split('#')[0].split()
+            if ln:
+                if len(ln) > 1 and ln[0].isdigit() and (not ln[1].isdigit()) and (not feature):
+                    # I think you are just trying to cast as a number here? Is safer to try casting as float.
+                    data_dir[' '.join(ln[1:])] = float(ln[0])
+                if len(ln) == 4 and ln[2][1:] == 'lo' and ln[3][1:] == 'hi':
+                    data_dir[ln[2]] = float(ln[0])
+                    data_dir[ln[3]] = float(ln[1])
+                if not (ln[0][0].isdigit() or ln[0][0] == '-'):
+                    feature = ' '.join(ln)
+                    data_dir[feature] = {}
+                if feature and (ln[0][0].isdigit() or ln[0][0] == '-'):
+                    data_dir[feature][eval(ln[0])] = [eval(i) for i in ln[1:]]
     return data_dir
 
 
 def write_lmp_ifile(file_location, datafile):
 
     # Write a LAMMPS input file given a file location and datafile.
+    # Where/what is in.lapps? Seems like a template.
     with open('in.lammps', 'r') as file:
         filedata = file.read()
 
