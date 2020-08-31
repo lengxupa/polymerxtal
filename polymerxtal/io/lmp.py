@@ -48,7 +48,7 @@ def read_data(data_file):
     return data_dir
 
 
-def write_lmp_ifile(file_location, datafile, potential_headfile, potentialfile):
+def write_lmp_ifile(lmp_file_location, datafile, potential_headfile, potentialfile):
 
     # Write a LAMMPS input file given a file location and datafile.
     # Where/what is in.lapps? Seems like a template.
@@ -80,8 +80,8 @@ def write_lmp_ifile(file_location, datafile, potential_headfile, potentialfile):
     des.close()
 
 
-def run_lammps(lmp_location):
-    os.system('%s < inr.lammps' %lmp_location)
+def run_lammps(lmp_location, lmp_file_location):
+    os.system('%s < %s' % (lmp_location, lmp_file_location))
     os.system('cp log.lammps out')
 
 
@@ -119,7 +119,7 @@ def read_cell_sizes(data_file):
 
 
 def get_boundaries(direction):
-    # get_boundaries function gets the center of mass and the boundaris - the minimum and maximum x, y and z positions - of a molecule or molecules from LAMMPS out put tmp.out 
+    # get_boundaries function gets the center of mass and the boundaris - the minimum and maximum x, y and z positions - of a molecule or molecules from LAMMPS out put tmp.out
     boundaries = {}
     com = {}
     with open('tmp.out', 'r') as infile:
