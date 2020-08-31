@@ -622,33 +622,6 @@ def add_data(Dir_1, Dir_2, add='append'):
     return Dir_data
 
 
-def writeinlammps(datafile, potential_headfile, potentialfile):
-    des = open('inr.lammps', 'w')
-    des.write('newton          on\n')
-    des.write('boundary        p p p\n')
-    des.write('units           real\n')
-    des.write('\n')
-    des.write('include      ../%s\n' % potential_headfile)
-    des.write('read_data       ../%s\n' % datafile)
-    des.write('include      ../%s\n' % potentialfile)
-    des.write('\n')
-    des.write('compute         graincm all com\n')
-    des.write('variable        M equal mass(all)\n')
-    des.write('variable        maxcx equal bound(all,xmax)\n')
-    des.write('variable        mincx equal bound(all,xmin)\n')
-    des.write('variable        maxcy equal bound(all,ymax)\n')
-    des.write('variable        mincy equal bound(all,ymin)\n')
-    des.write('variable        maxcz equal bound(all,zmax)\n')
-    des.write('variable        mincz equal bound(all,zmin)\n')
-    des.write('\n')
-    des.write(
-        'fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy v_maxcz v_mincz v_M file tmp.out\n'
-    )
-    des.write('run             0\n')
-    des.write('\n')
-    des.close()
-
-
 def grabprocessors(ifile):
     src = open(ifile)
     for line in src.readlines():

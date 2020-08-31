@@ -1,4 +1,4 @@
-from .lex import yylex, yyget_text, yyget_lineno
+from .lex import yylex, yyget_text, yyget_leng
 
 
 class Scanner:
@@ -16,4 +16,4 @@ class Scanner:
         else:
             self.tokval = yylex(self.scanner)
             self.tokstr = yyget_text(self.scanner)
-            self.toklen = yyget_leng(self.scanner);
+            self.toklen = yyget_leng(self.scanner)

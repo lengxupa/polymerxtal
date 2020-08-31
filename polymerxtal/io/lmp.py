@@ -4,6 +4,7 @@ Functions for manipulating LAMMPS files.
 
 import os
 
+
 def read_data(data_file):
     """Read information from a LAMMPS data file
 
@@ -47,25 +48,45 @@ def read_data(data_file):
     return data_dir
 
 
-def write_lmp_ifile(file_location, datafile):
+def write_lmp_ifile(file_location, datafile, potential_headfile, potentialfile):
 
     # Write a LAMMPS input file given a file location and datafile.
     # Where/what is in.lapps? Seems like a template.
-    with open('in.lammps', 'r') as file:
-        filedata = file.read()
+    # I have removed in.lammps and changed to a direct write
+    des = open('inr.lammps', 'w')
+    des.write('newton          on\n')
+    des.write('boundary        p p p\n')
+    des.write('units           real\n')
+    des.write('\n')
+    des.write('include      ../%s\n' % potential_headfile)
+    des.write('read_data       ../%s\n' % datafile)
+    des.write('include      ../%s\n' % potentialfile)
+    des.write('\n')
+    des.write('compute         graincm all com\n')
+    des.write('variable        M equal mass(all)\n')
+    des.write('variable        maxcx equal bound(all,xmax)\n')
+    des.write('variable        mincx equal bound(all,xmin)\n')
+    des.write('variable        maxcy equal bound(all,ymax)\n')
+    des.write('variable        mincy equal bound(all,ymin)\n')
+    des.write('variable        maxcz equal bound(all,zmax)\n')
+    des.write('variable        mincz equal bound(all,zmin)\n')
+    des.write('\n')
+    des.write(
+        'fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy v_maxcz v_mincz v_M file tmp.out\n'
+    )
+    # Here is the tmp.out output after running LAMMPS
+    des.write('run             0\n')
+    des.write('\n')
+    des.close()
 
-    filedata = filedata.replace('datafile', datafile)
 
-    with open(file_location, 'w+') as file:
-        file.write(filedata)
-
-
-def run_lammps():
-    os.system('./lmp_mpi < inr.lammps')
+def run_lammps(lmp_location):
+    os.system('%s < inr.lammps' %lmp_location)
     os.system('cp log.lammps out')
 
 
 def read_cell_sizes(data_file):
+    # read_cell_sizes function provides a quick step to read the simulation box information
     cell_sizes = {}
     delta_cell = {}
     with open(data_file) as f:
@@ -98,6 +119,7 @@ def read_cell_sizes(data_file):
 
 
 def get_boundaries(direction):
+    # get_boundaries function gets the center of mass and the boundaris - the minimum and maximum x, y and z positions - of a molecule or molecules from LAMMPS out put tmp.out 
     boundaries = {}
     com = {}
     with open('tmp.out', 'r') as infile:
