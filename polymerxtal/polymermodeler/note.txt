@@ -1,0 +1,67 @@
+Bond 
+	- create
+	- no freeBondList - use __del__ 
+
+Chain
+	- no destroyChain - use __del__ 
+
+Domain
+	- no destroyDomain - use __del__ 
+
+ExclCylinder 
+	- create
+	- no destroyExclCylinder - use __del__ 
+	- no createExclCylinder - use create
+
+ExclSlab 
+	- create
+	- no destroyExclSlab - use __del__ 
+
+ExclSphere 
+	- create
+
+Monomer 
+	- create
+	- no destroyMonomer - use __del__ 
+
+OccAtom 
+	- create
+
+Params
+	- no initParams - use __init__ 
+	- no freeParams - use __del__ 
+
+PolymerSystem
+	- no initSystem
+
+RNG
+	- no destroyRNG - use __del__ 
+
+Stereo 
+	- create
+	- no destroyStereo - use __del__ 
+
+ZMatrix
+	- no destroyZMatrix - use __del__ 
+
+ZVar
+	- create
+
+choke - use raise *Error
+EXIT_SUCCESS - 0
+fclose - f.close()
+file - f
+isEqual - ==
+len - leng
+max - maxi
+min - mini
+NEG_0 - 0
+openfile() - open()
+Rint - numpy.rint()
+str - string
+strcmp(a,b)==0 - ==
+STR_TO_REAL - eval
+snprintf(prevtok, TOKLEN, "%s", s->tokstr) - prevtok="%s" %s->tokstr
+strrchr(a,'c') - a.rfind('c')
+yylex_destroy - =''
+
