@@ -412,7 +412,7 @@ class Monomer:
     # Result: free all memory associated with m
     # ============================================================================
     def __del__(self):
-        if self:
+        if self and hasattr(self, 'next'):
             self.name = ''
             if self.zm:
                 del self.zm
