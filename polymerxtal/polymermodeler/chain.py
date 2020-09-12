@@ -8,11 +8,12 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
+import numpy as np
+
 from .zmatrix import ZMatrix, ZEntry, MIN_POSITIONS
 from .stereo import Stereo
 from .monomer import Bond, Monomer
 from .stdio import FILE
-from .vector import Vector
 from .utils import foldPosition
 from .element import getElementName
 from .params import Params
@@ -46,7 +47,7 @@ class Chain:
         na = self.curr_atom
         czm = self.zm
         mzm = m.zm
-        pos = Vector()
+        pos = np.zeros(3)
 
         self.curr_monomer += 1
         self.i_monomer[c.curr_monomer] = na
@@ -104,7 +105,7 @@ class Chain:
     # after 99999
     # ============================================================================
     def writeChainPDB(self, i_atom, fold_pos, f, p):
-        pos = Vector()
+        pos = np.zeros(3)
 
         RESIDUE_NAME = "UNK"
         CHAIN_ID = "A"
@@ -117,7 +118,7 @@ class Chain:
             #        1     7   13  18     23     31   39   47
             f.write("ATOM  %5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f\n" %
                     (i_atom, getElementName(self.zm.entries[i].type.element_index), RESIDUE_NAME, CHAIN_ID,
-                     RESIDUE_SEQ, pos.x, pos.y, pos.z))
+                     RESIDUE_SEQ, pos[0], pos[1], pos[2]))
             i_atom += 1
             if i_atom > 99999:
                 i_atom = 1

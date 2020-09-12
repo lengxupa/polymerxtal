@@ -8,10 +8,11 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
+import numpy as np
+
 from .params import Params
 from .system import PolymerSystem
 from .timer import Timer
-from .vector import Vector
 from .stdio import FILE
 
 # File scope
@@ -22,6 +23,7 @@ status_file = {'name': ''}
 total_monomers = 0
 update_count = 0
 timer = Timer()
+
 
 # ============================================================================
 # logMessage()
@@ -60,8 +62,8 @@ def main(args):
         "Usage: %s [flags] infile\n", "Flags:\n", "   -v   Show version and build info, then exit\n",
         "   -h   Show help message, then exit\n"
     ]
-    mini = Vector()
-    maxi = Vector()
+    mini = np.zeros(3)
+    maxi = np.zeros(3)
     m = []
     s = []
     f = []
@@ -101,6 +103,7 @@ def main(args):
 
     #Unfinished
 
+
 #int
 #main(int argc, char **argv)
 #{
@@ -111,7 +114,7 @@ def main(args):
 #   int i, j, k, n;
 #   char *p;
 #   char *infile = NULL;
-#   const char usage[] = 
+#   const char usage[] =
 #      "Usage: %s [flags] infile\n"
 #      "Flags:\n"
 #      "   -v   Show version and build info, then exit\n"

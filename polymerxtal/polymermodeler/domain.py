@@ -8,7 +8,8 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .vector import Vector
+import numpy as np
+
 from .utils import FREE
 
 
@@ -34,9 +35,9 @@ class Bin:
 # Spatial region divided into bins: identify neighboring atoms
 class Domain:
     def __init__(self):
-        self.min = Vector()
-        self.max = Vector()
-        self.bin_size = Vector()
+        self.min = np.zeros(3)
+        self.max = np.zeros(3)
+        self.bin_size = np.zeros(3)
         self.index = -1
         self.num_bins_x = 0
         self.num_bins_y = 0

@@ -9,14 +9,14 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .vector import Vector
+import numpy as np
 
 
 # Excluded cylindrical region
 class ExclCylinder:
     def __init__(self):
-        self.start = Vector()  # starting point in center of one end
-        self.axis = Vector()
+        self.start = np.zeros(3)  # starting point in center of one end
+        self.axis = np.zeros(3)
         self.radius = 0.  # Angstroms
         self.length = 0.  # Angstroms
         self.invert = 0
@@ -35,8 +35,8 @@ class ExclCylinder:
 # Excluded rectangular region
 class ExclSlab:
     def __init__(self):
-        self.min = Vector()
-        self.max = Vector()
+        self.min = np.zeros(3)
+        self.max = np.zeros(3)
         self.invert = 0
 
     # ============================================================================
@@ -53,7 +53,7 @@ class ExclSlab:
 # Excluded spherical region
 class ExclSphere:
     def __init__(self):
-        self.center = Vector()
+        self.center = np.zeros(3)
         self.radius = 0.  # Angstroms
         self.invert = 0
 

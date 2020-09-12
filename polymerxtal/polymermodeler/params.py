@@ -12,7 +12,6 @@ import random
 import time
 import numpy as np
 
-from .vector import Vector
 from .monomer import Monomer
 from .stereo import Stereo
 from .exclude import ExclCylinder, ExclSlab, ExclSphere
@@ -44,11 +43,11 @@ def findMonomer(name, p):
 # Simulation parameters
 class Params:
     def __init__(self):
-        self.system_min = Vector()  # minimum point of simulation box
-        self.system_max = Vector()  # maximum point of simulation box
-        self.system_size = Vector()  # system_max - system_min
-        self.half_system_size = Vector()
-        self.domain_size = Vector()  # size of thread spatial domain
+        self.system_min = np.zeros(3)  # minimum point of simulation box
+        self.system_max = np.zeros(3)  # maximum point of simulation box
+        self.system_size = np.zeros(3)  # system_max - system_min
+        self.half_system_size = np.zeros(3)
+        self.domain_size = np.zeros(3)  # size of thread spatial domain
         self.known_monomers = Monomer()  # list
         self.known_monomers.create()
         self.known_stereo = Stereo()  # list
@@ -202,12 +201,12 @@ class Params:
                     ec.invert = n
                     if ec.invert:
                         self.inverted_volume = 1
-                    ec.start.x = s.getRealToken()
-                    ec.start.y = s.getRealToken()
-                    ec.start.z = s.getRealToken()
-                    ec.axis.x = s.getRealToken()
-                    ec.axis.y = s.getRealToken()
-                    ec.axis.z = s.getRealToken()
+                    ec.start[0] = s.getRealToken()
+                    ec.start[1] = s.getRealToken()
+                    ec.start[2] = s.getRealToken()
+                    ec.axis[0] = s.getRealToken()
+                    ec.axis[1] = s.getRealToken()
+                    ec.axis[2] = s.getRealToken()
                     ec.radius = s.getRealToken()
                     ec.length = s.getRealToken()
                     ec.next = self.excluded_cylinders
@@ -219,21 +218,21 @@ class Params:
                     es.invert = n
                     if es.invert:
                         self.inverted_volume = 1
-                    es.min.x = s.getRealToken()
-                    es.min.y = s.getRealToken()
-                    es.min.z = s.getRealToken()
-                    es.max.x = s.getRealToken()
-                    es.max.y = s.getRealToken()
-                    es.max.z = s.getRealToken()
-                    if es.max.x < es.min.x:
+                    es.min[0] = s.getRealToken()
+                    es.min[1] = s.getRealToken()
+                    es.min[2] = s.getRealToken()
+                    es.max[0] = s.getRealToken()
+                    es.max[1] = s.getRealToken()
+                    es.max[2] = s.getRealToken()
+                    if es.max[0] < es.min[0]:
                         raise ValueError("Excluded slab min x > max x")
-                    if es.max.y < es.min.y:
+                    if es.max[1] < es.min[1]:
                         raise ValueError("Excluded slab min y > max y")
-                    if es.max.z < es.min.z:
+                    if es.max[2] < es.min[2]:
                         raise ValueError("Excluded slab min z > max z")
                     es.next = self.excluded_slabs
                     self.excluded_slabs = es
-                    self.excluded_volume += (es.max.x - es.min.x) * (es.max.y - es.min.y) * (es.max.z - es.min.z)
+                    self.excluded_volume += (es.max[0] - es.min[0]) * (es.max[1] - es.min[1]) * (es.max[2] - es.min[2])
                 elif t == TOK_SPHERE:
                     esph = ExclSphere()
                     esph.create()
@@ -241,9 +240,9 @@ class Params:
                     if esph.invert:
                         self.inverted_volume = 1
                     # TODO xcenter ycenter zcenter radius
-                    esph.center.x = s.getRealToken()
-                    esph.center.y = s.getRealToken()
-                    esph.center.z = s.getRealToken()
+                    esph.center[0] = s.getRealToken()
+                    esph.center[1] = s.getRealToken()
+                    esph.center[2] = s.getRealToken()
                     esph.radius = s.getRealToken()
                     esph.next = self.excluded_spheres
                     self.excluded_spheres = esph

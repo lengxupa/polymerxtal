@@ -9,8 +9,9 @@
 # ============================================================================
 
 from enum import Enum
+import numpy as np
 
-from .zmatrix import ZMatrix, Vector, createZMatrix
+from .zmatrix import ZMatrix, createZMatrix
 from .utils import FREE
 from .types import AtomType
 from .scan import *
@@ -70,7 +71,7 @@ def createHolder(num_atoms):
     h = Holder()
 
     for i in range(num_atoms):
-        h.pos[i] = Vector()
+        h.pos[i] = np.zeros(3)
         h.el_names[i] = ''
         h.atom_types[i] = AtomType()
     h.num_atoms = num_atoms
@@ -159,9 +160,9 @@ def readXYZ(s):
     # s->tokstr points to the first atom type, on line 3
     for i in range(h.num_atoms):
         h.el_names[i] = s.tokstr
-        h.pos[i].x = s.getRealToken()
-        h.pos[i].y = s.getRealToken()
-        h.pos[i].z = s.getRealToken()
+        h.pos[i][0] = s.getRealToken()
+        h.pos[i][1] = s.getRealToken()
+        h.pos[i][2] = s.getRealToken()
         s.getToken()
     return h
 
@@ -177,7 +178,7 @@ def readXYZ(s):
 def readZM(s, zmptr):
     h = {}
     TOKLEN = 256
-    v0 = Vector()
+    v0 = np.zeros(3)
 
     # Expected format of the zmatrix file:
     # N  # not used
@@ -345,9 +346,9 @@ def readPDB(path):
     while line:
         leng = len(line)
         if (line[:6] == "ATOM  ") or (line[:6] == "HETATM"):
-            h.pos[i].x = eval(line[30:38])
-            h.pos[i].y = eval(line[38:46])
-            h.pos[i].z = eval(line[46:54])
+            h.pos[i][0] = eval(line[30:38])
+            h.pos[i][1] = eval(line[38:46])
+            h.pos[i][2] = eval(line[46:54])
             # Check element symbol first...
             if (not line[77].isspace()) and leng > 77:
                 line[78] = '\0'

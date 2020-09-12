@@ -12,7 +12,6 @@
 import numpy as np
 
 from .types import AtomType
-from .vector import Vector
 from .utils import DEG2RAD
 from .config import REAL_MAX
 
@@ -61,7 +60,7 @@ class ZMatrix:
     def clearPosition(self, index):
         if index < 0 or index >= self.num_positions:
             raise ValueError("clearPosition(): Position index %d is out of range" % index)
-        self.positions[index].x = NO_POSITION
+        self.positions[index][0] = NO_POSITION
         # Only x is tested in getPosition()
         # zm->positions[index].y = NO_POSITION;
         # zm->positions[index].z = NO_POSITION;
@@ -75,54 +74,54 @@ class ZMatrix:
     def getPosition(self, index, pos):
         if index < 0 or index >= self.num_entries:
             raise ValueError("getPosition(): Position index %d is out of range (%d)" % (index, self.num_entries))
-        if index < self.num_positions and self.positions[index].x > NO_POSITION:
+        if index < self.num_positions and self.positions[index][0] > NO_POSITION:
             pos = self.positions[index]
         else:
-            a = Vector()
-            b = Vector()
-            c = Vector()
-            n1 = Vector()
-            n2 = Vector()
-            bond_index_pos = Vector()
-            angle_atom_pos = Vector()
-            torsion_atom_pos = Vector()
+            a = np.zeros(3)
+            b = np.zeros(3)
+            c = np.zeros(3)
+            n1 = np.zeros(3)
+            n2 = np.zeros(3)
+            bond_index_pos = np.zeros(3)
+            angle_atom_pos = np.zeros(3)
+            torsion_atom_pos = np.zeros(3)
             ze = self.entries[index]
 
             self.getPosition(ze.bond_index, bond_index_pos)
             bond_length = ze.bond_length
             if -1 == ze.angle_index:
                 # Atom 1
-                pos.x = bond_length
-                pos.y = 0.0
-                pos.z = 0.0
+                pos[0] = bond_length
+                pos[1] = 0.0
+                pos[2] = 0.0
             else:
                 self.getPosition(ze.angle_index, angle_atom_pos)
                 bond_angle = DEG2RAD(ze.bond_angle)
                 if -1 == ze.dihedral_index:
                     # Atom 2
-                    torsion_atom_pos.x = 0.0
-                    torsion_atom_pos.y = 1.0
-                    torsion_atom_pos.z = 0.0
+                    torsion_atom_pos[0] = 0.0
+                    torsion_atom_pos[1] = 1.0
+                    torsion_atom_pos[2] = 0.0
                     torsion_angle = DEG2RAD(90.0)
                 else:
                     # All other atoms
                     self.getPosition(ze.dihedral_index, torsion_atom_pos)
                     torsion_angle = DEG2RAD(ze.torsion_angle)
-                a.subtractVectors(bond_index_pos, angle_atom_pos)
-                b.subtractVectors(bond_index_pos, torsion_atom_pos)
-                n1.crossVectors(a, b)
-                n1.normalizeVector()
-                n2.crossVectors(a, n1)
-                n2.normalizeVector()
-                n1.scaleVector(-np.sin(torsion_angle))
-                n2.scaleVector(np.cos(torsion_angle))
-                c.addVectors(n1, n2)
-                c.normalizeVector()
-                c.scaleVector(bond_length * np.sin(bond_angle))
-                b.addVectors(bond_index_pos, c)
-                a.normalizeVector()
-                a.scaleVector(bond_length * np.cos(bond_angle))
-                pos.subtractVectors(b, a)
+                a = bond_index_pos - angle_atom_pos
+                b = bond_index_pos - torsion_atom_pos
+                n1 = np.cross(a, b)
+                n1 /= np.linalg.norm(n1)
+                n2 = np.cross(a, n1)
+                n2 /= np.linalg.norm(n2)
+                n1 *= -np.sin(torsion_angle)
+                n2 *= np.cos(torsion_angle)
+                c = n1 + n2
+                c /= np.linalg.norm(c)
+                c *= bond_length * np.sin(bond_angle)
+                b = bond_index_pos + c
+                a /= np.linalg.norm(a)
+                a *= bond_length * np.cos(bond_angle)
+                pos = b - a
 
 
 # ============================================================================
@@ -146,8 +145,8 @@ def createZMatrix(num_entries, store_positions):
         zm.entries[i].bond_angle = 0.0
         zm.entries[i].torsion_angle = 0.0
     for i in range(zm.num_positions):
-        zm.positions[i] = Vector()
-        zm.positions[i].x = NO_POSITION
-        zm.positions[i].y = NO_POSITION
-        zm.positions[i].z = NO_POSITION
+        zm.positions[i] = np.zeros(3)
+        zm.positions[i][0] = NO_POSITION
+        zm.positions[i][1] = NO_POSITION
+        zm.positions[i][2] = NO_POSITION
     return zm

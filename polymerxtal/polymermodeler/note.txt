@@ -44,6 +44,18 @@ Stereo
 	- create
 	- no destroyStereo - use __del__ 
 
+Vector 
+	- np.zeros(3)
+	- .x - [0]
+	- .y - [1]
+	- .z - [2]
+	- subtractVectors(self, lhs, rhs) - use self = lhs - rhs
+	- crossVectors(self, lhs, rhs) - use self = np.cross(lhs, rhs)
+	- normalizeVector(self) - use self /= np.linalg.norm(self)
+	- getLength(self) - use np.linalg.norm(self)
+	- scaleVector(self, scale) - use self *= scale
+	- addVectors(self, lhs, rhs) - use self = lhs + rhs
+
 ZMatrix
 	- no destroyZMatrix - use __del__ 
 

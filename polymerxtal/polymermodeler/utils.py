@@ -8,7 +8,7 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .vector import Vector
+import numpy as np
 
 
 # Free a list and set it to [] */
@@ -23,26 +23,26 @@ def FREE(ptr):
 # Result: fold pos until it is inside (system_min, system_max)
 # ============================================================================
 def foldPosition(pos, system_min, system_max, system_size):
-    while pos.x < system_min.x:
-        pos.x += system_size.x
-    while pos.x > system_max.x:
-        pos.x -= system_size.x
-    if pos.x == system_max.x:
-        pos.x = system_min.x
+    while pos[0] < system_min[0]:
+        pos[0] += system_size[0]
+    while pos[0] > system_max[0]:
+        pos[0] -= system_size[0]
+    if pos[0] == system_max[0]:
+        pos[0] = system_min[0]
 
-    while pos.y < system_min.y:
-        pos.y += system_size.y
-    while pos.y > system_max.y:
-        pos.y -= system_size.y
-    if pos.y == system_max.y:
-        pos.y = system_min.y
+    while pos[1] < system_min[1]:
+        pos[1] += system_size[1]
+    while pos[1] > system_max[1]:
+        pos[1] -= system_size[1]
+    if pos[1] == system_max[1]:
+        pos[1] = system_min[1]
 
-    while pos.z < system_min.z:
-        pos.z += system_size.z
-    while pos.z > system_max.z:
-        pos.z += system_size.z
-    if pos.z == system_max.z:
-        pos.z = system_min.z
+    while pos[2] < system_min[2]:
+        pos[2] += system_size[2]
+    while pos[2] > system_max[2]:
+        pos[2] += system_size[2]
+    if pos[2] == system_max[2]:
+        pos[2] = system_min[2]
 
 
 # Conversions between radians and degrees
