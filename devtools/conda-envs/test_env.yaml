@@ -6,10 +6,7 @@ dependencies:
   - pip
 
   - numpy
-  - matplotlib
-  - mdanalysis
-  - mdtraj
-
+  
     # Testing
   - pytest
   - pytest-cov
