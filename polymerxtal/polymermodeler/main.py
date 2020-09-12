@@ -97,6 +97,7 @@ def main(args):
 
     # Read input
     params.readParams(infile)
+    #polysys.buildsystem(params)
 
     #Unfinished
 

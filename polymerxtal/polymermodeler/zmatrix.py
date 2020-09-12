@@ -42,23 +42,11 @@ class ZMatrix:
         self.positions = {}
 
     # ============================================================================
-    # destroyZMatrix()
-    # ----------------------------------------------------------------------------
-    # Result: free all memory associated with the ZMatrix zm
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            self.entries = {}
-            self.positions = {}
-
-    # ============================================================================
     # setPosition()
     # ----------------------------------------------------------------------------
     # Result: set the position of the index-th atom; calls choke() is index is out
     # of range
     # ============================================================================
-
     def setPosition(self, index, pos):
         if index < 0 or index >= self.num_positions:
             raise ValueError("setPosition(): Position index %d is out of range" % index)
@@ -70,7 +58,6 @@ class ZMatrix:
     # Result: set the position of the index-th atom to NO_POSITION; calls choke()
     # if index is out of range
     # ============================================================================
-
     def clearPosition(self, index):
         if index < 0 or index >= self.num_positions:
             raise ValueError("clearPosition(): Position index %d is out of range" % index)
@@ -85,7 +72,6 @@ class ZMatrix:
     # Result: store the position of the index-th atom in *pos; calls choke() if
     # index is out of range
     # ============================================================================
-
     def getPosition(self, index, pos):
         if index < 0 or index >= self.num_entries:
             raise ValueError("getPosition(): Position index %d is out of range (%d)" % (index, self.num_entries))
@@ -145,8 +131,6 @@ class ZMatrix:
 # Result: return a pointer to a newly allocated, initialized ZMatrix; calls
 # choke() if allocation fails
 # ============================================================================
-
-
 def createZMatrix(num_entries, store_positions):
     zm = ZMatrix()
 

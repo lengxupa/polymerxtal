@@ -22,7 +22,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: set result = lhs + rhs
     # ============================================================================
-
     def addVectors(self, lhs, rhs):
         self.x = lhs.x + rhs.x
         self.y = lhs.y + rhs.y
@@ -33,7 +32,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: set result = lhs - rhs
     # ============================================================================
-
     def subtractVectors(self, lhs, rhs):
         self.x = lhs.x - rhs.x
         self.y = lhs.y - rhs.y
@@ -44,7 +42,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: scale each component of v by scale
     # ============================================================================
-
     def scaleVector(self, scale):
         self.x *= scale
         self.y *= scale
@@ -55,7 +52,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: set result = lhs x rhs (vector product)
     # ============================================================================
-
     def crossVectors(self, lhs, rhs):
         self.x = lhs.y * rhs.z - lhs.z * rhs.y
         self.y = lhs.z * rhs.x - lhs.x * rhs.z
@@ -66,7 +62,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: return the length of v (assuming a Vector from the origin)
     # ============================================================================
-
     def getLength(self):
         return np.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 
@@ -75,7 +70,6 @@ class Vector:
     # ----------------------------------------------------------------------------
     # Result: adjust components of v so that |v| = 1
     # ============================================================================
-
     def normalizeVector(self):
         leng = 1.0 / self.getLength()
 

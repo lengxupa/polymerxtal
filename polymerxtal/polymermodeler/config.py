@@ -1,5 +1,5 @@
 # ============================================================================
-# @configure_input@
+# config.py
 # ----------------------------------------------------------------------------
 # Author: Benjamin P. Haley, Tongtong Shen, Purdue University
 # Copyright (c) 2012 Purdue University

@@ -37,6 +37,9 @@ PolymerSystem
 RNG
 	- no destroyRNG - use __del__ 
 
+Scanner 
+	- no destroyScanner - use __del__ 
+
 Stereo 
 	- create
 	- no destroyStereo - use __del__ 

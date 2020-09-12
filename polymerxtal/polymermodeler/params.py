@@ -120,56 +120,6 @@ class Params:
             read_elements += 1
 
     # ============================================================================
-    # freeParams()
-    # ----------------------------------------------------------------------------
-    # Result: free all allocated fields of p
-    # ============================================================================
-    def __del__(self):
-        if self:
-            es2 = ExclSlab()
-            es2.create()
-
-            FREE(self.chain_stereo_weights)
-            self.data_dir = ''
-            self.element_data = ''
-            self.log_file = ''
-            self.status_file = ''
-
-            m1 = self.known_monomers
-            while m1 and hasattr(m1, 'next'):
-                m2 = m1.next
-                del m1
-                m1 = m2
-            del self.known_monomers
-
-            if self.chain_stereo:
-                for i in range(self.num_stereo):
-                    del self.chain_stereo[i]  # Free the Stereos below
-                del self.chain_stereo
-                self.chain_stereo = {}
-
-            s1 = self.known_stereo
-            while s1 and hasattr(s1, 'next'):
-                s2 = s1.next
-                del s1
-                s1 = s2
-            del self.known_stereo
-
-            ec1 = self.excluded_cylinders
-            while ec1 and hasattr(ec1, 'next'):
-                ec2 = ec1.next
-                del ec1
-                ec1 = ec2
-            del self.excluded_cylinders
-
-            es1 = self.excluded_slabs
-            while es1 and hasattr(es1, 'next'):
-                es2 = es1.next
-                del es1
-                es1 = es2
-            del self.excluded_slabs
-
-    # ============================================================================
     # readParams()
     # ----------------------------------------------------------------------------
     # Result: fill p by reading indicated input file; calls choke() on input error

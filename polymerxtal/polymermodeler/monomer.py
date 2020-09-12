@@ -27,18 +27,6 @@ class Bond:
     def create(self):
         self.next = Bond()
 
-    # ============================================================================
-    # freeBondList()
-    # ----------------------------------------------------------------------------
-    # Result: free all Bonds in blist
-    # ============================================================================
-    def __del__(self):
-        b1 = self
-        while b1 and hasattr(b1, 'next'):
-            b2 = b1.next
-            del b1
-            b1 = b2
-
 
 # Restrictions on allowed torsion (dihedral) angles for backbone atoms
 class Torsion(Enum):
@@ -405,39 +393,6 @@ class Monomer:
 
     def create(self):
         self.next = Monomer()
-
-    # ============================================================================
-    # destroyMonomer()
-    # ----------------------------------------------------------------------------
-    # Result: free all memory associated with m
-    # ============================================================================
-    def __del__(self):
-        if self and hasattr(self, 'next'):
-            self.name = ''
-            if self.zm:
-                del self.zm
-                self.zm = []
-            if self.extra_bonds:
-                del self.extra_bonds
-            FREE(self.torsions)
-            FREE(self.num_torsions)
-            FREE(self.torsion_prob_min)
-            if self.torsion_angles:
-                for i in range(self.num_bb):
-                    FREE(self.torsion_angles[i])
-                del self.torsion_angles
-                self.torsion_angles = {}
-            if self.torsion_probs:
-                for i in range(self.num_bb):
-                    FREE(self.torsion_probs[i])
-                del self.torsion_probs
-                self.torsion_probs = {}
-            if self.torsion_energies:
-                for i in range(self.num_bb):
-                    FREE(self.torsion_energies[i])
-                del self.torsion_energies
-                self.torsion_energies = {}
-            del self.next
 
 
 # ============================================================================

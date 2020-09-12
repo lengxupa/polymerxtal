@@ -22,8 +22,6 @@ def FREE(ptr):
 # ----------------------------------------------------------------------------
 # Result: fold pos until it is inside (system_min, system_max)
 # ============================================================================
-
-
 def foldPosition(pos, system_min, system_max, system_size):
     while pos.x < system_min.x:
         pos.x += system_size.x

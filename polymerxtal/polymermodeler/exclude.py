@@ -27,20 +27,9 @@ class ExclCylinder:
     # Result: return a pointer to a newly allocated, initialized ExclCylinder; all
     # fields are filled later; call choke() on error
     # ============================================================================
-
     def create(self):
         self.invert = 0
         self.next = ExclCylinder()
-
-    # ============================================================================
-    # destroyExclCylinder()
-    # ----------------------------------------------------------------------------
-    # Result: free and ExclCylinder
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            del self.next
 
 
 # Excluded rectangular region
@@ -56,20 +45,9 @@ class ExclSlab:
     # Result: return a pointer to a newly allocated, initialized ExclSlab; all
     # fields are filled later; call choke() on error
     # ============================================================================
-
     def create(self):
         self.invert = 0
         self.next = ExclSlab()
-
-    # ============================================================================
-    # destroyExclSlab()
-    # ----------------------------------------------------------------------------
-    # Result: free an ExclSlab
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            del self.next
 
 
 # Excluded spherical region
@@ -85,7 +63,6 @@ class ExclSphere:
     # Result: return a pointer to a newly allocated, initialized ExclSphere; all
     # fields are filled later; call choke() on error
     # ============================================================================
-
     def create(self):
         self.invert = 0
         self.next = ExclSphere()

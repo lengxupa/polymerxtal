@@ -27,20 +27,3 @@ class Stereo:
 
     def create(self):
         self.next = Stereo()
-
-    # ============================================================================
-    # destroyStereo()
-    # ----------------------------------------------------------------------------
-    # Result: free a Stereo
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            self.name = ''
-            FREE(self.weights)
-            del self.term
-            del self.next
-            if self.monomers:
-                for i in range(self.num_monomers):
-                    del self.monomers[i]  # Free Monomers elsewhere
-                del self.monomers

@@ -53,7 +53,6 @@ class Domain:
     # ----------------------------------------------------------------------------
     # Result: remove all OccAtoms from the Domain d
     # ============================================================================
-
     def clearDomain(self):
         for i in range(self.total_bins):
             oa = self.bins[i].oa_list
@@ -63,19 +62,3 @@ class Domain:
                 del oa
                 oa = next
             del self.bins[i].oa_list
-
-    # ============================================================================
-    # freeDomain()
-    # ----------------------------------------------------------------------------
-    # Result: free a Domain, including all OccAtoms
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            if self.bins:
-                self.clearDomain()
-                for i in range(self.total_bins):
-                    FREE(self.bins[i].nbr_bins)
-                    FREE(self.bins[i].domain_edge)
-            FREE(self.nbr_bins)
-            FREE(self.domain_edge)

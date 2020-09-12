@@ -11,7 +11,6 @@
 from .scan import Scanner, TOK_EOF
 
 # File scope
-
 elements = {}
 num_elements = 0
 
@@ -30,8 +29,6 @@ class Element:
 # ----------------------------------------------------------------------------
 # Result: read element data from the named file; calls choke() on error
 # ============================================================================
-
-
 def readElements(path):
     s = Scanner()
     s.createScanner(path)
@@ -58,8 +55,6 @@ def readElements(path):
 # Result: return an Element pointer for the specified index; calls choke() if
 # index is out of range
 # ============================================================================
-
-
 def getElement(index):
     if (index < 0) or (index >= num_elements):
         raise ValueError("Element index %d is out of range" % index)
@@ -72,8 +67,6 @@ def getElement(index):
 # Result: return a const char pointer to the specified Element name; calls
 # choke() if index is out of range
 # ============================================================================
-
-
 def getElementName(index):
     el = getElement(index)
 
@@ -86,8 +79,6 @@ def getElementName(index):
 # Result: return the Lennard-Jones length parameter for the specified Element;
 # calls choke() if index is out of range
 # ============================================================================
-
-
 def getElementLJ_R0(index):
     el = getElement(index)
 
@@ -100,8 +91,6 @@ def getElementLJ_R0(index):
 # Result: return the Lennard-Jones energy parameter for the specified Element;
 # calls choke() if index is out of range
 # ============================================================================
-
-
 def getElementLJ_D0(index):
     el = getElement(index)
 

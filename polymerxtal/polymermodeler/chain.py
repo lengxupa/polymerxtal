@@ -38,29 +38,10 @@ class Chain:
         self.extra_bonds.create()
 
     # ============================================================================
-    # destroyChain()
-    # ----------------------------------------------------------------------------
-    # Result: free a Chain
-    # ============================================================================
-
-    def __del__(self):
-        if self:
-            if self.zm:
-                del self.zm
-                self.zm = ZMatrix()
-            self.i_monomer = {}
-            self.length = {}
-            self.weight = {}
-            del self.extra_bonds
-            self.extra_bonds = Bond()
-            self.torsion_count = {}
-
-    # ============================================================================
     # addMonomer()
     # ----------------------------------------------------------------------------
     # Result: add a new Monomer of type m to the Chain c
     # ============================================================================
-
     def addMonomer(self, m, bond_length, update_bonds):
         na = self.curr_atom
         czm = self.zm
@@ -122,7 +103,6 @@ class Chain:
     # is 1; increment *i_atom as each atom is written, and roll *i_atom back to 1
     # after 99999
     # ============================================================================
-
     def writeChainPDB(self, i_atom, fold_pos, f, p):
         pos = Vector()
 
@@ -152,8 +132,6 @@ class Chain:
 # Result: return a newly allocated, initialized Chain that will contain
 # num_monomers repeated units and num_atoms total atoms
 # ============================================================================
-
-
 def createChain(stereo, num_monomers, num_atoms, store_positions):
     c = Chain()
 
@@ -178,8 +156,6 @@ def createChain(stereo, num_monomers, num_atoms, store_positions):
 # Result: return the atom index of an atom in a ZMatrix added to an existing
 # ZMatrix
 # ============================================================================
-
-
 def shiftIndex(zm, index, old_tail, offset):
     retval = -1
 
@@ -200,8 +176,6 @@ def shiftIndex(zm, index, old_tail, offset):
 # Result: write a series of PDB files representing rotation of a backbone atom
 # in a monomer of type m about the bond joining it to its neighbor
 # ============================================================================
-
-
 def writeInternalRotationPDB(m, index, step, basename):
     c = createChain(Stereo(), 1, m.num_atoms, 0)
     leng = len(basename) + 8  # basename_xxx.pdb

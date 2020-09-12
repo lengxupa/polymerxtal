@@ -249,18 +249,3 @@ class Scanner:
             raise TypeError("Expected a Real on line %d of file %s, but found \"%s\"" %
                             (self.lineno, self.path, self.tokstr))
         return r
-
-    # ============================================================================
-    # destroyScanner()
-    # ----------------------------------------------------------------------------
-    # Result: free all memory associated with s
-    # ============================================================================
-    def __del__(self):
-        if self:
-            self.path = ''
-            self.tokstr = ''
-            if self.f:
-                self.f.close()
-                self.f = FILE()
-            if self.scanner:
-                self.scanner = ''
