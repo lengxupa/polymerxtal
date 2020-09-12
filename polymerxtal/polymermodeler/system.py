@@ -10,7 +10,6 @@
 
 from .chain import Chain
 from .domain import Domain, OccAtom
-from .rng import RNG
 from .params import Params
 
 
