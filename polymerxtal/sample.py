@@ -4,7 +4,7 @@ This module is for functions which show sample helices.
 
 import os
 from ovito.io import import_file
-from ovito.vis import ParticlesVis, Viewport
+from ovito.vis import Viewport
 
 from .helice import Helice
 
