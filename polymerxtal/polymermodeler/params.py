@@ -8,36 +8,29 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-import random
-import time
 import numpy as np
+import random, time
 
-from .monomer import Monomer
-from .stereo import Stereo
-from .exclude import ExclCylinder, ExclSlab, ExclSphere
+from .config import MAX_BONDS, REAL_MAX
 from .energy import *
-from .utils import FREE
+from .exclude import ExclCylinder, ExclSlab, ExclSphere
+from .monomer import Monomer, Torsion, Bond
+from .os import storeDir, changeDir, restoreDir
 from .scan import *
-from .config import MAX_BONDS
+from .stereo import Stereo, createStereo
+from .types import writeAtomTypes, writeBondTypes
+from .zmatrix import ZMatrix
 
 # File scope
 read_elements = 0
 
 
-# ============================================================================
-# findMonomer()
-# ----------------------------------------------------------------------------
-# Result: return a pointer to the Monomer in the p->known_monomers list with
-# matching name, else return NULL
-# ============================================================================
-def findMonomer(name, p):
-    m = p.known_monomers
-
-    while m and hasattr(m, 'next'):
-        if name == m.name:
-            break
-        m = m.next
-    return m
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 
 # Simulation parameters
@@ -63,7 +56,7 @@ class Params:
         self.element_data = "elements"  # path to element data file
         self.log_file = ''  # stdout by default
         self.status_file = ''  # stdout by default
-        self.chain_stereo_weights = []  # size num_stereo
+        self.chain_stereo_weights = {}  # size num_stereo
         self.bond_scale = 0.  # scale equilibrium bond lengths to identify bonds
         self.temperature = 0.1  # K not zero
         self.backbone_bond_length = 0.  # Angstroms
@@ -353,7 +346,7 @@ class Params:
                 a = s.getIntToken() - 1  # head index
                 b = s.getIntToken() - 1  # tail index
                 self.getElements()
-                m = readMonomer(name, f, a, b, self.bond_scale)  # Unfinished
+                m = readMonomer(name, f, a, b, self.bond_scale)
                 m.next = self.known_monomers
                 self.known_monomers = m
                 name = ''
@@ -361,45 +354,209 @@ class Params:
                 if m.num_atoms > self.max_monomer_atoms:
                     self.max_monomer_atoms = m.num_atoms
 
-            #Unfinished
-
             elif tokval == TOK_TORSION:
-                pass
+                if not (m and hasattr(m, 'next')):
+                    raise TypeError("File %s, line %d: no monomer specified for torsion" % (s.path, s.lineno))
+                if TOK_ALL == s.getToken():
+                    a = 2
+                    b = m.num_bb
+                else:
+                    s.pushToken()
+                    b = s.getIntToken()
+                    if b < 1 or b > m.num_bb:
+                        raise ValueError("File %s, line %d: invalid torsion index %d" % (s.path, s.lineno, b))
+                    a = b - 1
+                tmp = s.getToken()
+                if tmp == TOK_FIXED:
+                    for n in range(a, b):
+                        m.torsions[n] = Torsion(0)
+                        t = s.getToken()
+                        if is_number(s.tokstr):
+                            ang = float(s.tokstr)
+                        else:  # not a number
+                            s.pushToken()
+                            ang = -REAL_MAX
+                        for n in range(a, b):
+                            m.setFixedTorsion(n, ang)
+                elif tmp == TOK_FREE:
+                    for n in range(a, b):
+                        m.torsions[n] = Torsion(1)
+                elif tmp == TOK_ENERGY:
+                    for n in range(a, b):
+                        m.torsions[n] = Torsion(2)
+                    if TOK_CALCULATE == s.getToken():
+                        s.getToken()
+                        for n in range(a, b):
+                            m.torsions[n] = TORSION_ENERGY_CALC
+                            calculateTorsionEnergies(m, n, self.bond_cutoff, self.backbone_bond_length, s.tokstr)
+                            m.readTorsionEnergies(n, s.tokstr, self.temperature)
+                    else:
+                        for n in range(a, b):
+                            m.readTorsionEnergies(n, s.tokstr, self.temperature)
+                else:
+                    CHOKE_PARSE("torsion option")
 
             elif tokval == TOK_STEREO:
-                pass
+                s.getToken()
+                name = s.tokstr
+                tmp = s.getToken()
+                if tmp == TOK_PATTERN:
+                    a = 1
+                elif tmp == TOK_WEIGHT:
+                    a = 0
+                else:
+                    CHOKE_PARSE("stereo option")
+                b = s.getIntToken()  # number of monomers in the stereo
+                st = createStereo(name, a, b)
+                name = ''
+                for n in range(b):
+                    s.getToken()
+                    msearch = findMonomer(s.tokstr, self)
+                    if not (msearch and hasattr(msearch, 'next')):
+                        CHOKE_PARSE("monomer")
+                    st.addStereoMonomer(msearch, 0.0 if a else s.getRealToken())
+                if TOK_TERM == s.getToken():
+                    s.getToken()
+                    msearch = findMonomer(s.tokstr, self)
+                    if not (msearch and hasattr(msearch, 'next')):
+                        CHOKE_PARSE("monomer")
+                    st.term = msearch
+                else:
+                    s.pushToken()
+                st.next = self.known_stereo
+                self.known_stereo = st
 
             elif tokval == TOK_CHAIN_STEREO:
-                pass
+                self.num_stereo = s.getIntToken()
+                for n in range(self.num_stereo):
+                    s.getToken()
+                    st = findStereo(s.tokstr, self)
+                    if not (st and hasattr(st, 'next')):
+                        CHOKE_PARSE("stereo")
+                    self.chain_stereo[n] = st
+                    self.chain_stereo_weights[n] = s.getRealToken()
 
             elif tokval == TOK_POLYMER:
-                pass
+                s.getToken()
+                self.getElements()
+                q = s.tokstr.rfind('/')
+                if q == -1:
+                    raise ValueError("Expecting <polymer>/<torsion_option> polymer argument")
+                leng = len(self.data_dir) + len(s.tokstr) + 11
+                full_path = "%s/polymers/%s" % (self.data_dir, s.tokstr)
+                storeDir()
+                changeDir(full_path)
+                self.readParams(s.tokstr[q + 1:])
+                restoreDir()
+                full_path = ''
 
             elif tokval == TOK_ISOLATE_CHAINS:
-                pass
+                self.isolate_chains += 1
 
             elif tokval == TOK_TORSION_STEP:
-                pass
+                self.num_delta_steps = s.getIntToken()
+                self.torsion_step = s.getRealToken()
 
             else:
                 CHOKE_PARSE("keyword")
+        del s
+
+        # Sanity checks
+        if self.temperature <= 0.:
+            raise ValueError("Invalid temperature: %f", self.temperature)
+        if 0 == self.num_stereo:
+            st = findStereo("default", self)
+            if not (st and hasattr(st, 'next')):
+                raise TypeError("No chain stereo chemistry options specified")
+            self.num_stereo = 1
+            self.chain_stereo = {}
+            self.chain_stereo[0] = st
+            self.chain_stereo_weights = {}
+            self.chain_stereo_weights[0] = 1.0
+
+    # ============================================================================
+    # reportParams()
+    # ----------------------------------------------------------------------------
+    # Result: write parameters to an output file
+    # ============================================================================
+    def reportParams(self, f):
+        m = Monomer()
+        m.create()
+        b = Bond()
+        b.create()
+        s = Stereo()
+        s.create()
+
+        f.write("Read data from %s\n" % self.data_dir)
+        f.write("Element info: %s/%s\n\n" % (self.data_dir, self.element_data))
+        f.write("Scale equilibrium bond lengths by %f to identify bonds\n\n" % self.bond_scale)
+
+        writeAtomTypes(f)
+        writeBondTypes(f)
+        f.write("\n")
+
+        m = self.known_monomers
+        while m and hasattr(m, 'next'):
+            f.write("Monomer %s:\n" % m.name)
+            m.zm.writeZMatrix(f, 0)
+            f.write("Internal coordinates with Dreiding types:\n")
+            m.zm.writeZMatrix(f, 1)
+            f.write("   %d backbone atoms\n" % m.num_bb)
+            f.write("   mass (without head and tail): %f amu\n" % m.central_mass)
+            for i in range(2, m.num_bb):
+                f.write("   Backbone atom %d torsion angle: " % (i + 1))
+                if m.torsions[i] == Torsion.TORSION_FIXED:
+                    f.write("fixed\n")
+                elif m.torsions[i] == Torsion.TORSION_FREE:
+                    f.write("freely rotating\n")
+                elif m.torsions[i] == Torsion.TORSION_ENERGY:
+                    f.write("bonded interactions (E(phi)) specified\n")
+                elif m.torsions[i] == Torsion.TORSION_ENERGY_CALC:
+                    f.write("bonded interactions (E(phi)) calculated internally\n")
+            f.write("   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds)
+            b = m.extra_bonds
+            while b and hasattr(b, 'next'):
+                f.write("      Between atoms %d and %d\n" % (b.index1 + 1, b.index2 + 1))
+                b = b.next
+            m = m.next
 
 
 #void
-#readParams(Params * restrict p, const char * restrict path)
+#reportParams(const Params * restrict p, FILE * restrict f)
 #{
-#   Scanner * restrict s = createScanner(path);
-#   int done = 0;
-#   int n, a, b, t;
-#   ExclCylinder *ec;
-#   ExclSlab *es;
-#   ExclSphere *esph;
-#   Stereo *st = NULL;
-#   Monomer *m = NULL;
-#   Monomer *msearch;
-#   char *name = NULL;
-#   char *file = NULL;
-#   char *full_path = NULL;
-#   char *q;
-#   size_t len;
-#   Real ang;
+#   Monomer *m;
+#   Bond *b;
+#   Stereo *s;
+#   int i;
+
+
+# ============================================================================
+# findStereo()
+# ----------------------------------------------------------------------------
+# Result: return a pointer to the Stereo in the p->known_stereo list with
+# matching name, else return NULL
+# ============================================================================
+def findStereo(name, p):
+    st = p.known_stereo
+
+    while st and hasattr(st, 'next'):
+        if name == st.name:
+            break
+        st = st.next
+    return st
+
+
+# ============================================================================
+# findMonomer()
+# ----------------------------------------------------------------------------
+# Result: return a pointer to the Monomer in the p->known_monomers list with
+# matching name, else return NULL
+# ============================================================================
+def findMonomer(name, p):
+    m = p.known_monomers
+
+    while m and hasattr(m, 'next'):
+        if name == m.name:
+            break
+        m = m.next
+    return m

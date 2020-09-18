@@ -15,7 +15,7 @@ def test_read_lammps():
     """
 
     # Build the path to the test file.
-    test_file = os.path.join(current_location, '..', 'data', 'DIAMOND.data')
+    test_file = os.path.join(current_location, '..', 'data', 'lmp_data', 'DIAMOND.data')
 
     # Use function to read lammps
     calculated_output = polymerxtal.io.read_data(test_file)

@@ -11,9 +11,10 @@
 
 import numpy as np
 
+from .config import REAL_MAX, MAX_BONDS
+from .element import getElementName
 from .types import AtomType
 from .utils import DEG2RAD
-from .config import REAL_MAX
 
 NO_POSITION = -REAL_MAX
 
@@ -64,6 +65,49 @@ class ZMatrix:
         # Only x is tested in getPosition()
         # zm->positions[index].y = NO_POSITION;
         # zm->positions[index].z = NO_POSITION;
+
+    # ============================================================================
+    # isBonded()
+    # ----------------------------------------------------------------------------
+    # Result: return 1 if entries n and m are separated by at most max_bonds
+    # bonds in zm, else return 0
+    # ============================================================================
+    def isBonded(self, n, m, max_bonds):
+        m_bonds = {}
+        n_bonds = {}
+        for i in range(MAX_BONDS):
+            m_bonds[i] = 0
+            n_bonds[i] = 0
+
+        m_bonds[0] = self.entries[m].bond_index
+        i = 1
+        while i < max_bonds and m_bonds[i - 1] > -1:
+            m_bonds[i] = self.entries[m_bonds[i - 1]].bond_index
+            if n == m_bonds[i]:
+                return 1
+            i += 1
+        m_count = i
+
+        n_bonds[0] = self.entries[n].bond_index
+        i = 1
+        while i < max_bonds and n_bonds[i - 1] > -1:
+            n_bonds[i] = self.entries[n_bonds[i - 1]].bond_index
+            if m == n_bonds[i]:
+                return 1
+            i += 1
+        n_count = i
+
+        for i in range(m_count):
+            common = -1
+            j = 0
+            while -1 == common and j < n_count:
+                if m_bonds[i] == n_bonds[j]:
+                    common = i
+                else:
+                    j += 1
+            if common > -1 and (i + j + 2) <= max_bonds:
+                return 1
+        return 0
 
     # ============================================================================
     # getPosition()
@@ -122,6 +166,30 @@ class ZMatrix:
                 a /= np.linalg.norm(a)
                 a *= bond_length * np.cos(bond_angle)
                 pos = b - a
+
+    # ============================================================================
+    # writeZMatrix()
+    # ----------------------------------------------------------------------------
+    # Result: write a ZMatrix to a FILE
+    # ============================================================================
+    def writeZMatrix(self, f, Dreiding_type):
+        for i in range(self.num_entries):
+            if Dreiding_type:
+                self.entries[i].type.writeAtomTypeDreiding(f)
+            else:
+                f.write("%2.2s" % getElementName(self.entries[i].type.element_index))
+            if 0 == i:
+                f.write("\n")
+                continue
+            f.write("  %2d  %5.2f" % (self.entries[i].bond_index + 1, self.entries[i].bond_length))
+            if 1 == i:
+                f.write("\n")
+                continue
+            f.write("  %2d  %6.2f" % (self.entries[i].angle_index + 1, self.entries[i].bond_angle))
+            if 2 == i:
+                f.write("\n")
+                continue
+            f.write("  %2d  %7.2f" % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle))
 
 
 # ============================================================================

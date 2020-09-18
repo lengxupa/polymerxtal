@@ -1,0 +1,263 @@
+chain.py 
+	Chain
+		- __init__
+		- addMonomer()
+		- writeChainPDB()
+
+	- createChain()
+	- shiftIndex()
+	- calculateTorsionEnergies()
+	- writeInternalRotationPDB()
+
+config.py
+	REAL_MAX
+	MAX_BONDS
+
+element.py
+	elements
+	num_elements
+
+	Element
+		- __init__
+
+	- readElements()
+	- getElementIndex()
+	- getElement()
+	- getElementName()
+	- getElementMass()
+	- getElementR0()
+	- getElementLJ_R0()
+	- getElementLJ_D0()
+
+energy.py
+	self_avoid_cutoff_sq
+
+	- setSelfAvoidCutoff()
+
+	Energy
+		- energyLJ()
+		- energyHardCore()
+		- energySelfAvoid()
+		- energyNone()
+
+main.py
+	params 
+	polysys
+	log_file
+	status_file
+	total_monomers
+	update_count
+	timer
+
+	- logMessage()
+	- cleanup()
+	- showVersion()
+	- main()
+
+monomer.py
+	Bond
+		- __init__
+		- create
+
+	Torsion(Enum)
+		TORSION_FIXED = 0  
+    	TORSION_FREE = 1  
+    	TORSION_ENERGY = 2  
+    	TORSION_ENERGY_CALC = 3 
+
+    Holder
+    	- __init__
+
+    ZVar
+    	- __init__
+    	- create
+
+    z_variables
+
+    - createHolder()
+    - addZVar()
+    - getRealValue()
+    - cleanupZVars()
+    - readXYZ()
+    - readZM()
+    - readPDB()
+    - createBond()
+    - clearBondVisits()
+    - findBonds()
+    - FIND_BOND(b, ndx)
+    - OTHER_INDEX(b, ndx)
+    - findRing()
+    - setAtomTypes()
+    - setBondTypes()
+
+    TARGET_SQ_DIST
+    ANGLE_DIFF
+
+	Monomer
+		- __init__
+		- create
+		- fillZMatrix()
+		- findExtraBonds()
+		- setFixedTorsion()
+		- readTorsionEnergies()
+
+	- readMonomer()
+
+os.py
+	prevdir
+
+	- storeDir()
+	- changeDir()
+	- restoreDir()
+
+params.py
+	- is_number(s)
+
+	Params
+		- __init__
+		- getElements()
+		- readParams()
+			- CHOKE_PARSE(param)
+		- reportParams()
+
+	- findStereo()
+	- findMonomer()
+
+scan.py
+	TOK_EOF
+	TOK_INT 
+	TOK_REAL 
+	TOK_STRING 
+	TOK_DATA_DIR 
+	TOK_ELEMENT_DATA 
+	TOK_BOND_SCALE 
+	TOK_TEMPERATURE 
+	TOK_MONOMER 
+	TOK_TORSION 
+	TOK_FIXED 
+	TOK_FREE 
+	TOK_ENERGY 
+	TOK_STEREO 
+	TOK_PATTERN 
+	TOK_WEIGHT 
+	TOK_POLYMER 
+	TOK_BACKBONE_BOND_LENGTH 
+	TOK_DENSITY 
+	TOK_CHAINS 
+	TOK_MONOMERS 
+	TOK_MONOMERS_STDDEV 
+	TOK_SYSTEM_MAX 
+	TOK_SYSTEM_MIN 
+	TOK_EXCLUDE 
+	TOK_CYLINDER 
+	TOK_SLAB 
+	TOK_CHAIN_STEREO 
+	TOK_DOMAINS 
+	TOK_GRID_SIZE 
+	TOK_SAMPLE 
+	TOK_MONTE_CARLO 
+	TOK_NONE 
+	TOK_CONFIGS 
+	TOK_LJ 
+	TOK_ENERGY_CUTOFF 
+	TOK_BOND_CUTOFF 
+	TOK_RNG_SEED 
+	TOK_WRITE 
+	TOK_WRAPPED_PDB 
+	TOK_UNWRAPPED_PDB 
+	TOK_WRAPPED_XYZ 
+	TOK_UNWRAPPED_XYZ 
+	TOK_CHAIN_LENGTH_HISTO_BIN 
+	TOK_TORSION_ROTATION 
+	TOK_CHAIN_LENGTH 
+	TOK_CHAIN_LENGTH_HISTO 
+	TOK_TORSION_HISTO 
+	TOK_LOG_FILE 
+	TOK_STATUS_FILE 
+	TOK_EQUAL 
+	TOK_RECALCULATE_POSITIONS 
+	TOK_INTERMEDIATE 
+	TOK_RECALCULATE_NEIGHBORS 
+	TOK_INVERT 
+	TOK_TERM 
+	TOK_ISOLATE_CHAINS 
+	TOK_CALCULATE 
+	TOK_ALL 
+	TOK_TORSION_STEP 
+	TOK_SELF_AVOID 
+	TOK_SELF_AVOID_CUTOFF 
+	TOK_SPHERE 
+
+	switcher
+
+	Scanner
+		- __init__
+		- initScanner()
+		- createScanner()
+		- resetScanner()
+		- pushToken()
+		- getToken()
+		- getIntToken()
+		- getRealToken()
+
+stereo.py
+	Stereo
+		- __init__
+		- create
+		- addStereoMonomer()
+
+	- createStereo()
+
+types.py
+	AtomType
+		- __init__
+		- __str__
+		- writeAtomType()
+		- writeAtomTypeDreiding()
+
+	AtomTypeList
+		- __init__
+		- create
+
+	- AT_EQUAL(at1, at2)
+
+	BondTypeList
+		- __init__
+		- create
+
+	atl_top
+	btl_top
+
+	- getAtomTypeIndex()
+	- addAtomType()
+	- writeAtomTypes()
+	- getBondTypeIndex()
+	- addBondType()
+	- writeBondTypes()
+
+unistd.py
+	- fchdir(fd)
+
+utils.py
+	- foldPosition()
+	- RAD2DEG(rad)
+	- DEG2RAD(deg)
+	- CA2CC(ca)
+	- AMU2GRAM(a)
+
+	kB
+
+zmatrix.py
+	ZEntry
+		- __init__
+	
+	ZMatrix
+		- __init__
+		- setPosition()
+		- clearPosition()
+		- isBonded()
+		- getPosition()
+		- writeZMatrix()
+
+	- createZMatrix()
+

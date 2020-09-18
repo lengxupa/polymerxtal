@@ -10,10 +10,11 @@
 
 import numpy as np
 
+from .config import MAX_BONDS
 from .params import Params
 from .system import PolymerSystem
 from .timer import Timer
-from .stdio import FILE
+from .utils import CA2CC, AMU2GRAM
 
 # File scope
 params = Params()
@@ -47,6 +48,16 @@ def cleanup():
         log_file['file'].close()
     if status_file['name']:
         status_file['file'].close()
+
+
+# ============================================================================
+# showVersion()
+# ----------------------------------------------------------------------------
+# Result: write version and build info to the FILE f
+# ============================================================================
+def showVersion(f):
+    f.write("OpenMP threading disabled\n")
+    f.write("MAX_BONDS: %d\n" % MAX_BONDS)
 
 
 # ============================================================================
@@ -99,9 +110,83 @@ def main(args):
 
     # Read input
     params.readParams(infile)
-    #polysys.buildsystem(params)
 
-    #Unfinished
+    # Maximum monomer mass
+    monomer_mass = 0.0
+    monomer_count = 0
+    m = params.known_monomers
+    while m and hasattr(m, 'next'):
+        if m.central_mass > monomer_mass:
+            monomer_mass = m.central_mass
+        monomer_count += 1
+        m = m.next
+    if 0 == monomer_count:
+        raise ValueError("No monomers specified")
+
+    # System size and chain distribution
+    # XXX params.excluded_volume does not consider volume overlaps
+    if params.explicit_volume:
+        params.total_volume = 1.0
+        if params.system_max[0] < params.system_min[0]:
+            raise ValueError("System minimum x (%f) > system maximum x (%f)" %
+                             (params.system_min[0], params.system_max[0]))
+        params.system_size[0] = params.system_max[0] - params.system_min[0]
+        params.total_volume *= params.system_size[0]
+        if params.system_max[1] < params.system_min[1]:
+            raise ValueError("System minimum y (%f) > system maximum y (%f)" %
+                             (params.system_min[1], params.system_max[1]))
+        params.system_size[1] = params.system_max[1] - params.system_min[1]
+        params.total_volume *= params.system_size[1]
+        if params.system_max[2] < params.system_min[2]:
+            raise ValueError("System minimum z (%f) > system maximum z (%f)" %
+                             (params.system_min[2], params.system_max[2]))
+        params.system_size[2] = params.system_max[2] - params.system_min[2]
+        params.total_volume *= params.system_size[2]  # total box volume
+        if params.inverted_volume:
+            params.total_volume = params.excluded_volume
+        else:
+            params.total_volume -= params.excluded_volume
+        # Now params.total_volume holds the true polymer volume
+        if 0 == params.num_monomers:
+            params.num_monomers = int(
+                (params.density * CA2CC(params.total_volume)) / float(params.num_chains * AMU2GRAM(monomer_mass)))
+    else:
+        params.total_volume = CC2CA(
+            float(params.num_chains * params.num_monomers) * AMU2GRAM(monomer_mass) / params.density)  # polymer volume
+        params.system_min[0] = 0.0
+        params.system_min[1] = 0.0
+        params.system_min[2] = 0.0
+        params.system_max[0] = np.cbrt(params.total_volume + params.excluded_volume)
+        params.system_max[1] = params.system_max[0]
+        params.system_max[2] = params.system_max[0]
+        params.system_size[0] = params.system_max[0]
+        params.system_size[1] = params.system_max[1]
+        params.system_size[2] = params.system_max[2]
+    params.half_system_size[0] = 0.5 * params.system_size[0]
+    params.half_system_size[1] = 0.5 * params.system_size[1]
+    params.half_system_size[2] = 0.5 * params.system_size[2]
+
+    # Spatial domain parameters
+    params.total_domains = params.num_domains_x * params.num_domains_y * params.num_domains_z
+    params.domain_size[0] = params.system_size[0] / float(params.num_domains_x)
+    params.domain_size[1] = params.system_size[1] / float(params.num_domains_y)
+    params.domain_size[2] = params.system_size[2] / float(params.num_domains_z)
+
+    # Log file
+    if params.log_file:
+        log_file['file'] = open(params.log_file, "w")
+
+    # Status file
+    if params.status_file:
+        status_file['file'] = open(params.status_file, "w")
+
+    # Report parameters
+    log_file['file'].write("\n========================================")
+    log_file['file'].write("========================================\n")
+    showVersion(log_file['file'])
+    log_file['file'].write("========================================")
+    log_file['file'].write("========================================\n\n")
+    params.reportParams(log_file, log_file['file'])
 
 
 #int

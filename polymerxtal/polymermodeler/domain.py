@@ -10,8 +10,6 @@
 
 import numpy as np
 
-from .utils import FREE
-
 
 # Spatial location of an atom: chain and atom indices
 class OccAtom:

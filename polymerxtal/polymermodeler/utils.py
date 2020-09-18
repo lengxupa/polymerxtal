@@ -11,12 +11,6 @@
 import numpy as np
 
 
-# Free a list and set it to [] */
-def FREE(ptr):
-    if ptr:
-        ptr = []
-
-
 # ============================================================================
 # foldPosition()
 # ----------------------------------------------------------------------------
@@ -46,5 +40,23 @@ def foldPosition(pos, system_min, system_max, system_size):
 
 
 # Conversions between radians and degrees
+def RAD2DEG(rad):
+    return rad * 57.295779513082325
+
+
 def DEG2RAD(deg):
     return deg * 0.017453292519943
+
+
+# Conversion from amu to grams
+def AMU2GRAM(a):
+    return a * 1.6605e-24
+
+
+# Conversions between cubic Angstroms and cubic centimeters
+def CA2CC(ca):
+    return ca * 1.0e-24
+
+
+# Boltzmann constant in kcal/mol/K
+kB = 0.0019872041

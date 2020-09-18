@@ -50,6 +50,23 @@ def readElements(path):
 
 
 # ============================================================================
+# getElementIndex()
+# ----------------------------------------------------------------------------
+# Result: return the index of the named Element; calls choke() if no match
+# ============================================================================
+def getElementIndex(name):
+    n = 0
+
+    while n < num_elements:
+        if name == elements[n].name:
+            break
+        n += 1
+    if n == num_elements:
+        raise NameError("Unknown element: \"%s\"" % name)
+    return n
+
+
+# ============================================================================
 # getElement()
 # ----------------------------------------------------------------------------
 # Result: return an Element pointer for the specified index; calls choke() if
@@ -71,6 +88,30 @@ def getElementName(index):
     el = getElement(index)
 
     return el.name
+
+
+# ============================================================================
+# getElementMass()
+# ----------------------------------------------------------------------------
+# Result: return the atomic mass for the specified Element; calls choke() if
+# index is out of range
+# ============================================================================
+def getElementMass(index):
+    el = getElement(index)
+
+    return el.mass
+
+
+# ============================================================================
+# getElementR0()
+# ----------------------------------------------------------------------------
+# Result: return the equilibrium bond length for the specified Element; calls
+# choke() if index is out of range
+# ============================================================================
+def getElementR0(index):
+    el = getElement(index)
+
+    return el.R0
 
 
 # ============================================================================

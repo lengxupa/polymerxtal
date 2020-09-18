@@ -9,7 +9,6 @@
 # ============================================================================
 
 from .monomer import Monomer
-from .utils import FREE
 
 
 class Stereo:
@@ -23,7 +22,46 @@ class Stereo:
         self.monomers = {}
         self.term = Monomer()
         self.term.create()
-        self.weights = []
+        self.weights = {}
 
     def create(self):
         self.next = Stereo()
+
+    # ============================================================================
+    # addStereoMonomer()
+    # ----------------------------------------------------------------------------
+    # Result: add a new Monomer with indicated weight; calls choke() if the
+    # number of Monomers passed to createStereo() has been reached already
+    # ============================================================================
+    def addStereoMonomer(self, m, weight):
+        if self.curr_monomer < self.num_monomers:
+            self.monomers[self.curr_monomer] = m
+            self.weights[self.curr_monomer] = weight
+            self.curr_monomer += 1
+        else:
+            raise ValueError("Invalid Stereo monomer index %d" % self.curr_monomer)
+
+
+# ============================================================================
+# createStereo()
+# ----------------------------------------------------------------------------
+# Result: return a pointer to a newly allocated, initialized Stereo
+# (monomers[] and weights[] are filled later); calls choke() on allocation
+# error
+# ============================================================================
+def createStereo(name, pattern, num_monomers):
+    s = Stereo()
+    s.create()
+
+    s.name = name
+    s.pattern = pattern
+    s.pattern_index = 0  # increment with calls to getNextMonomer()
+    s.curr_monomer = 0  # increment with calls to addStereoMonomer()
+    s.num_monomers = num_monomers
+    for i in range(num_monomers):
+        s.monomers[i] = Monomer()
+        s.weights[i] = 0.0
+    s.term = Monomer()
+    s.next = Stereo()
+    s.selection_count = 0
+    return s

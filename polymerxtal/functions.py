@@ -1019,8 +1019,6 @@ def main(args):
 
     args = complete_args(args)
 
-
-
     os.system('cp polymer_types/' + polymer_type + '/* .')
 
     # Get number of chains, molecules

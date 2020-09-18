@@ -1,6 +1,12 @@
+AtomTypeList
+	- create
+
 Bond 
 	- create
 	- no freeBondList - use __del__ 
+
+BondTypeList
+	- create
 
 Chain
 	- no destroyChain - use __del__ 
@@ -20,6 +26,12 @@ ExclSlab
 ExclSphere 
 	- create
 
+FILE
+	- no FILE
+
+Holder
+	- no destroyHolder - use __del__
+
 Monomer 
 	- create
 	- no destroyMonomer - use __del__ 
@@ -34,15 +46,18 @@ Params
 PolymerSystem
 	- no initSystem
 
-RNG
-	- no destroyRNG - use __del__ 
-
 Scanner 
 	- no destroyScanner - use __del__ 
 
 Stereo 
 	- create
 	- no destroyStereo - use __del__ 
+
+Torsion
+	- TORSION_FIXED - Torsion(0)
+	- TORSION_FREE - Torsion(1)
+	- TORSION_ENERGY - Torsion(2)
+	- TORSION_ENERGY_CALC - Torsion(3)
 
 Vector 
 	- np.zeros(3)
@@ -55,6 +70,9 @@ Vector
 	- getLength(self) - use np.linalg.norm(self)
 	- scaleVector(self, scale) - use self *= scale
 	- addVectors(self, lhs, rhs) - use self = lhs + rhs
+	- getDist(v1, v2) - np.linalg.norm(v1 - v2)
+	- getSqDist(v1, v2) - np.linalg.norm(v1 - v2)**2
+	- getAngle(v1, v2) - calculate_angle(-v1, np.zeros(3), -v2)
 
 ZMatrix
 	- no destroyZMatrix - use __del__ 
@@ -62,21 +80,102 @@ ZMatrix
 ZVar
 	- create
 
+normal:
+allocMem(size) - = size
 choke - use raise *Error
+copyStr(s) - s
+cbrt() - np.cbrt()
+dir - directory
+errno - errno.errorcode
 EXIT_SUCCESS - 0
+exp() - np.exp()
 fclose - f.close()
 file - f
+fprintf(f, "%3d  %.2f\n", i, E) - f.write("%3d  %.2f\n" %(i, E))
+fputc('_', f) - f.write('_')
+free - del
+FREE(ptr) - = {}
 isEqual - ==
+isnan - np.isnan
 len - leng
 max - maxi
 min - mini
 NEG_0 - 0
+open(".", O_RDONLY) - os.getcwd()
+open(dir, O_RDONLY) - dir
 openfile() - open()
+(Real)i - float(i)
+rewind(f) - f.seek(0)
 Rint - numpy.rint()
 str - string
+STR_TO_REAL - float()
 strcmp(a,b)==0 - ==
-STR_TO_REAL - eval
+strerror() - os.strerror()
 snprintf(prevtok, TOKLEN, "%s", s->tokstr) - prevtok="%s" %s->tokstr
 strrchr(a,'c') - a.rfind('c')
 yylex_destroy - =''
+< ZERO_TOL - <=0
 
+no:
+fflush(f)
+prog_cc_line
+prog_ld_line
+prog_name
+prog_version
+REAL_STR
+
+special:
+1.
+C:
+----
+ang = STR_TO_REAL(s->tokstr, &q);
+if ('\0' != *q)  /* not a number */
+{
+	pushToken(s);
+	ang = -REAL_MAX;
+}
+----
+Python:
+----
+from .params import is_number
+if is_number(s.tokstr):
+	ang = float(s.tokstr)
+else:
+	s.pushToken()
+	ang = -REAL_MAX
+----
+2.
+C:
+----
+if (prevdir > -1)
+   close(prevdir);
+prevdir = open(".", O_RDONLY);
+if (-1 == prevdir)
+   choke("Unable to open current directory: %s", strerror(errno));
+----
+Python:
+----
+prevdir = os.getcwd()
+if not prevdir:
+	raise IOError("Unable to open current directory: %s" %os.strerror(errno.EIO))
+----
+3.
+C:
+----
+int fd = open(dir, O_RDONLY);
+
+if (-1 == fd)
+   choke("Unable to open %s: %s", dir, strerror(errno));
+if (-1 == fchdir(fd))
+   choke("Unable to change directory to %s: %s", dir, strerror(errno));
+----
+Python:
+----
+from .unistd import fchdir
+fd = directory
+
+if not os.path.exists(fd):
+	raise IOError("Unable to open %s: %s" %(directory, os.strerror(errno.ENOENT)))
+if -1 == fchdir(fd):
+	raise IOError("Unable to change directory to %s: %s" %(directory, os.strerror(errno.EIO)))
+----

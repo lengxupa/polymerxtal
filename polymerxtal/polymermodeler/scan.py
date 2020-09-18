@@ -8,7 +8,6 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .stdio import FILE
 from .lex import yylex
 
 TOK_EOF = 0
@@ -145,7 +144,6 @@ class Scanner:
     def __init__(self, path):
         self.path = path
         self.tokstr = ''
-        self.f = FILE()
         self.scanner = ''
         self.tokval = 0
         self.lineno = 0
@@ -183,7 +181,6 @@ class Scanner:
         self.path = path
         self.tokstr = ''
         self.scanner = ''
-        self.f = FILE()
         self.initScanner()
         return self
 
@@ -198,6 +195,16 @@ class Scanner:
             self.scanner = ''
             self.tokstr = ''
             s.initScanner()
+
+    # ============================================================================
+    # pushToken()
+    # ----------------------------------------------------------------------------
+    # Result: push back the most recent token so that the next call to get*Token()
+    # returns the same token
+    # ============================================================================
+    def pushToken(self):
+        if s:
+            s.reuse += 1
 
     # ============================================================================
     # getToken()
@@ -230,7 +237,7 @@ class Scanner:
     def getIntToken(self):
         self.tokval = getToken(self)
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
-            r = int(eval(self.tokstr))
+            r = int(float(self.tokstr))
         else:
             raise TypeError("Expected an integer on line %d of file %s, but found \"%s\"" %
                             (self.lineno, self.path, self.tokstr))
@@ -244,7 +251,7 @@ class Scanner:
     def getRealToken(self):
         self.tokval = getToken(self)
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
-            r = eval(self.tokstr)
+            r = float(self.tokstr)
         else:
             raise TypeError("Expected a Real on line %d of file %s, but found \"%s\"" %
                             (self.lineno, self.path, self.tokstr))

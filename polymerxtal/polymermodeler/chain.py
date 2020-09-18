@@ -13,10 +13,10 @@ import numpy as np
 from .zmatrix import ZMatrix, ZEntry, MIN_POSITIONS
 from .stereo import Stereo
 from .monomer import Bond, Monomer
-from .stdio import FILE
 from .utils import foldPosition
 from .element import getElementName
 from .params import Params
+from .energy import Energy
 
 
 class Chain:
@@ -172,6 +172,58 @@ def shiftIndex(zm, index, old_tail, offset):
 
 
 # ============================================================================
+# calculateTorsionEnergies()
+# ----------------------------------------------------------------------------
+# Result: calculate the interaction energy (sum of pair interactions for all
+# atoms withing num_bonds of the rotating bond) for  rotations of the indexth
+# backbone torsion of the Monomer m, and write "ang  E\n" to the named file
+# ============================================================================
+def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
+    na = 5 * m.num_atoms - 8
+    indices = {}
+    for i in range(na):
+        indices[i] = -1
+    c = createChain(Stereo(), 5, na, 0)
+    f = open(path, "w")
+    v0 = np.zeros(3)
+    pj = np.zeros(3)
+    pk = np.zeros(3)
+
+    for i in range(5):
+        c.addMonomer(m, bond_length, 0)
+
+    c.zm.setPosition(0, v0)
+    v0[0] = m.zm.entries[1].bond_length
+    c.zm.setPosition(1, v0)
+
+    # Rotate about specified bond in the middle monomer
+    n = index + 2 * (m.num_atoms - 2)
+
+    # Which atoms in the 3-monomer chain are within num_bonds bonds of index?
+    for j in range(na):
+        indices[j] = 1 if c.zm.isBonded(n, j, num_bonds) else 0
+
+    for i in range(360):
+        c.zm.entries[n].torsion_angle = float(i)
+        E = 0.0
+        for j in range(na):
+            if indices[j]:
+                c.zm.getPosition(j, pj)
+                tj = c.zm.entries[j].type.element_index
+                for k in range(j + 1, na):
+                    if indices[k] and c.zm.isBonded(j, k, num_bonds):
+                        c.zm.getPosition(k, pk)
+                        tk = c.zm.entries[k].type.element_index
+                        r2 = np.linalg.norm(pj - pk)**2
+                        E += energyLJ(tj, tk, r2)
+        f.write("%3d  %.2f\n" % (i, E))
+
+    del c
+    del indices
+    f.close()
+
+
+# ============================================================================
 # writeInternalRotationPDB()
 # ----------------------------------------------------------------------------
 # Result: write a series of PDB files representing rotation of a backbone atom
@@ -180,7 +232,6 @@ def shiftIndex(zm, index, old_tail, offset):
 def writeInternalRotationPDB(m, index, step, basename):
     c = createChain(Stereo(), 1, m.num_atoms, 0)
     leng = len(basename) + 8  # basename_xxx.pdb
-    f = FILE()
 
     c.addMonomer(m, 0.0, 0)
     for i in range(0, 360, step):

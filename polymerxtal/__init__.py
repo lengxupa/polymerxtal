@@ -5,8 +5,12 @@ In this work, we present PolymerXtal, a software designed to build and analyze m
 
 # Add imports here
 from .functions import *
+from .helice import Helice
 from .io import open_pdb, open_xyz, write_xyz, write_lmp_ifile, run_lammps, read_cell_sizes, read_data, get_boundaries, read_input, check_args, complete_args
+from .measure import calculate_distance, calculate_angle
+from .molecule import Molecule, build_bond_list, calculate_molecular_mass, calculate_center_of_mass
 from .polymermodeler import main
+from .sample import sample_chain
 
 # Handle versioneer
 from ._version import get_versions
