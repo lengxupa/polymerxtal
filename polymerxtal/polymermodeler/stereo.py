@@ -9,6 +9,7 @@
 # ============================================================================
 
 from .monomer import Monomer
+from .utils import selectWeight
 
 
 class Stereo:
@@ -40,6 +41,22 @@ class Stereo:
             self.curr_monomer += 1
         else:
             raise ValueError("Invalid Stereo monomer index %d" % self.curr_monomer)
+
+    # ============================================================================
+    # getNextMonomer()
+    # ----------------------------------------------------------------------------
+    # Result: return a pointer to the next Monomer to be added to a Chain
+    # ============================================================================
+    def getNextMonomer(self, rng):
+
+        if self.pattern:
+            m = self.monomers[self.pattern_index]
+            self.pattern_index += 1
+            if self.pattern_index == self.curr_monomer:
+                self.pattern_index = 0
+        else:
+            m = self.monomers[selectWeight(self.weights, self.num_monomers, rng)]
+        return m
 
 
 # ============================================================================

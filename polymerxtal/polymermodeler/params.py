@@ -9,17 +9,25 @@
 # ============================================================================
 
 import numpy as np
-import random, time
+import os, random, time
 
 from .config import MAX_BONDS, REAL_MAX
-from .energy import *
+from .energy import setSelfAvoidCutoff, Energy
+from .element import readElements
 from .exclude import ExclCylinder, ExclSlab, ExclSphere
-from .monomer import Monomer, Torsion, Bond
+from .monomer import *
 from .os import storeDir, changeDir, restoreDir
 from .scan import *
+from .stdio import FILE
 from .stereo import Stereo, createStereo
 from .types import writeAtomTypes, writeBondTypes
 from .zmatrix import ZMatrix
+
+# Get the location of the current module
+current_location = os.path.dirname(__file__)
+
+# Build the path to data_dir.
+prog_datadir = os.path.join(current_location, '..', 'data')
 
 # File scope
 read_elements = 0
@@ -35,41 +43,42 @@ def is_number(s):
 
 # Simulation parameters
 class Params:
+    # ============================================================================
+    # initParams()
+    # ----------------------------------------------------------------------------
+    # Result: initilize p
+    # ============================================================================
     def __init__(self):
+        v0 = np.zeros(3)
+
         self.system_min = np.zeros(3)  # minimum point of simulation box
         self.system_max = np.zeros(3)  # maximum point of simulation box
         self.system_size = np.zeros(3)  # system_max - system_min
-        self.half_system_size = np.zeros(3)
         self.domain_size = np.zeros(3)  # size of thread spatial domain
         self.known_monomers = Monomer()  # list
-        self.known_monomers.create()
         self.known_stereo = Stereo()  # list
-        self.known_stereo.create()
         self.chain_stereo = {}  # size num_stereo
-        self.excluded_cylinders = ExclCylinder()  # list
-        self.excluded_cylinders.create()
         self.excluded_slabs = ExclSlab()  # list
-        self.excluded_slabs.create()
-        self.excluded_spheres = ExclSphere()  # list
-        self.excluded_spheres.create()
-        self.data_dir = ''  # directory name for data files
+        self.data_dir = prog_datadir  # directory name for data files
         self.element_data = "elements"  # path to element data file
         self.log_file = ''  # stdout by default
         self.status_file = ''  # stdout by default
+        self.excluded_cylinders = ExclCylinder()  # list
+        self.excluded_spheres = ExclSphere()  # list
         self.chain_stereo_weights = {}  # size num_stereo
-        self.bond_scale = 0.  # scale equilibrium bond lengths to identify bonds
-        self.temperature = 0.1  # K not zero
-        self.backbone_bond_length = 0.  # Angstroms
-        self.density = 0.  # g/cm^3
-        self.num_monomers_stddev = 0.
-        self.grid_size = 0.  # Angstroms
-        self.energy_cutoff = 0.  # Angstroms
-        self.self_avoid_cutoff = 0.  # Angstroms
-        self.chain_length_histo_bin = 0.  # Angstroms
-        self.total_volume = 0.  # available for packing chains; Angstroms^3
-        self.excluded_volume = 0.  # Angstroms^3
-        self.torsion_step = 0.  # degrees
         self.energy_func = Energy()  # energy expression
+        self.bond_scale = 0.0  # scale equilibrium bond lengths to identify bonds
+        self.temperature = 0.1  # K not zero
+        self.density = 0.0  # g/cm^3
+        self.grid_size = 0.0  # Angstroms
+        self.energy_cutoff = 0.0  # Angstroms
+        self.self_avoid_cutoff = 0.0  # Angstroms
+        self.total_volume = 0.0  # available for packing chains; Angstroms^3
+        self.excluded_volume = 0.0  # Angstroms^3
+        self.torsion_step = 0.0  # degrees
+        self.backbone_bond_length = 0.0  # Angstroms
+        self.num_monomers_stddev = 0.0
+        self.chain_length_histo_bin = 0.0  # Angstroms
         self.rng_seed = int(time.time())
         self.num_chains = 0
         self.num_stereo = 0  # size of chain_stereo[], chain_stereo_weights[]
@@ -78,10 +87,10 @@ class Params:
         self.num_domains_y = 1  # spatial domains in Y
         self.num_domains_z = 1  # spatial domains in Z
         self.total_domains = 0
-        self.max_monomer_atoms = 0  # Most atoms in any Monomer
         self.num_configs = 30  # Sampling configurations
         self.bond_cutoff = 0  # max bonded interactions separation
         self.num_delta_steps = 0
+        self.max_monomer_atoms = 0  # Most atoms in any Monomer
         self.recalculate_positions = 0  # flags
         self.recalculate_neighbors = 0
         self.sample_monte_carlo = 0
@@ -96,6 +105,7 @@ class Params:
         self.write_chain_length = 0
         self.write_torsion_histo = 0
         self.write_intermediate = 0
+        self.half_system_size = np.zeros(3)
 
     # ============================================================================
     # getElements()
@@ -103,6 +113,7 @@ class Params:
     # Result: call readElements()
     # ============================================================================
     def getElements(self):
+        global read_elements
         if not read_elements:
             leng = len(self.data_dir) + len(self.element_data) + 2
 
@@ -117,16 +128,8 @@ class Params:
     # Result: fill p by reading indicated input file; calls choke() on input error
     # ============================================================================
     def readParams(self, path):
-        s = Scanner().createScanner(path)
+        s = createScanner(path)
         done = 0
-        ec = ExclCylinder()
-        ec.create()
-        es = ExclSlab()
-        es.create()
-        esph = ExclSphere()
-        esph.create()
-        msearch = Monomer()
-        msearch.create()
         name = ''
         file_name = ''
         full_path = ''
@@ -189,8 +192,7 @@ class Params:
                     n += 1
                     t = s.getToken()
                 if t == TOK_CYLINDER:
-                    ec = ExclCylinder()
-                    ec.create()
+                    ec = createExclCylinder()
                     ec.invert = n
                     if ec.invert:
                         self.inverted_volume = 1
@@ -206,8 +208,7 @@ class Params:
                     self.excluded_cylinders = ec
                     self.excluded_volume += np.pi * ec.radius * ec.radius * ec.length
                 elif t == TOK_SLAB:
-                    es = ExclSlab()
-                    es.create()
+                    es = createExclSlab()
                     es.invert = n
                     if es.invert:
                         self.inverted_volume = 1
@@ -227,8 +228,7 @@ class Params:
                     self.excluded_slabs = es
                     self.excluded_volume += (es.max[0] - es.min[0]) * (es.max[1] - es.min[1]) * (es.max[2] - es.min[2])
                 elif t == TOK_SPHERE:
-                    esph = ExclSphere()
-                    esph.create()
+                    esph = createExclSphere()
                     esph.invert = n
                     if esph.invert:
                         self.inverted_volume = 1
@@ -298,11 +298,11 @@ class Params:
             elif tokval == TOK_ENERGY:
                 t = s.getToken()
                 if t == TOK_LJ:
-                    self.energy_func = energyLJ
+                    self.energy_func = Energy.energyLJ
                 elif t == TOK_SELF_AVOID:
-                    self.energy_func = energySelfAvoid
+                    self.energy_func = Energy.energySelfAvoid
                 elif t == TOK_NONE:
-                    self.energy_func = energyNone
+                    self.energy_func = Energy.energyNone
                 else:
                     CHOKE_PARSE("energy option")
 
@@ -480,54 +480,141 @@ class Params:
     # Result: write parameters to an output file
     # ============================================================================
     def reportParams(self, f):
-        m = Monomer()
-        m.create()
-        b = Bond()
-        b.create()
-        s = Stereo()
-        s.create()
 
-        f.write("Read data from %s\n" % self.data_dir)
-        f.write("Element info: %s/%s\n\n" % (self.data_dir, self.element_data))
-        f.write("Scale equilibrium bond lengths by %f to identify bonds\n\n" % self.bond_scale)
+        f.printf("Read data from %s\n" % self.data_dir)
+        f.printf("Element info: %s/%s\n\n" % (self.data_dir, self.element_data))
+        f.printf("Scale equilibrium bond lengths by %f to identify bonds\n\n" % self.bond_scale)
 
         writeAtomTypes(f)
         writeBondTypes(f)
-        f.write("\n")
+        f.printf("\n")
 
         m = self.known_monomers
         while m and hasattr(m, 'next'):
-            f.write("Monomer %s:\n" % m.name)
+            f.printf("Monomer %s:\n" % m.name)
             m.zm.writeZMatrix(f, 0)
-            f.write("Internal coordinates with Dreiding types:\n")
+            f.printf("Internal coordinates with Dreiding types:\n")
             m.zm.writeZMatrix(f, 1)
-            f.write("   %d backbone atoms\n" % m.num_bb)
-            f.write("   mass (without head and tail): %f amu\n" % m.central_mass)
+            f.printf("   %d backbone atoms\n" % m.num_bb)
+            f.printf("   mass (without head and tail): %f amu\n" % m.central_mass)
             for i in range(2, m.num_bb):
-                f.write("   Backbone atom %d torsion angle: " % (i + 1))
+                f.printf("   Backbone atom %d torsion angle: " % (i + 1))
                 if m.torsions[i] == Torsion.TORSION_FIXED:
-                    f.write("fixed\n")
+                    f.printf("fixed\n")
                 elif m.torsions[i] == Torsion.TORSION_FREE:
-                    f.write("freely rotating\n")
+                    f.printf("freely rotating\n")
                 elif m.torsions[i] == Torsion.TORSION_ENERGY:
-                    f.write("bonded interactions (E(phi)) specified\n")
+                    f.printf("bonded interactions (E(phi)) specified\n")
                 elif m.torsions[i] == Torsion.TORSION_ENERGY_CALC:
-                    f.write("bonded interactions (E(phi)) calculated internally\n")
-            f.write("   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds)
+                    f.printf("bonded interactions (E(phi)) calculated internally\n")
+            f.printf("   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds)
             b = m.extra_bonds
             while b and hasattr(b, 'next'):
-                f.write("      Between atoms %d and %d\n" % (b.index1 + 1, b.index2 + 1))
+                f.printf("      Between atoms %d and %d\n" % (b.index1 + 1, b.index2 + 1))
                 b = b.next
             m = m.next
 
+        f.printf("\nStereochemistry options:\n")
+        s = self.known_stereo
+        while s and hasattr(s, 'next'):
+            f.printf("   %s (%s): " % (s.name, "pattern" if s.pattern else "weighted selection"))
+            for i in range(s.num_monomers):
+                f.printf("%s " % s.monomers[i].name)
+                if not s.pattern:
+                    f.printf("(%f) " % s.weights[i])
+            if s.pattern:
+                f.printf("(repeat)")
+            f.printf("\n")
+            s = s.next
 
-#void
-#reportParams(const Params * restrict p, FILE * restrict f)
-#{
-#   Monomer *m;
-#   Bond *b;
-#   Stereo *s;
-#   int i;
+        f.printf("\nSystem dimensions:\n")
+        f.printf("   Minimum (%f, %f, %f)\n" % (self.system_min[0], self.system_min[1], self.system_min[2]))
+        f.printf("   Maximum (%f, %f, %f)\n" % (self.system_max[0], self.system_max[1], self.system_max[2]))
+        if (self.excluded_cylinders and hasattr(self.excluded_cylinders, 'next')) or (self.excluded_slabs and hasattr(
+                self.excluded_slabs, 'next')) or (self.excluded_spheres and hasattr(self.excluded_spheres, 'next')):
+            ec = self.excluded_cylinders
+            es = self.excluded_slabs
+            esph = self.excluded_spheres
+
+            while ec and hasattr(ec, 'next'):
+                if ec.invert:
+                    f.printf("   Excluded inverted")
+                else:
+                    f.printf("   Excluded")
+                f.printf(" cylinder: start at (%f, %f, %f), " % (ec.start[0], ec.start[1], ec.start[2]))
+                f.printf("axis (%f, %f, %f), radius %f, length %f\n" %
+                         (ec.axis[0], ec.axis[1], ec.axis[2], ec.radius, ec.length))
+                ec = ec.next
+            while es and hasattr(es, 'next'):
+                if es.invert:
+                    f.printf("   Excluded inverted")
+                else:
+                    f.printf("   Excluded")
+                    f.printf(" slab: from (%f, %f, %f) to (%f, %f, %f)\n" %
+                             (es.min[0], es.min[1], es.min[2], es.max[0], es.max[1], es.max[2]))
+                es = es.next
+            while esph and hasattr(esph, 'next'):
+                if esph.invert:
+                    f.printf("   Excluded inverted")
+                else:
+                    f.printf("   Excluded")
+                f.printf(" sphere: centered at (%f, %f, %f) with radius %g\n" %
+                         (esph.center[0], esph.center[1], esph.center[2], esph.radius))
+                esph = esph.next
+        f.printf("Total polymer volume: %g A^3\n\n" % self.total_volume)
+
+        f.printf("Total domains: %d\n" % self.total_domains)
+        f.printf("   %d domain%s in X (size %f)\n" %
+                 (self.num_domains_x, "s" if self.num_domains_x > 1 else "", self.domain_size[0]))
+        f.printf("   %d domain%s in Y (size %f)\n" %
+                 (self.num_domains_y, "s" if self.num_domains_y > 1 else "", self.domain_size[1]))
+        f.printf("   %d domain%s in Z (size %f)\n" %
+                 (self.num_domains_z, "s" if self.num_domains_z > 1 else "", self.domain_size[2]))
+
+        f.printf("\nChain density: %f g/cm^3\n" % self.density)
+        f.printf("%d chains\n" % self.num_chains)
+        f.printf("%d monomers per chain\n" % self.num_monomers)
+        f.printf("   %f deviation in monomers per chain\n\n" % self.num_monomers_stddev)
+        for i in range(self.num_stereo):
+            f.printf("%f %% of chains will be %s\n" %
+                     (self.chain_stereo_weights[i] * 100.0, self.chain_stereo[i].name))
+
+        f.printf("\nChain growth:\n")
+        f.printf("   consider %d configurations\n" % self.num_configs)
+        if self.sample_monte_carlo:
+            f.printf("   Monte Carlo sampling\n")
+            f.printf("   Temperature: %f K\n" % self.temperature)
+            f.printf("   Energy expression: ")
+            if self.energy_func == Energy.energyLJ:
+                f.printf("Lennard-Jones\n")
+            else:
+                f.printf("none\n")
+            f.printf("   Bond cutoff for bonded interactions: %d\n" % self.bond_cutoff)
+            f.printf("   Interaction range for non-bonded interactions: %f A\n" % self.energy_cutoff)
+            f.printf("   Grid size for neighbor bins: %f A\n" % self.grid_size)
+        f.printf("   Rotate varying torsions %f degrees when packing\n" % self.torsion_step)
+        f.printf("   Backbone bond length between monomers: %f A\n" % self.backbone_bond_length)
+
+        f.printf("\nRNG seed: %d\n" % self.rng_seed)
+        f.printf("%s atomic positions\n" % ("Recalculate" if self.recalculate_positions else "Store"))
+        if self.isolate_chains:
+            f.printf("Grow isolated chains\n")
+        if self.write_wrapped_pdb:
+            f.printf("Write PDB file with folded positions\n")
+        if self.write_unwrapped_pdb:
+            f.printf("Write PDB file with unfolded positions\n")
+        if self.write_wrapped_xyz:
+            f.printf("Write XYZ file with folded positions\n")
+        if self.write_unwrapped_xyz:
+            f.printf("Write XYZ file with unfolded positions\n")
+        if self.write_chain_length:
+            f.printf("Write chain length\n")
+        if self.write_chain_length_histo:
+            f.printf("Write chain length histogram (bin size %f A)\n" % self.chain_length_histo_bin)
+        if self.write_torsion_histo:
+            f.printf("Write torsion angle histogram\n")
+        if self.write_intermediate:
+            f.printf("Write intermediate files for LAMMPS preprocessing\n")
 
 
 # ============================================================================

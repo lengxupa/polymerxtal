@@ -8,7 +8,10 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .lex import yylex
+import re
+
+from .stdio import FILE
+from .utils import openFile
 
 TOK_EOF = 0
 TOK_INT = 1
@@ -140,9 +143,23 @@ switcher = {
 }
 
 
+def yylex(item):
+    print('debug scan.py: yylex - item -', item)
+    scan_flag = 1
+    for key in switcher:
+        if re.match('^' + key + '$', item):
+            tokval = switcher[key]
+            tokstr = item
+            scan_flag = 0
+            break
+    if scan_flag:
+        return -1, "Invalid argument"
+    return tokval, tokstr
+
+
 class Scanner:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self):
+        self.path = ''
         self.tokstr = ''
         self.scanner = ''
         self.tokval = 0
@@ -157,32 +174,11 @@ class Scanner:
     # choke() on error
     # ============================================================================
     def initScanner(self):
-        self.f = open(self.path, "r")
-        self.line = self.f.readline()
+        self.f = openFile(self.path, "r")
         self.lineno = 1
-        self.tok_list = self.line.split('#')[0].split()
-        self.toklen = len(self.tok_list)
-        while not self.toklen:
-            self.line = self.f.readline()
-            self.lineno += 1
-            self.tok_list = self.line.split('#')[0].split()
-            self.toklen = len(self.tok_list)
-        self.colno = 0
-        self.scanner = self.tok_list[self.colno]
+        self.toklen = 0
         self.reuse = 0
-
-    # ============================================================================
-    # createScanner()
-    # ----------------------------------------------------------------------------
-    # Result: return a pointer to a newly allocated, initialized Scanner; call
-    # choke() if allocation fails
-    # ============================================================================
-    def createScanner(self, path):
-        self.path = path
-        self.tokstr = ''
-        self.scanner = ''
-        self.initScanner()
-        return self
+        self.colno = 0
 
     # ============================================================================
     # resetScanner()
@@ -191,10 +187,10 @@ class Scanner:
     # ============================================================================
     def resetScanner(self):
         if self:
-            self.f.close()
+            self.f.fclose()
             self.scanner = ''
             self.tokstr = ''
-            s.initScanner()
+            self.initScanner()
 
     # ============================================================================
     # pushToken()
@@ -203,8 +199,8 @@ class Scanner:
     # returns the same token
     # ============================================================================
     def pushToken(self):
-        if s:
-            s.reuse += 1
+        if self:
+            self.reuse += 1
 
     # ============================================================================
     # getToken()
@@ -216,16 +212,24 @@ class Scanner:
         if self.reuse:
             self.reuse = 0
         else:
-            self.tokval, self.tokstr = yylex(self.scanner)
             self.colno += 1
             if self.colno >= self.toklen:
+                self.line = self.f.readline()
+                if self.line == '':
+                    return TOK_EOF
+                self.lineno += 1
+                self.tok_list = self.line.split('#')[0].split()
+                self.toklen = len(self.tok_list)
                 while not self.toklen:
                     self.line = self.f.readline()
+                    if self.line == '':
+                        return TOK_EOF
                     self.lineno += 1
                     self.tok_list = self.line.split('#')[0].split()
                     self.toklen = len(self.tok_list)
                 self.colno = 0
             self.scanner = self.tok_list[self.colno]
+        self.tokval, self.tokstr = yylex(self.scanner)
         return self.tokval
 
     # ============================================================================
@@ -235,12 +239,13 @@ class Scanner:
     # token can't be converted to an int
     # ============================================================================
     def getIntToken(self):
-        self.tokval = getToken(self)
+        self.tokval = self.getToken()
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
             r = int(float(self.tokstr))
         else:
             raise TypeError("Expected an integer on line %d of file %s, but found \"%s\"" %
                             (self.lineno, self.path, self.tokstr))
+        return r
 
     # ============================================================================
     # getRealToken()
@@ -249,10 +254,26 @@ class Scanner:
     # token can't be converted to a Real
     # ============================================================================
     def getRealToken(self):
-        self.tokval = getToken(self)
+        self.tokval = self.getToken()
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
             r = float(self.tokstr)
         else:
             raise TypeError("Expected a Real on line %d of file %s, but found \"%s\"" %
                             (self.lineno, self.path, self.tokstr))
         return r
+
+
+# ============================================================================
+# createScanner()
+# ----------------------------------------------------------------------------
+# Result: return a pointer to a newly allocated, initialized Scanner; call
+# choke() if allocation fails
+# ============================================================================
+def createScanner(path):
+    s = Scanner()
+
+    s.path = path
+    s.tokstr = ''
+    s.scanner = ''
+    s.initScanner()
+    return s

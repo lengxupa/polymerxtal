@@ -1,0 +1,13 @@
+debug - before findRing( 1 , 1 ,OTHER_INDEX(b, i) - 0 , blist)
+debug - after findRing( 1 , 1 ,OTHER_INDEX(b, i) - 0 , blist)
+
+getPosition(self, index, pos) - pos=getPosition(self, index)
+
+0: 0 1
+1: 1 2
+2: 1 4
+3: 1 5
+4: 2 3
+5: 2 6
+6: 2 7
+7: 4 8

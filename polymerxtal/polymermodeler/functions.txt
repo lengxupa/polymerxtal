@@ -1,8 +1,20 @@
+build.py
+	- updateStatus()
+	- interpolateTorsion()
+	- setTorsions()
+	- rejectConfig()
+	- fillNeighbors()
+	- sumInteractions()
+	- buildChains()
+
 chain.py 
 	Chain
 		- __init__
+		- resetChain()
+		- getChainLength()
 		- addMonomer()
 		- writeChainPDB()
+		- writeChainXYZ()
 
 	- createChain()
 	- shiftIndex()
@@ -12,6 +24,23 @@ chain.py
 config.py
 	REAL_MAX
 	MAX_BONDS
+
+domain.py
+	OccAtom
+		- __init__
+		- create
+
+	Bin
+		- __init__
+
+	Domain
+		- __init__
+		- clearDomain()
+		- addAtom()
+		- addOccAtom()
+		- removeDeadChains()
+
+	- createDomain()
 
 element.py
 	elements
@@ -40,6 +69,27 @@ energy.py
 		- energySelfAvoid()
 		- energyNone()
 
+exclude.py
+	ExclCylinder
+		- __init__
+		- create
+		- insideExclCylinder()
+
+	- createExclCylinder()
+
+	ExclSlab
+		- __init__
+		- create
+		- insideExclSlab()
+
+	- createExclSlab()
+
+	ExclSphere
+		- __init__
+		- create 
+
+	- createExclSphere()
+
 main.py
 	params 
 	polysys
@@ -50,6 +100,7 @@ main.py
 	timer
 
 	- logMessage()
+	- updateStatus()
 	- cleanup()
 	- showVersion()
 	- main()
@@ -111,10 +162,14 @@ os.py
 	- restoreDir()
 
 params.py
+	current_location
+	prog_datadir
+	read_elements
+
 	- is_number(s)
 
 	Params
-		- __init__
+		- __init__ - initParams()
 		- getElements()
 		- readParams()
 			- CHOKE_PARSE(param)
@@ -190,23 +245,54 @@ scan.py
 
 	switcher
 
+	- yylex(scanner)
+
 	Scanner
 		- __init__
 		- initScanner()
-		- createScanner()
 		- resetScanner()
 		- pushToken()
 		- getToken()
 		- getIntToken()
 		- getRealToken()
 
+	- createScanner()
+
+stdio.py
+	FILE
+		- __init__
+		- printf()
+		- fclose()
+		- rewind()
+		- readline()
+
+	stderr
+	stdout
+
+	- fputc(character, stream)
+	- fgets(string, length, stream)
+
 stereo.py
 	Stereo
 		- __init__
 		- create
 		- addStereoMonomer()
+		- getNextMonomer()
 
 	- createStereo()
+
+system.py
+	PolymerSystem
+		- __init__ - initSystem()
+		- cleanupSystem()
+		- addPendingAtom()
+		- getPendingAtoms()
+timer.py
+	Timer
+		- __init__
+		- startTimer()
+		- getSeconds()
+		- getElapsedTime()
 
 types.py
 	AtomType
@@ -231,15 +317,29 @@ types.py
 	- getAtomTypeIndex()
 	- addAtomType()
 	- writeAtomTypes()
+	- writeAtomTypesDreiding()
 	- getBondTypeIndex()
 	- addBondType()
 	- writeBondTypes()
+	- writeBondTypesDreiding()
 
 unistd.py
 	- fchdir(fd)
 
 utils.py
+	- openFile()
+	- selectWeight()
 	- foldPosition()
+	- hashBin()
+
+	MIN_X_EDGE
+	MIN_Y_EDGE
+	MIN_Z_EDGE
+	MAX_X_EDGE
+	MAX_Y_EDGE
+	MAX_Z_EDGE
+
+	- getNeighborIndices()
 	- RAD2DEG(rad)
 	- DEG2RAD(deg)
 	- CA2CC(ca)
@@ -247,7 +347,13 @@ utils.py
 
 	kB
 
+vector.py
+	- getNearestSqDist()
+
 zmatrix.py
+	NO_POSITION
+	MIN_POSITIONS
+
 	ZEntry
 		- __init__
 	

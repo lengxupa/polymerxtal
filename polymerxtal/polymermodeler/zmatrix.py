@@ -13,6 +13,7 @@ import numpy as np
 
 from .config import REAL_MAX, MAX_BONDS
 from .element import getElementName
+from .stdio import FILE
 from .types import AtomType
 from .utils import DEG2RAD
 
@@ -115,23 +116,16 @@ class ZMatrix:
     # Result: store the position of the index-th atom in *pos; calls choke() if
     # index is out of range
     # ============================================================================
-    def getPosition(self, index, pos):
+    def getPosition(self, index):
         if index < 0 or index >= self.num_entries:
             raise ValueError("getPosition(): Position index %d is out of range (%d)" % (index, self.num_entries))
         if index < self.num_positions and self.positions[index][0] > NO_POSITION:
             pos = self.positions[index]
         else:
-            a = np.zeros(3)
-            b = np.zeros(3)
-            c = np.zeros(3)
-            n1 = np.zeros(3)
-            n2 = np.zeros(3)
-            bond_index_pos = np.zeros(3)
-            angle_atom_pos = np.zeros(3)
             torsion_atom_pos = np.zeros(3)
             ze = self.entries[index]
 
-            self.getPosition(ze.bond_index, bond_index_pos)
+            bond_index_pos=self.getPosition(ze.bond_index)
             bond_length = ze.bond_length
             if -1 == ze.angle_index:
                 # Atom 1
@@ -139,7 +133,7 @@ class ZMatrix:
                 pos[1] = 0.0
                 pos[2] = 0.0
             else:
-                self.getPosition(ze.angle_index, angle_atom_pos)
+                angle_atom_pos=self.getPosition(ze.angle_index)
                 bond_angle = DEG2RAD(ze.bond_angle)
                 if -1 == ze.dihedral_index:
                     # Atom 2
@@ -149,7 +143,7 @@ class ZMatrix:
                     torsion_angle = DEG2RAD(90.0)
                 else:
                     # All other atoms
-                    self.getPosition(ze.dihedral_index, torsion_atom_pos)
+                    torsion_atom_pos=self.getPosition(ze.dihedral_index)
                     torsion_angle = DEG2RAD(ze.torsion_angle)
                 a = bond_index_pos - angle_atom_pos
                 b = bond_index_pos - torsion_atom_pos
@@ -166,6 +160,7 @@ class ZMatrix:
                 a /= np.linalg.norm(a)
                 a *= bond_length * np.cos(bond_angle)
                 pos = b - a
+        return pos
 
     # ============================================================================
     # writeZMatrix()
@@ -177,19 +172,19 @@ class ZMatrix:
             if Dreiding_type:
                 self.entries[i].type.writeAtomTypeDreiding(f)
             else:
-                f.write("%2.2s" % getElementName(self.entries[i].type.element_index))
+                f.printf("%2.2s" % getElementName(self.entries[i].type.element_index))
             if 0 == i:
-                f.write("\n")
+                f.printf("\n")
                 continue
-            f.write("  %2d  %5.2f" % (self.entries[i].bond_index + 1, self.entries[i].bond_length))
+            f.printf("  %2d  %5.2f" % (self.entries[i].bond_index + 1, self.entries[i].bond_length))
             if 1 == i:
-                f.write("\n")
+                f.printf("\n")
                 continue
-            f.write("  %2d  %6.2f" % (self.entries[i].angle_index + 1, self.entries[i].bond_angle))
+            f.printf("  %2d  %6.2f" % (self.entries[i].angle_index + 1, self.entries[i].bond_angle))
             if 2 == i:
-                f.write("\n")
+                f.printf("\n")
                 continue
-            f.write("  %2d  %7.2f" % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle))
+            f.printf("  %2d  %7.2f" % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle))
 
 
 # ============================================================================
@@ -212,6 +207,7 @@ def createZMatrix(num_entries, store_positions):
         zm.entries[i].bond_length = 0.0
         zm.entries[i].bond_angle = 0.0
         zm.entries[i].torsion_angle = 0.0
+    zm.num_positions = num_entries if store_positions else MIN_POSITIONS
     for i in range(zm.num_positions):
         zm.positions[i] = np.zeros(3)
         zm.positions[i][0] = NO_POSITION

@@ -8,11 +8,11 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .scan import Scanner, TOK_EOF
+from .scan import Scanner, createScanner, TOK_EOF
 
 # File scope
 elements = {}
-num_elements = 0
+num_elements  = 0
 
 
 class Element:
@@ -30,14 +30,14 @@ class Element:
 # Result: read element data from the named file; calls choke() on error
 # ============================================================================
 def readElements(path):
-    s = Scanner()
-    s.createScanner(path)
+    s = createScanner(path)
     num_tokens = 0
 
     while TOK_EOF != s.getToken():
         num_tokens += 1
     s.resetScanner()
-    num_elements = num_tokens / 5
+    global num_elements
+    num_elements = int(num_tokens / 5)
     for n in range(num_elements):
         elements[n] = Element()
         s.getToken()

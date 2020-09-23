@@ -9,6 +9,7 @@
 # ============================================================================
 
 from .element import getElementName
+from .stdio import FILE, fputc
 
 
 class AtomType:
@@ -27,11 +28,11 @@ class AtomType:
     def writeAtomType(self, f):
         n = abs(self.num_bonds)
 
-        f.write("%s with %d bond%s" % (getElementName(self.element_index), n, "s" if n > 1 else ""))
+        f.printf("%s with %d bond%s" % (getElementName(self.element_index), n, "s" if n > 1 else ""))
         if -3 == self.num_bonds:
-            f.write(" (resonant)")
+            f.printf(" (resonant)")
         elif -1 == self.num_bonds:
-            f.write(" (H-bond)")
+            f.printf(" (H-bond)")
 
     # ============================================================================
     # writeAtomTypeDreiding()
@@ -43,11 +44,11 @@ class AtomType:
         NUM_FEL = 9
         fel = ["H", "F", "Cl", "Br", "I", "Na", "Ca", "Fe", "Zn"]
 
-        f.write("%s" % s)
-        f.write('_')
+        f.printf("%s" % s)
+        fputc('_', f)
         #ifdef HYDROGEN_BOND
         if -1 == self.num_bonds:
-            f.write("_HB")
+            f.printf("_HB")
         #endif
         i = 0
         while i < NUM_FEL:
@@ -57,11 +58,11 @@ class AtomType:
         # If s is an entry in fel[], then we're done -- no hybridization needed
         if i == NUM_FEL:
             if self.num_bonds < 0:
-                f.write('R')
+                fputc('R', f)
             elif s == "O":
-                f.write("%d" % (self.num_bonds + 1))
+                f.printf("%d" % (self.num_bonds + 1))
             else:
-                f.write("%d" % (self.num_bonds - 1))
+                f.printf("%d" % (self.num_bonds - 1))
 
 
 # Used only in this file
@@ -120,6 +121,7 @@ def addAtomType(t):
     atl.create()
 
     atl.at = t
+    global atl_top
     atl.next = atl_top
     if atl_top and hasattr(atl_top, 'next'):
         atl.index = atl_top.index + 1
@@ -137,11 +139,27 @@ def addAtomType(t):
 def writeAtomTypes(f):
     atl = atl_top
 
-    f.write("%d known atom types:\n" % (atl_top.index if atl_top and hasattr(atl_top, 'next') else 0))
+    f.printf("%d known atom types:\n" % (atl_top.index if atl_top and hasattr(atl_top, 'next') else 0))
     while atl and hasattr(atl, 'next'):
-        f.write("   ")
+        f.printf("   ")
         atl.at.writeAtomType(f)
-        f.write("\n")
+        f.printf("\n")
+        atl = atl.next
+
+
+# ============================================================================
+# writeAtomTypesDreiding()
+# ----------------------------------------------------------------------------
+# Result: write a list of AtomTypes, index and Dreiding symbol, to the output
+# FILE f
+# ============================================================================
+def writeAtomTypesDreiding(f):
+    atl = atl_top
+
+    while atl and hasattr(atl, 'next'):
+        f.printf("%d  " % atl.index)
+        atl.at.writeAtomTypeDreiding(f)
+        f.printf("\n")
         atl = atl.next
 
 
@@ -172,6 +190,7 @@ def addBondType(at1, at2):
 
     btl.at1 = at1
     btl.at2 = at2
+    global btl_top
     btl.next = btl_top
     if btl_top and hasattr(btl_top, 'next'):
         btl.index = btl_top.index + 1
@@ -189,11 +208,29 @@ def addBondType(at1, at2):
 def writeBondTypes(f):
     btl = btl_top
 
-    f.write("%d known bond types:\n" % (btl_top.index if (btl_top and hasattr(btl_top, 'next')) else 0))
+    f.printf("%d known bond types:\n" % (btl_top.index if (btl_top and hasattr(btl_top, 'next')) else 0))
     while btl and hasattr(btl, 'next'):
-        f.write("   (")
+        f.printf("   (")
         btl.at1.writeAtomType(f)
-        f.write(") -- (")
+        f.printf(") -- (")
         btl.at2.writeAtomType(f)
-        f.write(")\n")
+        f.printf(")\n")
+        btl = btl.next
+
+
+# ============================================================================
+# writeBondTypesDreiding()
+# ----------------------------------------------------------------------------
+# Result: write a list of BondTypes, index and Dreiding atom types, to the
+# output FILE f
+# ============================================================================
+def writeBondTypesDreiding(f):
+    btl = btl_top
+
+    while btl and hasattr(btl, 'next'):
+        f.printf("%d  " % btl.index)
+        btl.at1.writeAtomTypeDreiding(f)
+        f.printf("  ")
+        btl.at2.writeAtomTypeDreiding(f)
+        f.printf("\n")
         btl = btl.next

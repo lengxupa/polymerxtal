@@ -12,7 +12,7 @@ from .helice import Helice
 current_location = os.path.dirname(__file__)
 
 
-def sample_chain(helice=Helice()):
+def sample_chain(helice=Helice(), view='Perspective'):
 
     # Build the path to the sample file.
     sample_path = os.path.join(current_location, 'data', 'lmp_data',
@@ -25,10 +25,29 @@ def sample_chain(helice=Helice()):
     pipeline.add_to_scene()
 
     vp = Viewport()
-    vp.type = Viewport.Type.Front
+
+    if view == 'Perspective':
+        vp.type = Viewport.Type.Perspective
+        vp.camera_dir = (-1, -1, -1)
+    elif view == 'Ortho':
+        vp.type = Viewport.Type.Ortho
+        vp.camera_dir = (-1, -1, -1)
+    elif view == 'Top':
+        vp.type = Viewport.Type.Top
+    elif view == 'Bottom':
+        vp.type = Viewport.Type.Bottom
+    elif view == 'Front':
+        vp.type = Viewport.Type.Front
+    elif view == 'Back':
+        vp.type = Viewport.Type.Back
+    elif view == 'Left':
+        vp.type = Viewport.Type.Left
+    elif view == 'Right':
+        vp.type = Viewport.Type.Right
+
     vp.zoom_all()
     vp.render_image(size=(800, 600),
-                    filename="sample_helix_%d_%d_%d.png" % (helice.atoms, helice.motifs, helice.turns),
+                    filename="sample_helix_%d_%d_%d_%s.png" % (helice.atoms, helice.motifs, helice.turns, view),
                     background=(0, 0, 0),
                     frame=0)
 

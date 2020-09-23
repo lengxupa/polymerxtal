@@ -13,12 +13,13 @@ import numpy as np
 
 from polymerxtal import calculate_angle
 
-from .zmatrix import ZMatrix, createZMatrix, ZEntry
-from .utils import RAD2DEG, kB
-from .types import *
-from .scan import *
-from .element import *
 from .config import REAL_MAX
+from .element import getElementIndex, getElementName, getElementMass, getElementR0
+from .scan import *
+from .stdio import FILE, fgets
+from .types import *
+from .utils import RAD2DEG, kB, openFile
+from .zmatrix import ZMatrix, createZMatrix, ZEntry
 
 
 # A bond between two monomer atoms, not represented by the z-matrix
@@ -284,7 +285,7 @@ def readZM(s, zmptr):
     # Now, fill h->pos[] from zm internal coordinates
     zmptr.setPosition(0, v0)
     for i in range(h.num_atoms):
-        zmptr.getPosition(i, h.pos[i])
+        h.pos[i] = zmptr.getPosition(i)
 
     #for (i = 0; i < h->num_atoms; i++)
     #{
@@ -306,7 +307,6 @@ def readZM(s, zmptr):
 # can't be opened
 # ============================================================================
 def readPDB(path):
-    h = {}
     LINELEN = 81
 
     # PDB file format: only use the ATOM/HETATM lines
@@ -335,17 +335,18 @@ def readPDB(path):
     # This method reads the file twice; see comments below in findBonds()
     # for why this is not a problem.
 
-    f = open(path, "r")
+    f = openFile(path, "r")
     n = 0
-    line = f.readline()
+    line = fgets(LINELEN, f)
     while line:
         if (line[:6] == "ATOM  ") or (line[:6] == "HETATM"):
             n += 1
+        line = fgets(LINELEN, f)
     h = createHolder(n)
 
-    f.seek(0)
+    f.rewind()
     i = 0
-    line = f.readline()
+    line = fgets(LINELEN, f)
     while line:
         leng = len(line)
         if (line[:6] == "ATOM  ") or (line[:6] == "HETATM"):
@@ -353,8 +354,8 @@ def readPDB(path):
             h.pos[i][1] = float(line[38:46])
             h.pos[i][2] = float(line[46:54])
             # Check element symbol first...
-            if (not line[77].isspace()) and leng > 77:
-                line[78] = '\0'
+            if leng > 77 and (not line[77].isspace()):
+                # line[78] = '\0';
                 p = 77
                 if not line[76].isspace():
                     p -= 1
@@ -370,7 +371,8 @@ def readPDB(path):
                     q += 1
             h.el_names[i] = line[p:q]
             i += 1
-    f.close()
+        line = fgets(LINELEN, f)
+    f.fclose()
     return h
 
 
@@ -386,7 +388,8 @@ def createBond(index1, index2):
     b.index1 = index1
     b.index2 = index2
     b.visited = 0
-    b.create()
+    b.next = Bond()
+    return b
 
 
 # ============================================================================
@@ -421,27 +424,28 @@ def findBonds(h, eq_bond_scale):
         for j in range(i + 1, h.num_atoms):
             el_index = getElementIndex(h.el_names[j])
             di = getElementR0(el_index)
-            d = np.linalg.norm(h.pos[i], h.pos[j])
+            d = np.linalg.norm(h.pos[i] - h.pos[j])
             if d < (di + dj) * eq_bond_scale:
                 # Bond
                 b = createBond(i, j)
-                if blist and bcurr and hasattr(bcurr, 'next'):
+                if blist and hasattr(blist, 'next') and bcurr and hasattr(bcurr, 'next'):
                     bcurr.next = b
                 else:
                     blist = b
                 bcurr = b
 
-                print("Created bond between %d and %d\n" % (i + 1, j + 1))
+                # printf("Created bond between %d and %d\n", i+1, j+1);
 
-            else:
-                print("No bond between %d and %d\n" % (i + 1, j + 1))
-            print("di = %g, dj = %g, d = %g\n\n" % (di, dj, d))
+            # else:
+            #    printf("No bond between %d and %d\n", i+1, j+1);
+            # printf("di = %g, dj = %g, d = %g\n\n", di, dj, d);
     return blist
 
 
 def FIND_BOND(b, ndx):
-    while b and ndx != b.index1 and ndx != b.index2:
+    while b and hasattr(b, 'next') and ndx != b.index1 and ndx != b.index2:
         b = b.next
+    return b
 
 
 def OTHER_INDEX(b, ndx):
@@ -458,7 +462,7 @@ def findRing(target, prev, current, blist):
     b = blist
 
     while b and hasattr(b, 'next'):
-        FIND_BOND(b, current)
+        b = FIND_BOND(b, current)
         if b and hasattr(b, 'next'):
             n = OTHER_INDEX(b, current)
             if n != prev and (not b.visited):
@@ -480,9 +484,9 @@ def findRing(target, prev, current, blist):
 # ============================================================================
 def setAtomTypes(h, blist):
     H_index = getElementIndex("H")
-    at = AtomType()
 
     for i in range(h.num_atoms):
+        at = AtomType()
         # Count the number of bonds which involve atom i
         at.element_index = getElementIndex(h.el_names[i])
         at.num_bonds = 0
@@ -507,7 +511,7 @@ def setAtomTypes(h, blist):
 
         if H_index == h.atom_types[i].element_index:
             b = blist
-            FIND_BOND(b, i)  # only 1 bond
+            b = FIND_BOND(b, i)  # only 1 bond
             name = getElementName(h.atom_types[OTHER_INDEX(b, i)].element_index)
             if "N" == name or "O" == name or "F" == name:
                 # printf("atom %d is in a H-bond\n", i+1); fflush(stdout);
@@ -575,16 +579,8 @@ class Monomer:
         indices = {}
         rev_indices = {}
         not_bb = {}
-        bsearch = {}
-        for i in range(self.num_atoms):
-            indices[i] = -1
-            rev_indices[i] = -1
-            not_bb[i] = 0
-            bsearch[i] = Bond()
-            bsearch[i].create()
         i_not_bb = 0
         v0 = np.zeros(3)
-        zej = ZEntry()
 
         # Use indices[] to order the atoms, starting with the head, and identify
         # backbone atoms to the tail.  The chain building algorithms depend on
@@ -600,11 +596,13 @@ class Monomer:
             while b and hasattr(b, 'next'):
                 # Visit all bonds involving atom indices[i-1]; find the bonded atom
                 # nearest to the tail atom.
-                FIND_BOND(b, indices[i - 1])
+                b = FIND_BOND(b, indices[i - 1])
                 if b and hasattr(b, 'next'):
-                    for j in range(i_not_bb):
+                    j = 0
+                    while j < i_not_bb:
                         if OTHER_INDEX(b, indices[i - 1]) == not_bb[j]:
                             break
+                        j += 1
                     if j == i_not_bb:
                         # atom to which indices[i-1] is bonded has not already been
                         # rejected from the backbone
@@ -636,8 +634,8 @@ class Monomer:
                 else:
                     # Chosen bond (nearest to tail) is already in the backbone!
                     # Current backbone atom is not truly on the backbone.
-                    i_not_bb += 1
                     not_bb[i_not_bb] = indices[i - 1]
+                    i_not_bb += 1
                     i -= 1
             else:
                 raise TypeError("Unable to fill zmatrix")
@@ -650,12 +648,14 @@ class Monomer:
             for j in range(i):
                 # Find a bond involving atom indices[j]
                 b = blist
-                FIND_BOND(b, indices[j])
+                b = FIND_BOND(b, indices[j])
                 while b and hasattr(b, 'next'):
                     k = OTHER_INDEX(b, indices[j])
-                    for n in range(i):
+                    n = 0
+                    while n < i:
                         if k == indices[n]:
                             break
+                        n += 1
                     if n == i:  # k is not yet in the z-matrix
                         indices[i] = k
 
@@ -666,7 +666,7 @@ class Monomer:
                         i += 1
                     else:
                         b = b.next
-                        FIND_BOND(b, indices[j])
+                        b = FIND_BOND(b, indices[j])
 
         # printf("indices[]: ");
         # for (i = 0; i < m->num_atoms; i++)
@@ -692,7 +692,7 @@ class Monomer:
             self.zm.entries[i].type = h.atom_types[indices[i]]
 
         # Bond lengths
-        for i in range(self.num_atoms):
+        for i in range(1, self.num_atoms):
             j = indices[i]
             k = indices[self.zm.entries[i].bond_index]
             self.zm.entries[i].bond_length = np.linalg.norm(h.pos[j] - h.pos[k])
@@ -750,7 +750,7 @@ class Monomer:
             # Torsion corrections
             d2min = 1e9
             for j in range(360):
-                self.zm.getPosition(i, v1)
+                v1 = self.zm.getPosition(i)
                 d1 = np.linalg.norm(v1 - h.pos[indices[i]])**2
                 if d1 < TARGET_SQ_DIST:
                     break
@@ -824,7 +824,6 @@ class Monomer:
 
         del indices
         del rev_indices
-        del bsearch
         del not_bb
 
     # ============================================================================
@@ -863,8 +862,7 @@ class Monomer:
     # calls choke() on error
     # ============================================================================
     def readTorsionEnergies(self, index, path, temperature):
-        s = Scanner()
-        s.createScanner(path)
+        s = createScanner(path)
         kT = kB * temperature
 
         # Expected format: "angle (deg)    energy (kcal/mol) \n"
@@ -920,12 +918,12 @@ def readMonomer(name, path, head_index, tail_index, eq_bond_scale):
         raise NameError("Unable to determine file type of monomer file %s" % path)
     p += 1
     if path[p:] == "xyz":
-        s = s.createScanner(path)
+        s = createScanner(path)
         h = readXYZ(s)
     elif path[p:] == "zm":
         if 0 != head_index:
             raise ValueError("For .zm input, head atom must be first")
-        s = s.createScanner(path)
+        s = createScanner(path)
         h = readZM(s, zm)
     elif path[p:] == "pdb":
         h = readPDB(path)

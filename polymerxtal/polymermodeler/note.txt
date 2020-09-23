@@ -26,9 +26,6 @@ ExclSlab
 ExclSphere 
 	- create
 
-FILE
-	- no FILE
-
 Holder
 	- no destroyHolder - use __del__
 
@@ -81,40 +78,52 @@ ZVar
 	- create
 
 normal:
+acos - np.arccos
 allocMem(size) - = size
+cbrt() - np.cbrt()
+ceil - np.ceil
 choke - use raise *Error
 copyStr(s) - s
-cbrt() - np.cbrt()
+cos - np.cos
+createRNG(i) - = i
 dir - directory
 errno - errno.errorcode
 EXIT_SUCCESS - 0
 exp() - np.exp()
-fclose - f.close()
+fclose - f.file.close()
 file - f
-fprintf(f, "%3d  %.2f\n", i, E) - f.write("%3d  %.2f\n" %(i, E))
-fputc('_', f) - f.write('_')
 free - del
 FREE(ptr) - = {}
+getNormalRand(sys.rngs[0], mu, sigma) - random.gauss(mu, sigma)
+gettimeofday(t.tv, NULL) - t.tv=time.time()
+getUniformRand(rng) - random.random()
 isEqual - ==
 isnan - np.isnan
 len - leng
+M_PI - np.pi
 max - maxi
 min - mini
 NEG_0 - 0
 open(".", O_RDONLY) - os.getcwd()
 open(dir, O_RDONLY) - dir
-openfile() - open()
 (Real)i - float(i)
-rewind(f) - f.seek(0)
 Rint - numpy.rint()
+SHOW_USAGE(stderr) - SHOW_USAGE(stdout) - SHOW_USAGE(FILE())
+sin - np.sin
+stderr - FILE()
+stdout - FILE()
 str - string
 STR_TO_REAL - float()
 strcmp(a,b)==0 - ==
 strerror() - os.strerror()
 snprintf(prevtok, TOKLEN, "%s", s->tokstr) - prevtok="%s" %s->tokstr
+sqrt - np.sqrt
 strrchr(a,'c') - a.rfind('c')
+sys - polysys
+vfprintf(log_file, msg, ap) - log_file.fprintf(msg)
 yylex_destroy - =''
 < ZERO_TOL - <=0
+> ZERO_TOL - >0
 
 no:
 fflush(f)
@@ -179,3 +188,11 @@ if not os.path.exists(fd):
 if -1 == fchdir(fd):
 	raise IOError("Unable to change directory to %s: %s" %(directory, os.strerror(errno.EIO)))
 ----
+4.
+++k :- this is pre-increment, means the value of variable is first incremented to +1 and then the result is printed.
+For eg. Let b=++k. Where k=4, then
+b= 5 . Because first 4 is incremented to +1 i.e 5 and then the result 5 is printed.
+
+K++ :- this is post-increment, means first the value of variable is printed and then incremented to +1.
+For eg. Let b=k++, where k=4.
+b=4, because first the value is printed i.e 4 and then incremented to 5.
