@@ -1,4 +1,7 @@
 build.py
+	params 
+	update_count
+
 	- updateStatus()
 	- interpolateTorsion()
 	- setTorsions()
@@ -91,12 +94,10 @@ exclude.py
 	- createExclSphere()
 
 main.py
-	params 
 	polysys
 	log_file
 	status_file
 	total_monomers
-	update_count
 	timer
 
 	- logMessage()

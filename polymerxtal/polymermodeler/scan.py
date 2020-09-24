@@ -144,7 +144,6 @@ switcher = {
 
 
 def yylex(item):
-    print('debug scan.py: yylex - item -', item)
     scan_flag = 1
     for key in switcher:
         if re.match('^' + key + '$', item):

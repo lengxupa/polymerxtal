@@ -11,7 +11,7 @@
 import numpy as np
 import random
 
-from .build import buildChains, updateStatus
+from .build import *
 from .chain import Chain, createChain
 from .config import MAX_BONDS
 from .domain import createDomain, Bin, Domain
@@ -26,12 +26,10 @@ from .utils import *
 from .zmatrix import ZMatrix
 
 # File scope
-params = Params()
 polysys = PolymerSystem()
 log_file = FILE()
 status_file = FILE()
 total_monomers = 0
-update_count = 0
 timer = Timer()
 
 
@@ -52,8 +50,9 @@ def logMessage(msg):
 # Result: free all top level structures
 # ============================================================================
 def cleanup():
+    global params
     polysys.cleanupSystem(params)  # before freeParams()
-    params.freeParams()
+    del params
     if log_file.path and stdout != log_file:
         log_file.fclose()
     if status_file.path and stdout != status_file:
@@ -265,7 +264,14 @@ def main(args):
     log_file.printf("Rough estimate of density: %f g/cm^3\n\n" % (AMU2GRAM(total_mass) / CA2CC(params.total_volume)))
 
     # Build Chains
+    #ifdef HAVE_OPENMP
+    #pragma omp parallel default(shared) num_threads(params.total_domains)
+    #   {  /* Each thread builds in a specific Domain */
+    #      buildChains(&sys, &params, omp_get_thread_num());
+    #   }
+    #else
     buildChains(polysys, params, 0)
+    #endif
 
     # Final log outputs
     total_mass = 0.0
@@ -396,6 +402,7 @@ def main(args):
     # N.B. This block of code is largely duplicated in pdb2im.c; it should be
     # abstracted to accept arrays of positions, bonds ...
     if params.write_intermediate:
+        pos = np.zeros(3)
 
         f = openFile("atom_type.dat", "w")
         writeAtomTypesDreiding(f)
@@ -413,7 +420,7 @@ def main(args):
             if polysys.chains[i].dead:
                 continue
             for j in range(polysys.chains[i].curr_atom):
-                pos = polysys.chains[i].zm.getPosition(j)
+                pos = polysys.chains[i].zm.getPosition(j, pos)
                 foldPosition(pos, params.system_min, params.system_max, params.system_size)
                 f.printf("%d  %d  %d  %f  %.6f  %.6f  %.6f\n" % (
                     na,

@@ -23,6 +23,9 @@ from .utils import *
 from .vector import getNearestSqDist
 from .zmatrix import ZMatrix
 
+params = Params()
+update_count = 0
+
 
 # ============================================================================
 # updateStatus()
@@ -38,6 +41,7 @@ def updateStatus():
     #        update_count+1, params.total_domains);
     # fflush(stdout);
 
+    global update_count
     update_count += 1
     if update_count == params.total_domains:
         for i in range(params.num_chains):
@@ -158,11 +162,12 @@ def setTorsions(c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, tors
 # excluded region, else return 0
 # ============================================================================
 def rejectConfig(c, indices, num_indices, store_positions, start_unset, p):
+    pos = np.zeros(3)
 
     if (not p.excluded_cylinders) and (not p.excluded_slabs) and (not p.excluded_spheres):
         return 0
     for i in range(num_indices):
-        pos = c.zm.getPosition(indices[i])
+        pos = c.zm.getPosition(indices[i], pos)
         # Cache positions to avoid size-of-monomer recursion for getPosition();
         # note that this is NOT the final position...
         if store_positions:
@@ -274,6 +279,8 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
     c = s.chains[chain_index]
     prev_bin = -1
     prev_domain = -1
+    ipos = np.zeros(3)
+    jpos = np.zeros(3)
     oa_nbrs = {}
     for i in range(27):
         oa_nbrs[i] = OccAtom()
@@ -289,7 +296,7 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
         #        d->index, indices[i]+1, chain_index+1);
         # fflush(stdout);
 
-        ipos = c.zm.getPosition(indices[i])
+        ipos = c.zm.getPosition(indices[i], ipos)
         # Cache positions to avoid size-of-monomer recursion for getPosition();
         # note that this is NOT the final position...
         if store_positions:
@@ -324,7 +331,7 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
         for j in range(i):
             if not c.zm.isBonded(indices[i], indices[j], p.bond_cutoff):
                 jtype = c.zm.entries[indices[j]].type.element_index
-                jpos = c.zm.getPosition(indices[j])
+                jpos = c.zm.getPosition(indices[j], jpos)
                 foldPosition(jpos, p.system_min, p.system_max, p.system_size)
                 r2 = getNearestSqDist(jpos, ipos, p.system_size, p.half_system_size)
                 if r2 < ecut2:
@@ -349,7 +356,7 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
                     # d->index, oa->atom+1, oa->chain+1);
                     # fflush(stdout);
 
-                    jpos = cn.zm.getPosition(oa.atom)
+                    jpos = cn.zm.getPosition(oa.atom, jpos)
                     foldPosition(jpos, p.system_min, p.system_max, p.system_size)
                     r2 = getNearestSqDist(jpos, ipos, p.system_size, p.half_system_size)
                     if r2 < ecut2:
@@ -404,7 +411,7 @@ def buildChains(s, p, domain_index):
             # Add a Monomer to the Chain ZMatrix
             m_prev = m
             nm = c.curr_monomer
-            if nm == c.num_monomers - 1 and c.stereo.term:
+            if nm == c.num_monomers - 1 and c.stereo.term and hasattr(c.stereo.term, 'next'):
                 m = c.stereo.term
             else:
                 m = c.stereo.getNextMonomer(rng)
@@ -515,10 +522,11 @@ def buildChains(s, p, domain_index):
                     # choice; now we choose from the available distribution
                     # of angles each time...
 
+                    # &
                     # setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng,
                     #             &Eb, NULL, p->torsion_step);
 
-                    setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, NULL, 0.0)
+                    setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, 0, 0.0)
                     Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
                                               store_positions, p, p.energy_func)
                     if Ef > Emax:
@@ -766,7 +774,7 @@ def buildChains(s, p, domain_index):
                     if (not p.recalculate_positions) and c.zm.num_positions > 2:
                         for j in range(c.i_monomer[c.curr_monomer - 2], c.i_monomer[c.curr_monomer - 1]):
                             # Cache final unwrapped positions
-                            pos = c.zm.getPosition(j)
+                            pos = c.zm.getPosition(j, pos)
                             c.zm.setPosition(j, pos)
                             # Add folded positions to grid
                             foldPosition(pos, p.system_min, p.system_max, p.system_size)
@@ -1132,7 +1140,7 @@ def buildChains(s, p, domain_index):
                         if (not p.recalculate_positions) and c.zm.num_positions > 2:
                             for j in range(c.i_monomer[c.curr_monomer - 2], c.i_monomer[c.curr_monomer - 1]):
                                 # Cache final unwrapped positions
-                                pos = c.zm.getPosition(j)
+                                pos = c.zm.getPosition(j, pos)
                                 c.zm.setPosition(j, pos)
                                 # Add folded positions to grid
                                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
@@ -1160,7 +1168,7 @@ def buildChains(s, p, domain_index):
                     #        d->index, j+1, chain_index+1);
                     # fflush(stdout);
 
-                    pos = c.zm.getPosition(j)
+                    pos = c.zm.getPosition(j, pos)
                     c.zm.setPosition(j, pos)
 
             # Record torsion selections
@@ -1178,7 +1186,7 @@ def buildChains(s, p, domain_index):
                 #        d->index, j+1, chain_index+1);
                 # fflush(stdout);
 
-                pos = c.zm.getPosition(j)
+                pos = c.zm.getPosition(j, pos)
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
                 if pos[0] > d.max[0] or pos[0] < d.min[0] or pos[1] > d.max[1] or pos[1] < d.min[1] or pos[2] > d.max[
                         2] or pos[2] < d.min[2]:
@@ -1203,7 +1211,7 @@ def buildChains(s, p, domain_index):
             #        d->index, c->tail_index+1, chain_index+1);
             # fflush(stdout);
 
-            pos = c.zm.getPosition(c.tail_index)
+            pos = c.zm.getPosition(c.tail_index, pos)
             foldPosition(pos, p.system_min, p.system_max, p.system_size)
             c.domain = hashBin(pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y)
         # End loop over Chains

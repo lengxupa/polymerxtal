@@ -8,6 +8,7 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
+import copy
 import numpy as np
 
 from .element import getElementName
@@ -37,7 +38,6 @@ class Chain:
         self.weight = {}  # as each monomer is added
         self.mass = 0.
         self.extra_bonds = Bond()
-        self.extra_bonds.create()
 
     # ============================================================================
     # resetChain()
@@ -54,6 +54,7 @@ class Chain:
         self.mass = 0.0
         if self.extra_bonds and hasattr(self.extra_bonds, 'next'):
             del self.extra_bonds
+            self.extra_bonds = Bond()
         for i in range(360):
             self.torsion_count[i] = 0
 
@@ -63,9 +64,11 @@ class Chain:
     # Result: return the length (head atom to tail atom) of the Chain c
     # ============================================================================
     def getChainLength(self):
+        head = np.zeros(3)
+        tail = np.zeros(3)
 
-        head = self.zm.getPosition(0)
-        tail = self.zm.getPosition(self.tail_index)
+        head = self.zm.getPosition(0, head)
+        tail = self.zm.getPosition(self.tail_index, tail)
         return np.linalg.norm(head - tail)
 
     # ============================================================================
@@ -77,6 +80,7 @@ class Chain:
         na = self.curr_atom
         czm = self.zm
         mzm = m.zm
+        pos = np.zeros(3)
 
         self.i_monomer[self.curr_monomer] = na
         self.curr_monomer += 1
@@ -99,25 +103,25 @@ class Chain:
             if self.zm.num_positions > MIN_POSITIONS:
                 # Storing positions -- update previous tail atom position
                 czm.clearPosition(old_tail_index)
-                pos = czm.getPosition(old_tail_index)
-                pos = czm.setPosition(old_tail_index)
+                pos = czm.getPosition(old_tail_index, pos)
+                czm.setPosition(old_tail_index, pos)
             # Add remaining atoms in monomer
             for i in range(2, mzm.num_entries):
-                cze = czm.entries[c.curr_atom]
-                self.curr_atom += 1
+                #cze = czm.entries[self.curr_atom] #origin
+                #self.curr_atom += 1 #origin
                 mze = mzm.entries[i]
-                cze = mze  # struct copy
+                cze = copy.copy(mze)  # struct copy
                 cze.bond_index = shiftIndex(czm, mze.bond_index, old_tail_index, offset)
                 cze.angle_index = shiftIndex(czm, mze.angle_index, old_tail_index, offset)
                 cze.dihedral_index = shiftIndex(czm, mze.dihedral_index, old_tail_index, offset)
+                czm.entries[self.curr_atom] = cze  #try
+                self.curr_atom += 1  #try
         self.tail_index = offset + m.num_bb - 1
         self.mass += m.central_mass
         if self.curr_monomer == self.num_monomers:  # last monomer
             self.mass += m.tail_mass
         if update_bonds:
             blist = m.extra_bonds
-            b = Bond()
-            b.create()
 
             while blist and hasattr(blist, 'next'):
                 b = createBond(blist.index1 + offset, blist.index2 + offset)
@@ -134,13 +138,14 @@ class Chain:
     # after 99999
     # ============================================================================
     def writeChainPDB(self, i_atom, fold_pos, f, p):
+        pos = np.zeros(3)
 
         RESIDUE_NAME = "UNK"
         CHAIN_ID = "A"
         RESIDUE_SEQ = 1
 
         for i in range(self.curr_atom):
-            pos = self.zm.getPosition(i)
+            pos = self.zm.getPosition(i, pos)
             if fold_pos:
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
             #        1     7   13  18     23     31   39   47
@@ -162,9 +167,10 @@ class Chain:
     # is 1
     # ============================================================================
     def writeChainXYZ(self, fold_pos, f, p):
+        pos = np.zeros(3)
 
         for i in range(self.curr_atom):
-            pos = self.zm.getPosition(i)
+            pos = self.zm.getPosition(i, pos)
             if fold_pos:
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
             f.printf("%4s%15.3f%15.3f%15.3f\n" %
@@ -190,7 +196,6 @@ def createChain(stereo, num_monomers, num_atoms, store_positions):
     for i in range(360):
         c.torsion_count[i] = 0.
     c.extra_bonds = Bond()
-    c.extra_bonds.create()
     c.init_domain = -1
     return c
 
@@ -230,6 +235,8 @@ def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
     c = createChain(Stereo(), 5, na, 0)
     f = openFile(path, "w")
     v0 = np.zeros(3)
+    pj = np.zeros(3)
+    pk = np.zeros(3)
 
     for i in range(5):
         c.addMonomer(m, bond_length, 0)
@@ -250,11 +257,11 @@ def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
         E = 0.0
         for j in range(na):
             if indices[j]:
-                pj = c.zm.getPosition(j)
+                pj = c.zm.getPosition(j, pj)
                 tj = c.zm.entries[j].type.element_index
                 for k in range(j + 1, na):
                     if indices[k] and c.zm.isBonded(j, k, num_bonds):
-                        pk = c.zm.getPosition(k)
+                        pk = c.zm.getPosition(k, pk)
                         tk = c.zm.entries[k].type.element_index
                         r2 = np.linalg.norm(pj - pk)**2
                         E += energyLJ(tj, tk, r2)

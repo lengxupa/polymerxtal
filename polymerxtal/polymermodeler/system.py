@@ -35,35 +35,17 @@ class PolymerSystem:
     # Result: free all fields of s
     # ============================================================================
     def cleanupSystem(self, p):
-        i = 0
 
         if self.chains:
-            for i in range(p.num_chais):
-                del self.chains[i]
-                self.chains[i] = []
-            del self.chains
             self.chains = {}
 
         if self.domains:
-            for i in range(p.total_domains):
-                del self.domains[i]
-                self.domains = {}
-            del self.domains
             self.domains = {}
 
         if self.rngs:
-            for i in range(p.total_domains):
-                del self.rngs[i]
-            del self.rngs
             self.rngs = {}
 
-        oa1 = self.pending_atoms
-        while oa1:
-            oa2 = oa1
-            del oa1
-            oa1 = oa2
         self.pending_atoms = OccAtom()
-        self.pending_atoms.create()
 
     # ============================================================================
     # addPendingAtom()
@@ -86,12 +68,13 @@ class PolymerSystem:
     # Result: add pending atoms for the Domain d and remove from s->pending_atoms
     # ============================================================================
     def getPendingAtoms(self, d, p):
+        pos = np.zeros(3)
         oa = self.pending_atoms
         prev = OccAtom()
 
         while oa and hasattr(oa, 'next'):
             next = oa.next
-            pos = self.chains[oa.chain].zm.getPosition(oa.atom)
+            pos = self.chains[oa.chain].zm.getPosition(oa.atom, pos)
             foldPosition(pos, p.system_min, p.system_max, p.system_size)
             domain = hashBin(pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y)
             if domain == d.index:

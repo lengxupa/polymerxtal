@@ -9,6 +9,7 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
+import copy
 import numpy as np
 
 from .config import REAL_MAX, MAX_BONDS
@@ -51,7 +52,7 @@ class ZMatrix:
     def setPosition(self, index, pos):
         if index < 0 or index >= self.num_positions:
             raise ValueError("setPosition(): Position index %d is out of range" % index)
-        self.positions[index] = pos
+        self.positions[index] = copy.copy(pos)
 
     # ============================================================================
     # clearPosition()
@@ -116,16 +117,18 @@ class ZMatrix:
     # Result: store the position of the index-th atom in *pos; calls choke() if
     # index is out of range
     # ============================================================================
-    def getPosition(self, index):
+    def getPosition(self, index, pos):
         if index < 0 or index >= self.num_entries:
             raise ValueError("getPosition(): Position index %d is out of range (%d)" % (index, self.num_entries))
         if index < self.num_positions and self.positions[index][0] > NO_POSITION:
             pos = self.positions[index]
         else:
+            bond_index_pos = np.zeros(3)
+            angle_atom_pos = np.zeros(3)
             torsion_atom_pos = np.zeros(3)
             ze = self.entries[index]
 
-            bond_index_pos=self.getPosition(ze.bond_index)
+            bond_index_pos = self.getPosition(ze.bond_index, bond_index_pos)
             bond_length = ze.bond_length
             if -1 == ze.angle_index:
                 # Atom 1
@@ -133,7 +136,7 @@ class ZMatrix:
                 pos[1] = 0.0
                 pos[2] = 0.0
             else:
-                angle_atom_pos=self.getPosition(ze.angle_index)
+                angle_atom_pos = self.getPosition(ze.angle_index, angle_atom_pos)
                 bond_angle = DEG2RAD(ze.bond_angle)
                 if -1 == ze.dihedral_index:
                     # Atom 2
@@ -143,7 +146,7 @@ class ZMatrix:
                     torsion_angle = DEG2RAD(90.0)
                 else:
                     # All other atoms
-                    torsion_atom_pos=self.getPosition(ze.dihedral_index)
+                    torsion_atom_pos = self.getPosition(ze.dihedral_index, torsion_atom_pos)
                     torsion_angle = DEG2RAD(ze.torsion_angle)
                 a = bond_index_pos - angle_atom_pos
                 b = bond_index_pos - torsion_atom_pos

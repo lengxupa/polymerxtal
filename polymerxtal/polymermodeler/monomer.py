@@ -285,7 +285,7 @@ def readZM(s, zmptr):
     # Now, fill h->pos[] from zm internal coordinates
     zmptr.setPosition(0, v0)
     for i in range(h.num_atoms):
-        h.pos[i] = zmptr.getPosition(i)
+        h.pos[i] = zmptr.getPosition(i, h.pos[i])
 
     #for (i = 0; i < h->num_atoms; i++)
     #{
@@ -750,7 +750,7 @@ class Monomer:
             # Torsion corrections
             d2min = 1e9
             for j in range(360):
-                v1 = self.zm.getPosition(i)
+                v1 = self.zm.getPosition(i, v1)
                 d1 = np.linalg.norm(v1 - h.pos[indices[i]])**2
                 if d1 < TARGET_SQ_DIST:
                     break
