@@ -359,6 +359,7 @@ def readPDB(path):
                 p = 77
                 if not line[76].isspace():
                     p -= 1
+                h.el_names[i] = line[p:].split()[0]
             else:
                 # ...otherwise try to grab atom name, which might have extra
                 # information e.g. hybridization
@@ -369,7 +370,7 @@ def readPDB(path):
                 q = p + 1
                 while not line[q].isspace():
                     q += 1
-            h.el_names[i] = line[p:q]
+                h.el_names[i] = line[p:q]
             i += 1
         line = fgets(LINELEN, f)
     f.fclose()

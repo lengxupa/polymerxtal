@@ -4,7 +4,7 @@ Functions for manipulating PolymerXtal files.
 
 import os
 
-from .latch import generate_latch_input
+from .polymod import generate_polymod_input
 
 def read_input(infile):
     ifile = open(infile)
@@ -95,7 +95,7 @@ def complete_args(args):
 
     molecular_weight = 0
     if flag_polymer_custom:
-        polymer_type_custom = generate_latch_input(polymer_custom_input)
+        polymer_type_custom = generate_polymod_input(polymer_custom_input)
         if polymer_type_custom:
             os.system('latch/latch in.txt > out.txt')
             polymer_type_custom = read_latchout('out.txt', Dir=polymer_type_custom)

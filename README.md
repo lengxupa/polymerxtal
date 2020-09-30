@@ -15,6 +15,7 @@ in the repository directory.
 
 This package requires the following:
   - numpy
+  - matplotlib
   - ovito
 
 Features should be developed on branches. To create and switch to a branch, use the command

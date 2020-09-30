@@ -90,43 +90,6 @@ def parameters(periodic, cell, coord, boundaries, radius):
     return shift, length, cylinder_p, cylinder_d, lc
 
 
-def input_polymod(nc, nm, cell, cpos, caxis, radius, lc, mctemp):
-
-    with open('file.txt', 'r') as file:
-        filedata = file.read()
-
-    # Replace the target string
-    filedata = filedata.replace('nc', str(nc))
-    filedata = filedata.replace('nm', str(nm))
-    filedata = filedata.replace('lcx', str(cell[0]))
-    filedata = filedata.replace('lcy', str(cell[1]))
-    filedata = filedata.replace('lcz', str(cell[2]))
-    filedata = filedata.replace('ccx', str(cpos[0]))
-    filedata = filedata.replace('ccy', str(cpos[1]))
-    filedata = filedata.replace('ccz', str(cpos[2]))
-    filedata = filedata.replace('dx', str(caxis[0]))
-    filedata = filedata.replace('dy', str(caxis[1]))
-    filedata = filedata.replace('dz', str(caxis[2]))
-    filedata = filedata.replace('crad', str(radius))
-    filedata = filedata.replace('clc', str(lc + 200))
-    filedata = filedata.replace('irad', str(2 * radius - 5))
-    filedata = filedata.replace('mctemp', str(mctemp))
-
-    # Write the file out again
-    with open('run_file.txt', 'w') as file:
-        file.write(filedata)
-
-
-def run_polymod():
-    os.system('./polybuild run_file.txt')
-    #return_code = subprocess.Popen('./polybuild run_file.txt > out', shell=True,
-    #stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-    #stderr=subprocess.PIPE)
-    #stdout,stderr = return_code.communicate()
-
-    #return return_code
-
-
 def run_data4lammps(charge, ffname, cell):
 
     directory = './data4lammps/'

@@ -462,5 +462,5 @@ def main(args):
 
     # Finish
     log_file.printf("Total build and analysis time: %g s\n" % timer.getElapsedTime())
-    cleanup()
+    #cleanup()
     return 0

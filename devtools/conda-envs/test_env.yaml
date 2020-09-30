@@ -6,6 +6,7 @@ dependencies:
   - pip
 
   - numpy
+  - matplotlib
   - ovito
   
     # Testing

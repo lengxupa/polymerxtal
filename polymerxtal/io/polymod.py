@@ -2,8 +2,13 @@
 Functions for manipulating Polymer Modeler files.
 """
 
+import numpy as np
 
-def generate_latch_input(polymer_custom_input):
+from polymerxtal.helice import Helice
+from polymerxtal.polymod import main, readPDB
+
+
+def generate_polymod_input(polymer_custom_input):
     polymer_custom_output = polymer_custom_input + '_latch.in'
     polymer_type_custom = {}
     src = open(polymer_custom_input)
@@ -208,3 +213,160 @@ def generate_latch_input(polymer_custom_input):
     des.write('\n')
     des.close()
     return polymer_custom_output, polymer_type_custom
+
+
+def input_polymod(in_path, monomer_path, helice, tacticity, chiriality, num_monomers,
+                  ofile):  #def input_polymod(nc, nm, cell, cpos, caxis, radius, lc, mctemp): origin
+
+    with open(in_path, 'r') as file:  #with open('file.txt', 'r') as file:
+        filedata = file.read()
+
+    # Replace the target string
+    #filedata = filedata.replace('nc', str(nc))
+    filedata = filedata.replace('monomer_path', monomer_path)
+    filedata = filedata.replace('nm', str(num_monomers))
+    #filedata = filedata.replace('lcx', str(cell[0]))
+    #filedata = filedata.replace('lcy', str(cell[1]))
+    #filedata = filedata.replace('lcz', str(cell[2]))
+    #filedata = filedata.replace('ccx', str(cpos[0]))
+    #filedata = filedata.replace('ccy', str(cpos[1]))
+    #filedata = filedata.replace('ccz', str(cpos[2]))
+    #filedata = filedata.replace('dx', str(caxis[0]))
+    #filedata = filedata.replace('dy', str(caxis[1]))
+    #filedata = filedata.replace('dz', str(caxis[2]))
+    #filedata = filedata.replace('crad', str(radius))
+    #filedata = filedata.replace('clc', str(lc + 200))
+    #filedata = filedata.replace('irad', str(2 * radius - 5))
+    #filedata = filedata.replace('mctemp', str(mctemp))
+
+    if tacticity == 'isotactic':
+        if str(helice) == str(Helice(2, 3, 1)):
+            if chiriality == 'left':
+                m1 = 'm2'
+                m2 = 'm2'
+            elif chiriality == 'right':
+                m1 = 'm5'
+                m2 = 'm5'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+        elif str(helice) == str(Helice(2, 2, 1)):
+            if chiriality == 'left':
+                m1 = 'm3'
+                m2 = 'm3'
+            elif chiriality == 'right':
+                m1 = 'm4'
+                m2 = 'm4'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+        elif str(helice) == str(Helice(2, 1, 1)):
+            if chiriality == 'left':
+                m1 = 'm8'
+                m2 = 'm8'
+            elif chiriality == 'right':
+                m1 = 'm8'
+                m2 = 'm8'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+    elif tacticity == 'atactic' or tacticity == 'syndiotactic':
+        if str(helice) == str(Helice(2, 3, 1)):
+            if chiriality == 'left':
+                m1 = 'm2'
+                m2 = 'm14'
+            elif chiriality == 'right':
+                m1 = 'm5'
+                m2 = 'm17'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+        elif str(helice) == str(Helice(2, 2, 1)):
+            if chiriality == 'left':
+                m1 = 'm3'
+                m2 = 'm15'
+            elif chiriality == 'right':
+                m1 = 'm4'
+                m2 = 'm16'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+        elif str(helice) == str(Helice(2, 1, 1)):
+            if chiriality == 'left':
+                m1 = 'm8'
+                m2 = 'm11'
+            elif chiriality == 'right':
+                m1 = 'm8'
+                m2 = 'm11'
+            else:
+                raise ValueError("Chiriality should be either left or right")
+    else:
+        raise TypeError("Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic")
+
+    stereo_type = ('%s 2 ' % ('weight' if tacticity == 'atactic' else 'pattern')) + m1 + (
+        ' 0.5 ' if tacticity == 'atactic' else ' ') + m2 + (' 0.5' if tacticity == 'atactic' else '')
+    filedata = filedata.replace('stereo_type', stereo_type)
+
+    # Write the file out again
+    with open(ofile, 'w') as file:  #with open('run_file.txt', 'w') as file:
+        file.write(filedata)
+
+
+def success_run_polymod():
+    try:
+        main(['run_polymod.txt'])
+        return True
+    except KeyError:
+        return False
+
+
+def validate_coords(coords):
+    for i in range(4, (len(coords) - 18), 7):
+        if np.linalg.norm(coords[i - 1] - coords[i - 2]) > 1.6 or np.linalg.norm(coords[i - 1] - coords[i + 7]) > 1.6:
+            return False
+            break
+    return True
+
+
+def readbond(a):
+    src = open(a, 'r')
+    flag = 0
+    bonds = []
+    for line in src.readlines():
+        ln = line.split()
+        if ln:
+            if ln[0] == 'BONDS':
+                flag = 1
+                continue
+            if flag: # and eval(ln[1]) == 2:
+                bonds.append([eval(ln[2]), eval(ln[3])])
+    src.close()
+    return bonds
+
+
+def validate_bonds(coords, path):
+    bonds = readbond(path)
+    for key in bonds:
+        if np.linalg.norm(coords[key[0] - 1] - coords[key[1] - 1]) > 1.6:
+            return False
+            break
+    return True
+
+
+def run_polymod():
+    while not success_run_polymod():
+        pass
+
+    h = readPDB('chains_unwrapped.pdb')
+
+    while not validate_bonds(h.pos, 'bonds.dat'):
+
+        while not success_run_polymod():
+            pass
+
+        h = readPDB('chains_unwrapped.pdb')
+
+    return h
+
+    #os.system('./polybuild run_file.txt')
+    #return_code = subprocess.Popen('./polybuild run_file.txt > out', shell=True,
+    #stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+    #stderr=subprocess.PIPE)
+    #stdout,stderr = return_code.communicate()
+
+    #return return_code
