@@ -6,8 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from mpl_toolkits.mplot3d import Axes3D
-from ovito.io import import_file
-from ovito.vis import Viewport
+
+try:
+    from ovito.io import import_file
+    from ovito.vis import Viewport
+    use_ovito = True
+except ModuleNotFoundError:
+    use_ovito = False
 
 from .atom_data import atom_colors
 
@@ -79,34 +84,51 @@ def bond_histogram(bond_list, save_location=None, dpi=300, graph_min=0, graph_ma
 
 
 def ovito_view(sample_path, filename, view='Perspective'):
-    # Import the sample file.
-    pipeline = import_file(sample_path)
-    pipeline.source.data.cell.vis.enabled = False
-    pipeline.source.data.particles.vis.radius = .5
-    pipeline.add_to_scene()
+    """
+    Use the package ovito to make visualizaitons of molecules.
 
-    vp = Viewport()
+    Parameters
+    ----------
+    sample_path : str
+        The path of the file to visualize
+    filename : str
+        The name of the output file image
+    view : str (optional)
+        The view to use
+    """
 
-    if view == 'Perspective':
-        vp.type = Viewport.Type.Perspective
-        vp.camera_dir = (-1, -1, -1)
-    elif view == 'Ortho':
-        vp.type = Viewport.Type.Ortho
-        vp.camera_dir = (-1, -1, -1)
-    elif view == 'Top':
-        vp.type = Viewport.Type.Top
-    elif view == 'Bottom':
-        vp.type = Viewport.Type.Bottom
-    elif view == 'Front':
-        vp.type = Viewport.Type.Front
-    elif view == 'Back':
-        vp.type = Viewport.Type.Back
-    elif view == 'Left':
-        vp.type = Viewport.Type.Left
-    elif view == 'Right':
-        vp.type = Viewport.Type.Right
+    if use_ovito:
+        # Import the sample file.
+        pipeline = import_file(sample_path)
+        pipeline.source.data.cell.vis.enabled = False
+        pipeline.source.data.particles.vis.radius = .5
+        pipeline.add_to_scene()
 
-    vp.zoom_all()
-    vp.render_image(size=(800, 600), filename=filename, background=(0, 0, 0), frame=0)
+        vp = Viewport()
 
-    pipeline.remove_from_scene()
+        if view == 'Perspective':
+            vp.type = Viewport.Type.Perspective
+            vp.camera_dir = (-1, -1, -1)
+        elif view == 'Ortho':
+            vp.type = Viewport.Type.Ortho
+            vp.camera_dir = (-1, -1, -1)
+        elif view == 'Top':
+            vp.type = Viewport.Type.Top
+        elif view == 'Bottom':
+            vp.type = Viewport.Type.Bottom
+        elif view == 'Front':
+            vp.type = Viewport.Type.Front
+        elif view == 'Back':
+            vp.type = Viewport.Type.Back
+        elif view == 'Left':
+            vp.type = Viewport.Type.Left
+        elif view == 'Right':
+            vp.type = Viewport.Type.Right
+
+        vp.zoom_all()
+        vp.render_image(size=(800, 600), filename=filename, background=(0, 0, 0), frame=0)
+
+        pipeline.remove_from_scene()
+    
+    else:
+        raise ModuleNotFoundError("Cannot use function ovito_view - the package ovito is not installed or cannot be found.")
