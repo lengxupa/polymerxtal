@@ -7,7 +7,7 @@ dependencies:
 
   - numpy
   - matplotlib
-  - ovito
+  # - ovito # visualization script and not used for testing
   
     # Testing
   - pytest
