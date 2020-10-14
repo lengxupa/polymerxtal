@@ -174,15 +174,15 @@ class Params:
                 self.num_monomers_stddev = s.getRealToken()
 
             elif tokval == TOK_SYSTEM_MIN:
-                self.system_min['x'] = s.getRealToken()
-                self.system_min['y'] = s.getRealToken()
-                self.system_min['z'] = s.getRealToken()
+                self.system_min[0] = s.getRealToken()
+                self.system_min[1] = s.getRealToken()
+                self.system_min[2] = s.getRealToken()
                 self.explicit_volume = 1
 
             elif tokval == TOK_SYSTEM_MAX:
-                self.system_max['x'] = s.getRealToken()
-                self.system_max['y'] = s.getRealToken()
-                self.system_max['z'] = s.getRealToken()
+                self.system_max[0] = s.getRealToken()
+                self.system_max[1] = s.getRealToken()
+                self.system_max[2] = s.getRealToken()
                 self.explicit_volume = 1
 
             elif tokval == TOK_EXCLUDE:

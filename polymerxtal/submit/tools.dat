@@ -1,0 +1,22 @@
+[earth]
+destinations = cluster
+executablePath = ${HOME}/apps/planets/bin/earth.x
+remoteManager = mpich-intel
+
+[sun]
+destinations = cluster
+executablePath = ${HOME}/apps/stars/bin/sun.x
+remoteManager = mpich-intel
+
+[earth]
+destinations = newton
+executablePath = ${HOME}/apps/gravity/bin/earth.x
+
+[moon]
+destinations = newton
+executablePath = ${HOME}/apps/gravity/bin/moon.x
+
+[gravity]
+destinations = newton
+executablePath = /apps/gravity/bin/gravity.x
+

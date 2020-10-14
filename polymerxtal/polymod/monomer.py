@@ -11,7 +11,7 @@
 from enum import Enum
 import numpy as np
 
-from polymerxtal import calculate_angle
+from polymerxtal.build import calculate_angle
 
 from .config import REAL_MAX
 from .element import getElementIndex, getElementName, getElementMass, getElementR0
@@ -907,7 +907,7 @@ class Monomer:
 # AtomTypes; calls choke() on path errors (unknown extension, can't open file,
 # etc).
 # ============================================================================
-def readMonomer(name, path, head_index, tail_index, eq_bond_scale):
+def readMonomer(name, path, head_index, tail_index, eq_bond_scale=1.2):
     zm = {}
     blist = Bond()
     s = Scanner()

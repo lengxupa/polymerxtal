@@ -188,6 +188,7 @@ class ZMatrix:
                 f.printf("\n")
                 continue
             f.printf("  %2d  %7.2f" % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle))
+            f.printf("\n")
 
 
 # ============================================================================

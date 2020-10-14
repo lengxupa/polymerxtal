@@ -11,7 +11,7 @@
 
 import numpy as np
 
-from polymerxtal import calculate_angle
+from polymerxtal.build import calculate_angle
 
 
 # Excluded cylindrical region

@@ -1,0 +1,9 @@
+[public]
+whitelist = /apps/.*
+priority = 0
+classification = apps
+
+[submit]
+whitelist = ${HOME}/.*
+priority = 0
+classification = home

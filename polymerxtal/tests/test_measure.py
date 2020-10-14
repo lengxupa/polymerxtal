@@ -3,7 +3,7 @@ Unit and regression test for the measure module.
 """
 
 # Import package, test suite, and other packages as needed
-import polymerxtal
+import polymerxtal.build
 import numpy as np
 import pytest
 
@@ -16,7 +16,7 @@ def test_calculate_distance():
 
     expected_distance = 1
 
-    calculated_distance = polymerxtal.calculate_distance(r1, r2)
+    calculated_distance = polymerxtal.build.calculate_distance(r1, r2)
 
     assert expected_distance == calculated_distance
 
@@ -33,7 +33,7 @@ def test_calculate_distance():
 def test_calculate_angle(r1, r2, r3, expected_angle):
     """Test the calculate_angle function"""
 
-    calculated_value = polymerxtal.calculate_angle(r1, r2, r3, degrees=True)
+    calculated_value = polymerxtal.build.calculate_angle(r1, r2, r3, degrees=True)
     assert pytest.approx(expected_angle, abs=1e-2) == calculated_value
 
 
@@ -45,7 +45,7 @@ def test_calculate_angle(r1, r2, r3, expected_angle):
 ])
 def test_calculate_angle_many(p1, p2, p3, expected_angle):
 
-    calculated_angle = polymerxtal.calculate_angle(p1, p2, p3, degrees=True)
+    calculated_angle = polymerxtal.build.calculate_angle(p1, p2, p3, degrees=True)
 
     assert expected_angle == pytest.approx(calculated_angle), F'{calculated_angle} {expected_angle}'
 
@@ -61,7 +61,7 @@ def test_calculate_angle_many(p1, p2, p3, expected_angle):
 )
 def test_calculate_angle_radians(r1, r2, r3, expected_angle):
 
-    calculated_value = polymerxtal.calculate_angle(r1, r2, r3)
+    calculated_value = polymerxtal.build.calculate_angle(r1, r2, r3)
     expected_angle_radians = np.radians(expected_angle)
 
     assert pytest.approx(expected_angle_radians, abs=1e-2) == calculated_value

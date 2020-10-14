@@ -1,0 +1,13 @@
+[cluster]
+venue = cluster.campus.edu
+venuePort = 22
+gatewayHost = gateway.campus.edu
+gatewayUser = yourhub
+localPortOffset = 1
+
+[newton]
+venue = newton.SandE.edu
+venuePort = 22
+gatewayHost = gateway.SandE.edu
+gatewayUser = HUBzero
+localPortOffset = 1

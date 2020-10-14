@@ -1,0 +1,23 @@
+[clusterPBS]
+venue = cluster.campus.edu
+remoteUser = yourhub
+remoteBinDirectory = ${HOME}/bin
+
+[cluster]
+venues = cluster.campus.edu
+remotePpn = 8
+remoteBatchSystem = PBS
+remoteBatchQueue = standby
+remoteUser = yourhub
+remoteManager = mpich-intel64
+venueMechanism = ssh
+remoteScratchDirectory = /scratch/yourhub
+siteMonitorDesignator = clusterPBS
+
+[newton]
+venues = newton.SandE.edu
+remoteUser = HUBzero
+remoteBatchSystem = PBS
+venueMechanism = ssh
+remoteScratchDirectory = /scratch/HUBzero/Jobs
+siteMonitorDesignator = newton

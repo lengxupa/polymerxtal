@@ -1,0 +1,13 @@
+mysql_host = "localhost"
+mysql_user = "hubzero"
+mysql_password = "XXXXXXX"
+mysql_db = "hubzero"
+
+ldap_hosts = [ "hubzero.org" ]
+ldap_basedn = "dc=hubzero,dc=org"
+ldap_user_dn = "uid=%s,ou=users,dc=hubzero,dc=org"
+listen_ports = [ "tcp://:830" ]
+
+load_limit = 600
+load_horizon = 86400
+load_halflife = 3600

@@ -14,7 +14,7 @@ try:
 except ModuleNotFoundError:
     use_ovito = False
 
-from .atom_data import atom_colors
+from .data import atom_colors
 
 
 def draw_molecule(coordinates, symbols, draw_bonds=None, save_location=None, dpi=300):

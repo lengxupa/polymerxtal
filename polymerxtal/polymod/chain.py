@@ -87,7 +87,7 @@ class Chain:
         if 0 == na:
             # First monomer in c
             for i in range(mzm.num_entries):
-                czm.entries[i] = mzm.entries[i]  # struct copy
+                czm.entries[i] = copy.copy(mzm.entries[i])  # struct copy
             self.curr_atom = mzm.num_entries
             offset = 0
             self.mass += m.head_mass
