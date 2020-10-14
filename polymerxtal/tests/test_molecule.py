@@ -20,7 +20,7 @@ def methane_molecule():
 def test_build_bond_list(methane_molecule):
     symbols, coordinates = methane_molecule
 
-    bonds = polymerxtal.build.build_bond_list(coordinates)
+    bonds = polymerxtal.crystal.build_bond_list(coordinates)
 
     assert len(bonds) == 4
 
@@ -31,7 +31,7 @@ def test_build_bond_list(methane_molecule):
 def test_molecular_mass(methane_molecule):
     symbols, coordinates = methane_molecule
 
-    calculated_mass = polymerxtal.build.calculate_molecular_mass(symbols)
+    calculated_mass = polymerxtal.crystal.calculate_molecular_mass(symbols)
 
     actual_mass = polymerxtal.data.atomic_weights['C'] + polymerxtal.data.atomic_weights[
         'H'] + polymerxtal.data.atomic_weights['H'] + polymerxtal.data.atomic_weights[
@@ -44,13 +44,13 @@ def test_build_bond_list_failure():
     coordinates = np.array([])
 
     with pytest.raises(ValueError):
-        polymerxtal.build.build_bond_list(coordinates)
+        polymerxtal.crystal.build_bond_list(coordinates)
 
 
 def test_center_of_mass(methane_molecule):
     symbols, coordinates = methane_molecule
 
-    center_of_mass = polymerxtal.build.calculate_center_of_mass(symbols, coordinates)
+    center_of_mass = polymerxtal.crystal.calculate_center_of_mass(symbols, coordinates)
 
     expected_center = np.array([1, 1, 1])
 

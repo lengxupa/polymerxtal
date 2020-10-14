@@ -294,6 +294,8 @@ def main(args):
     m = params.known_monomers
     while m and hasattr(m, 'next'):
         log_file.printf("   %s: %.2f %%\n" % (m.name, 100.0 * float(m.selection_count) / float(total_monomers)))
+        #print('debug main.py: main - m.selection_count -', m.selection_count)
+        #print('debug main.py: main - total_monomers -', total_monomers)
         m = m.next
     log_file.printf("\nStereochemistry selection:\n")
     s = params.known_stereo

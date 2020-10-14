@@ -4,7 +4,7 @@ This module is for functions which show sample helices.
 
 import os
 
-from polymerxtal.build import Helice
+from polymerxtal.crystal import Helice
 from polymerxtal.visualize import ovito_view
 
 # Get the location of the current module
