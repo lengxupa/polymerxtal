@@ -174,7 +174,10 @@ class Chain:
                     while not (h_t_label == m2_name[0] and m1 != m2 and tor_label == m2_name[m2_name.index('T'):]):
                         m2 = random.choice(monomer_index)
                         m2_name = random.choice(monomers[m2])
-                    self.configurations[config_index] = [m1_name]
+                    if self.tacticity == 'atactic':
+                        self.configurations[config_index] = [random.choice([m1_name, m2_name])]
+                    elif self.tacticity == 'syndiotactic':
+                        self.configurations[config_index] = [m1_name]
                     for i, seq in enumerate(sequence):
                         if seq:
                             m1 = random.choice(monomer_index)
@@ -189,10 +192,13 @@ class Chain:
                                        and tor_label == m2_name[m2_name.index('T'):]):
                                 m2 = random.choice(monomer_index)
                                 m2_name = random.choice(monomers[m2])
-                        if i % 2:
-                            self.configurations[config_index].append(m1_name)
-                        else:
-                            self.configurations[config_index].append(m2_name)
+                        if self.tacticity == 'atactic':
+                            self.configurations[config_index].append(random.choice([m1_name, m2_name]))
+                        elif self.tacticity == 'syndiotactic':
+                            if i % 2:
+                                self.configurations[config_index].append(m1_name)
+                            else:
+                                self.configurations[config_index].append(m2_name)
                 config_index += 1
         else:
             if self.tacticity == 'isotactic' or (not self.tacticity):
