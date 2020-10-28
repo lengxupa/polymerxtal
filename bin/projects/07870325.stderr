@@ -1,3 +1,0 @@
-slurmstepd: error: *** JOB 2204599 ON rice-a001 CANCELLED AT 2020-08-01T05:04:26 DUE TO TIME LIMIT ***
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-slurmstepd: error: *** STEP 2204599.0 ON rice-a001 CANCELLED AT 2020-08-01T05:04:26 DUE TO TIME LIMIT ***
