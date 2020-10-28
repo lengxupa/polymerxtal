@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/invoke_app "$@" -t polymod -C rappture -u lammps-15May15 

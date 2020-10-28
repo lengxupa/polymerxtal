@@ -29,7 +29,6 @@ from .zmatrix import ZMatrix
 polysys = PolymerSystem()
 log_file = FILE()
 status_file = FILE()
-total_monomers = 0
 timer = Timer()
 
 
@@ -89,6 +88,7 @@ def main(args):
     usage = "Usage: %s [flags] infile\n" + "Flags:\n" + "   -v   Show version and build info, then exit\n" + "   -h   Show help message, then exit\n"
     mini = np.zeros(3)
     maxi = np.zeros(3)
+    total_monomers = 0
 
     def SHOW_USAGE(f):
         pass
@@ -252,7 +252,7 @@ def main(args):
             k += s.term.num_atoms - 2
         if n > max_monomers:
             max_monomers = n
-        global total_monomers
+        #global total_monomers
         total_monomers += n
         polysys.chains[i] = createChain(s, n, k, not params.recalculate_positions)
         total_atoms += k
@@ -294,8 +294,6 @@ def main(args):
     m = params.known_monomers
     while m and hasattr(m, 'next'):
         log_file.printf("   %s: %.2f %%\n" % (m.name, 100.0 * float(m.selection_count) / float(total_monomers)))
-        #print('debug main.py: main - m.selection_count -', m.selection_count)
-        #print('debug main.py: main - total_monomers -', total_monomers)
         m = m.next
     log_file.printf("\nStereochemistry selection:\n")
     s = params.known_stereo

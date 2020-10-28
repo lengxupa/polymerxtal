@@ -4,8 +4,8 @@ In this work, we present PolymerXtal, a software designed to build and analyze m
 """
 
 # Add imports here
-from .crystal import Helice, build_chain
 from .data import sample_chain
+from .crystal import Helice, Chain
 
 # Handle versioneer
 from ._version import get_versions

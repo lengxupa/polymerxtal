@@ -1,14 +1,17 @@
 """
 Functions for calculating monomer properties.
 """
+import os
 
 from polymerxtal.io import run_polymod, read_latchout
 from polymerxtal.polymod import readPDB
 
 from .molecule import build_bond_list
 
+# Get the location of the current module
+current_location = os.path.dirname(__file__)
 
-# A bond between two monomer atoms, not represented by the z-matrix
+
 class Backbone:
     def __init__(self, name, path, head_index, tail_index, tail_torsion):
         self.name = name
@@ -43,49 +46,85 @@ def get_tail_torsion(mpath, head, tail):
     return tail_torsion
 
 
-def identify_backbone_path(monomer_path, center_atoms, side_atom=0):
-    h = readPDB(monomer_path)
-    bonds = build_bond_list(h.pos)
+class PolymerType:
+    def __init__(self, name, path, backbone_atoms=[], side_atom=0):
+        self.name = name
+        self.path = path
+        self.backbone_atoms = backbone_atoms
+        self.side_atom = side_atom
 
-    center_head = center_atoms[0]
-    center_tail = center_atoms[-1]
-    if side_atom and ((center_tail - 1, side_atom - 1) not in bonds) and ((side_atom - 1, center_tail - 1)
-                                                                          not in bonds):
-        raise ValueError('side atom must connect to tail backbone atom')
+    def identify_backbone_path(self, find_inverse_path=False):
+        if find_inverse_path and (not self.side_atom):
+            print(f'Polymer type {self.name} does not have defects for head to head or tail to tail connections')
+            find_inverse_path = False
 
-    head_atoms = []
-    tail_atoms = []
+        h = readPDB(self.path)
+        bonds = build_bond_list(h.pos)
 
-    for key in bonds:
-        atom1, atom2 = key
-        if side_atom and (side_atom - 1 in [atom1, atom2]):
-            continue
-        elif center_head - 1 == atom1:
-            if not center_tail - 1 == atom2:
-                head_atoms.append(atom2 + 1)
-        elif center_head - 1 == atom2:
-            if not center_tail - 1 == atom1:
-                head_atoms.append(atom1 + 1)
-        elif center_tail - 1 == atom1:
-            if not center_head - 1 == atom2:
-                tail_atoms.append(atom2 + 1)
-        elif center_tail - 1 == atom2:
-            if not center_head - 1 == atom1:
-                tail_atoms.append(atom1 + 1)
+        center_head = self.backbone_atoms[0]
+        center_tail = self.backbone_atoms[-1]
+        if self.side_atom and ((center_tail - 1, self.side_atom - 1)
+                               not in bonds) and ((self.side_atom - 1, center_tail - 1) not in bonds):
+            raise ValueError('side atom must connect to tail backbone atom')
 
-    backbones = {}
-    tail_flag = 0
+        head_atoms = []
+        tail_atoms = []
 
-    for tail in tail_atoms:
-        tail_flag += 1
-        for head in head_atoms:
-            tail_torsion = get_tail_torsion(monomer_path, head, tail)
-            while tail_torsion < 0:
-                tail_torsion += 360
-            while tail_torsion >= 360:
-                tail_torsion -= 360
-            tail_torsion = 60 if 0 <= tail_torsion < 120 else 180 if 120 <= tail_torsion < 240 else 300
-            m_name = 'm' + str(tail_flag) + 'T' + str(tail_torsion)
-            backbones[m_name] = Backbone(m_name, monomer_path, head, tail, tail_torsion)
+        for key in bonds:
+            atom1, atom2 = key
+            if self.side_atom and (self.side_atom - 1 in [atom1, atom2]):
+                continue
+            elif center_head - 1 == atom1:
+                if not center_tail - 1 == atom2:
+                    head_atoms.append(atom2 + 1)
+            elif center_head - 1 == atom2:
+                if not center_tail - 1 == atom1:
+                    head_atoms.append(atom1 + 1)
+            elif center_tail - 1 == atom1:
+                if not center_head - 1 == atom2:
+                    tail_atoms.append(atom2 + 1)
+            elif center_tail - 1 == atom2:
+                if not center_head - 1 == atom1:
+                    tail_atoms.append(atom1 + 1)
 
-    return backbones
+        backbones = {}
+        for tail in tail_atoms:
+            for head in head_atoms:
+                tail_torsion = get_tail_torsion(self.path, head, tail)
+                while tail_torsion < 0:
+                    tail_torsion += 360
+                while tail_torsion >= 360:
+                    tail_torsion -= 360
+                tail_torsion = 60 if 0 <= tail_torsion < 120 else 180 if 120 <= tail_torsion < 240 else 300
+                m_name = 'h_m' + str(tail) + 'T' + str(tail_torsion)
+                backbones[m_name] = Backbone(m_name, self.path, head, tail, tail_torsion)
+                if find_inverse_path:
+                    tail_torsion = get_tail_torsion(self.path, tail, head)
+                    while tail_torsion < 0:
+                        tail_torsion += 360
+                    while tail_torsion >= 360:
+                        tail_torsion -= 360
+                    tail_torsion = 60 if 0 <= tail_torsion < 120 else 180 if 120 <= tail_torsion < 240 else 300
+                    m_name = 't_m' + str(tail) + 'T' + str(tail_torsion)
+                    backbones[m_name] = Backbone(m_name, self.path, tail, head, tail_torsion)
+
+        return backbones
+
+
+PAN_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
+PE_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PE.pdb')
+PP_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PP.pdb')
+PS_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PS.pdb')
+POM_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'POM.pdb')
+PTFE_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PTFE.pdb')
+PVC_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PVC.pdb')
+
+polymer_types = {
+    'PAN': PolymerType('PAN', PAN_path, backbone_atoms=[3, 2], side_atom=5),
+    'PE': PolymerType('PE', PE_path, backbone_atoms=[2, 3]),
+    'PP': PolymerType('PP', PP_path, backbone_atoms=[2, 3], side_atom=8),
+    'PS': PolymerType('PS', PS_path, backbone_atoms=[2, 3], side_atom=8),
+    'POM': PolymerType('POM', POM_path, backbone_atoms=[2, 3]),
+    'PTFE': PolymerType('PTFE', PTFE_path, backbone_atoms=[2, 3]),
+    'PVC': PolymerType('PVC', PVC_path, backbone_atoms=[2, 3], side_atom=8)
+}

@@ -234,16 +234,32 @@ def readbond(a):
                 continue
             if flag:  # and eval(ln[1]) == 2:
                 bonds.append([eval(ln[2]), eval(ln[3])])
+    if not flag:
+        raise Exception(f'{a} file does not formatted correctly')
     src.close()
     return bonds
 
 
 def validate_bonds(coords, path):
+    """
+    Validate all bonds are sucessfully connected
+
+    Parameters
+    ----------
+    coords: dict or list of numpy-arrays
+        atom coordinates
+    path: str
+        path to bonds.dat which contains bonds info
+
+    Returns
+    -------
+    bool
+        True if all the bonds are connected within 1.6 Angstrongs, False if otherwise
+    """
     bonds = readbond(path)
-    for key in bonds:
-        if np.linalg.norm(coords[key[0] - 1] - coords[key[1] - 1]) > 1.6:
+    for atom in bonds:
+        if np.linalg.norm(coords[atom[0] - 1] - coords[atom[1] - 1]) > 1.6:
             return False
-            break
     return True
 
 
@@ -251,9 +267,8 @@ def run_polymod(infile, validate_bond=False):
     while not success_run_polymod(infile):
         pass
 
-    h = readPDB('chains_unwrapped.pdb')
-
     if validate_bond:
+        h = readPDB('chains_unwrapped.pdb')
         while not validate_bonds(h.pos, 'bonds.dat'):
 
             while not success_run_polymod(infile):
@@ -261,7 +276,7 @@ def run_polymod(infile, validate_bond=False):
 
             h = readPDB('chains_unwrapped.pdb')
 
-    return h
+    #return h
 
     #os.system('./polybuild run_file.txt')
     #return_code = subprocess.Popen('./polybuild run_file.txt > out', shell=True,
