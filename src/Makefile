@@ -8,12 +8,3 @@ all: install
 
 install: 
 	@(cd ..; pip install -e .)
-
-clean:
-	@(cd latch; make clean)
-	@(cd PolymerBuilder; make clean)
-
-distclean:
-	@(cd latch; make distclean)
-	@(cd PolymerBuilder; make distclean)
-

@@ -111,20 +111,14 @@ class PolymerType:
         return backbones
 
 
-PAN_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
-PE_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PE.pdb')
-PP_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PP.pdb')
-PS_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PS.pdb')
-POM_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'POM.pdb')
-PTFE_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PTFE.pdb')
-PVC_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PVC.pdb')
+monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer')
 
 polymer_types = {
-    'PAN': PolymerType('PAN', PAN_path, backbone_atoms=[3, 2], side_atom=5),
-    'PE': PolymerType('PE', PE_path, backbone_atoms=[2, 3]),
-    'PP': PolymerType('PP', PP_path, backbone_atoms=[2, 3], side_atom=8),
-    'PS': PolymerType('PS', PS_path, backbone_atoms=[2, 3], side_atom=8),
-    'POM': PolymerType('POM', POM_path, backbone_atoms=[2, 3]),
-    'PTFE': PolymerType('PTFE', PTFE_path, backbone_atoms=[2, 3]),
-    'PVC': PolymerType('PVC', PVC_path, backbone_atoms=[2, 3], side_atom=8)
+    'PAN': PolymerType('PAN', os.path.join(monomer_path, 'PAN.pdb'), backbone_atoms=[3, 2], side_atom=5),
+    'PE': PolymerType('PE', os.path.join(monomer_path, 'PE.pdb'), backbone_atoms=[2, 3]),
+    'PP': PolymerType('PP', os.path.join(monomer_path, 'PP.pdb'), backbone_atoms=[2, 3], side_atom=8),
+    'PS': PolymerType('PS', os.path.join(monomer_path, 'PS.pdb'), backbone_atoms=[2, 3], side_atom=8),
+    'POM': PolymerType('POM', os.path.join(monomer_path, 'POM.pdb'), backbone_atoms=[2, 3]),
+    'PTFE': PolymerType('PTFE', os.path.join(monomer_path, 'PTFE.pdb'), backbone_atoms=[2, 3]),
+    'PVC': PolymerType('PVC', os.path.join(monomer_path, 'PVC.pdb'), backbone_atoms=[2, 3], side_atom=8)
 }
