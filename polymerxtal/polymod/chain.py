@@ -13,7 +13,7 @@ import numpy as np
 
 from .element import getElementName
 from .energy import Energy
-from .monomer import Bond, Monomer
+from .monomer import Bond, Monomer, createBond
 from .params import Params
 from .stdio import FILE
 from .stereo import Stereo

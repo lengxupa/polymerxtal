@@ -7,7 +7,7 @@ import os, random
 try:
     from ovito.io import import_file
     use_ovito = True
-except ModuleNotFoundError:
+except:
     use_ovito = False
 
 from polymerxtal.io import run_polymod, readbond, write_pdb

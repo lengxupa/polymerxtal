@@ -11,7 +11,7 @@ try:
     from ovito.io import import_file
     from ovito.vis import Viewport
     use_ovito = True
-except ModuleNotFoundError:
+except:
     use_ovito = False
 
 from .data import atom_colors
