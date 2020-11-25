@@ -1,0 +1,12 @@
+<html>
+    <body>
+        <p>
+        <b><font size = "3.5">Welcome to Quantum Dot Lab !</font></b>
+        <li>Quantum Dot Lab allows users to simulate quantum dots of various shapes and sizes and understand the impact of material properties and dimensions on optical absorption.</li>
+        <li>Users can choose a variety of materials and shapes, perform effective mass or a 10 band tight binding simulation.</li>
+        <li>We hope that this tool deepens your understanding on quantum dots and confined electronic systems.</li>
+        <li>For more information, please check out the User Guide or send a ticket to nanoHUB.</li>
+        <img style="float: left; margin: 8px;" src="images/intro_page_picture.png">
+        </p>
+    </body>
+</html>
