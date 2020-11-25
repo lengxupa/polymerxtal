@@ -1,0 +1,5 @@
+.ipynb_checkpoints
+*.pyc
+manual/im\.mp4
+
+manual/lines\.mp4

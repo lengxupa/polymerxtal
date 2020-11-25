@@ -1,0 +1,34 @@
+
+{
+    "timeline":
+    {
+        "headline": "The History of HealthyStart",
+        "type": "default",
+        "text": "History of Calico's Pediatric Nutrition Program: Healthy Start",
+        "asset": {
+            "media": "https://dl.dropbox.com/s/3adp7vgwklbm51k/calicomap.jpg",
+            "credit": "Mattie Wechsler original artwork",
+            "caption": "Super rad map of calico"
+        },
+        "date": [
+            {
+                "startDate":"1955,10,15",
+                "endDate":"",
+                "headline":"Calican Congress Approves HealthyStart Creation Bill",
+                "text":"Stuff happened",
+                "tag":"meta impressions",
+                "classname":"weirdocat stew",
+            }
+        ],
+        "era": [
+            {
+                "startDate":"1945",
+                "endDate":"1956",
+                "headline":"Post WWII Japanese Occupation",
+                "text":"Ten year period after Calico ceased to be WWII Japanese State",
+                "tag":"Regrets with Rice"
+            }
+
+        ]
+    }
+}
