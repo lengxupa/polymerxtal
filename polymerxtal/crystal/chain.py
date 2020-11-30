@@ -73,7 +73,8 @@ class Chain:
                  num_monomers=40,
                  tacticity='',
                  chiriality='',
-                 head_tail_defect_ratio=0):
+                 head_tail_defect_ratio=0,
+                 configs=30):
 
         if polymer_type not in polymer_types:
             raise ValueError(self.polymer_type + ' do not exist in our library, please consider using custom feature')
@@ -117,11 +118,12 @@ class Chain:
                 print('Zig-zag conformation does not have chiriality')
 
         self.head_tail_defect_ratio = head_tail_defect_ratio
+        self.configs = configs
         self.pattern = 0
         self.monomers = []
         self.weights = {}
 
-    def find_configurations(self, configs=50, find_inverse_path=False):
+    def find_configurations(self, find_inverse_path=False):
 
         if self.head_tail_defect_ratio:
             find_inverse_path = True
@@ -146,7 +148,7 @@ class Chain:
 
         if find_inverse_path:
             self.pattern = 0
-            while config_index <= configs:
+            while config_index <= self.configs:
                 sequence = random.choices([0, 1], [1 - self.head_tail_defect_ratio, self.head_tail_defect_ratio],
                                           k=self.num_monomers - 1)
                 if self.tacticity == 'isotactic' or (not self.tacticity):

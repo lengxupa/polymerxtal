@@ -1,6 +1,0 @@
-#!/bin/sh
-
-/usr/bin/invoke_app "$@" -C "start_jupyter -T @tool Index.ipynb" \
-                         -u anaconda-6 \
-                         -e LD_LIBRARY_PATH=@tool/lib:${LD_LIBRARY_PATH}
-
