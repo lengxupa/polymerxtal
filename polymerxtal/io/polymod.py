@@ -254,11 +254,11 @@ def validate_bonds(coords, path):
     Returns
     -------
     bool
-        True if all the bonds are connected within 1.6 Angstrongs, False if otherwise
+        True if all the bonds are connected within 1.8 Angstrongs, False if otherwise
     """
     bonds = readbond(path)
     for atom in bonds:
-        if np.linalg.norm(coords[atom[0] - 1] - coords[atom[1] - 1]) > 1.6:
+        if np.linalg.norm(coords[atom[0] - 1] - coords[atom[1] - 1]) > 1.8:
             return False
     return True
 

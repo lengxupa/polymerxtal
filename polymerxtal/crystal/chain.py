@@ -4,12 +4,8 @@ This module is for functions Chain class.
 
 import numpy as np
 import os, random
-try:
-    from ovito.io import import_file
-    use_ovito = True
-except:
-    use_ovito = False
 
+from polymerxtal.data import atomic_radii
 from polymerxtal.io import run_polymod, readbond, write_pdb
 from polymerxtal.polymod import readPDB
 from polymerxtal.visualize import ovito_view
@@ -23,19 +19,14 @@ from .unit import chain_periodicity
 def validate_coords(coords_path, bond_path):
     h = readPDB(coords_path)
     bonds = readbond(bond_path)
-    if use_ovito:
-        pipeline = import_file(coords_path)
-        types = pipeline.source.data.particles.particle_types
-        for i in range(h.num_atoms):
-            for j in range(i + 1, h.num_atoms):
-                if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
-                    if np.linalg.norm(h.pos[i] - h.pos[j]) <= (types.type_by_name(h.el_names[i]).radius +
-                                                               types.type_by_name(h.el_names[j]).radius):
+    for i in range(h.num_atoms):
+        for j in range(i + 1, h.num_atoms):
+            if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
+                if (h.el_names[i] in atomic_radii) and (h.el_names[j] in atomic_radii):
+                    if np.linalg.norm(h.pos[i] - h.pos[j]) <= (atomic_radii[h.el_names[i]] +
+                                                               atomic_radii[h.el_names[j]]):
                         return False
-    else:
-        for i in range(h.num_atoms):
-            for j in range(i + 1, h.num_atoms):
-                if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
+                else:
                     if np.linalg.norm(h.pos[i] - h.pos[j]) < 1.5:
                         return False
     return True

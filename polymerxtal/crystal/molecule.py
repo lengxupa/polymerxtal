@@ -3,7 +3,7 @@ Functions for calculating molecule properties.
 """
 import numpy as np
 
-from polymerxtal.data import atomic_weights
+from polymerxtal.data import atomic_weights, atomic_radii
 from .measure import calculate_distance
 
 
@@ -27,7 +27,7 @@ class Molecule:
         return f'name: {self.name}\ncharge: {self.charge}\nsymbols: {self.symbols}'
 
 
-def build_bond_list(coordinates, max_bond=1.55, min_bond=0):
+def build_bond_list(coordinates, max_bond=1.55, min_bond=0, elements=[], bond_scale=1.2):
     """Calculate bonds in a molecule base on a distance criteria.
 
     The pairwise distance between atoms is computed. If it is in the range 
@@ -35,15 +35,19 @@ def build_bond_list(coordinates, max_bond=1.55, min_bond=0):
 
     Parameters
     ----------
-    coordinates : array-like
+    coordinates : dict or list of numpy-arrays
         The coordinates of the atoms.
     max_bond : float (optional)
         The maximum distance for two points to be considered bonded. The default
-        is 1.5
+        is 1.55
     min_bond : float (optional)
         The minimum distance for two points to be considered bonded. The default
         is 0.
-    
+    elements : dict or list of string (optional)
+        The element types of the atoms.
+    bond_scale : float (optional)
+        Scale factor applied to equilibrium bond lengths from ovito database. The default is 1.2.
+
     Returns
     -------
     bonds : dict
@@ -65,8 +69,13 @@ def build_bond_list(coordinates, max_bond=1.55, min_bond=0):
     for atom1 in range(num_atoms):
         for atom2 in range(atom1 + 1, num_atoms):
             distance = calculate_distance(coordinates[atom1], coordinates[atom2])
-            if distance > min_bond and distance < max_bond:
-                bonds[(atom1, atom2)] = distance
+            if elements and (elements[atom1] in atomic_radii) and (elements[atom2] in atomic_radii):
+                if distance > min_bond and distance <= (atomic_radii[elements[atom1]] +
+                                                        atomic_radii[elements[atom2]]) * bond_scale:
+                    bonds[(atom1, atom2)] = distance
+            else:
+                if distance > min_bond and distance < max_bond:
+                    bonds[(atom1, atom2)] = distance
 
     return bonds
 

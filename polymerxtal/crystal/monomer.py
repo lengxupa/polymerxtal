@@ -54,12 +54,14 @@ class PolymerType:
         self.side_atom = side_atom
 
     def identify_backbone_path(self, find_inverse_path=False):
-        if find_inverse_path and (not self.side_atom):
-            print(f'Polymer type {self.name} does not have defects for head to head or tail to tail connections')
-            find_inverse_path = False
-
         h = readPDB(self.path)
-        bonds = build_bond_list(h.pos)
+        backbone_el = [h.el_names[i - 1] for i in self.backbone_atoms]
+
+        if find_inverse_path and (not self.side_atom) and backbone_el == backbone_el[::-1]:
+            raise Exception(
+                f'Polymer type {self.name} does not have defects for head to head or tail to tail connections')
+
+        bonds = build_bond_list(h.pos, elements=h.el_names)
 
         center_head = self.backbone_atoms[0]
         center_tail = self.backbone_atoms[-1]
