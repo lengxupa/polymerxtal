@@ -1,5 +1,0 @@
-#!/bin/sh
-
-/usr/bin/invoke_app "$@" -t introtosimtools \
-                         -C "start_jupyter -t -T @tool introtoSimTools.ipynb" \
-                         -u anaconda-6
