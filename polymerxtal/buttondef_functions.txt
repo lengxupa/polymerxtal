@@ -1,0 +1,5 @@
+distance(a,b) - np.linalg.norm(b - a)
+k(a,b) - normalized_dot_product(a,b)
+leng(a) - np.linalg.norm(a)
+readdata(a) - readPDB(a)
+vec(a,b) - b - a

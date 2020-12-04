@@ -1,0 +1,19 @@
+[mpich-intel]
+preManagerCommands = . ${MODULESHOME}/init/sh, module load mpich-intel/11.1.038
+managerCommand = mpirun -machinefile ${PBS_NODEFILE} -np NPROCESSORS
+
+[mpich]
+managerCommand = mpirun -machinefile ${PBS_NODEFILE} -np NPROCESSORS
+
+[mpich2-pgi64-mpd]
+preManagerCommands = . ${MODULESHOME}/init/sh, module load mpich2-pgi64, mpdboot -f ${PBS_NODEFILE}
+managerCommand = mpirun -np NPROCESSORS
+postManagerCommands = npdallexit
+mpiRankVariable = PMI_RANK
+
+[mpich2-pgi64-manual]
+preManagerCommands = . ${MODULESHOME}/init/sh, module load mpich2-pgi64, export MPD_CON_EXT=${PBS_JOBID}, mpdboot -n NNODES -f ${PBS _NODEFILE} -remcons
+managerCommand = mpiexec.y -np NPROCESSORS
+postManagerCommands = mpdallexit
+mpiRankVariable = PMI_RANK
+environment = OMP_NUM_THREADS=1

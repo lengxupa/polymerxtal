@@ -1,0 +1,8 @@
+# apt-get install hubzero-submit-pegasus
+# apt-get install hubzero-submit-condor
+# apt-get install hubzero-submit-common
+# apt-get install hubzero-submit-server
+# apt-get install hubzero-submit-distributor
+# apt-get install hubzero-submit-monitors
+# hzcms configure submit-server --enable
+# /etc/init.d/submit-server start

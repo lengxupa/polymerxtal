@@ -1,0 +1,9 @@
+[clusterPBS]
+venue = cluster.campus.edu
+remoteUser = yourhub
+remoteMonitorCommand = ${HOME}/SubmitMonitor/monitorPBS.py
+
+[newton]
+venue = newton.SandE.edu
+remoteUser = HUBzero
+remoteMonitorCommand = ${HOME}/submit/monitorPBS.py
