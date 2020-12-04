@@ -1,4 +1,0 @@
-# environment variables listed here can be specified from the command line with -e/--env option. Attempts to specify other environment variables will be ignored and the values will not be passed to the remote site.
-
-OMP_NUM_THREADS
-MPICH_HOME

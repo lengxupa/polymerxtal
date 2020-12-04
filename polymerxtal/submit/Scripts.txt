@@ -1,6 +1,0 @@
-receiveinput.sh jobWorkingDirectory jobScratchDirectory  transferredTimestampFile
-submitbatchjob.sh jobWorkingDirectory jobScratchDirectory jobDescriptionFile
-transmitresults.sh jobWorkingDirectory
-cleanupjob.sh jobWorkingDirectory jobScratchDirectory jobClass
-killbatchjob.sh jobId jobClass
-postprocessjob.sh jobWorkingDirectory jobScratchDirectory jobClass

@@ -1,6 +1,0 @@
-distance(a,b) - np.linalg.norm(b - a)
-k(a,b) - normalized_dot_product(a,b)
-leng(a) - np.linalg.norm(a)
-readdata(a) - readPDB(a)
-unit_ana.main + writeTk(Atoms) - chain_periodicity(h)
-vec(a,b) - b - a

@@ -1,4 +1,0 @@
-#!/bin/sh
-
-/usr/bin/invoke_app "$@" -C "start_jupyter -T @tool workflow.ipynb" \
-                         -u anaconda3-dev
