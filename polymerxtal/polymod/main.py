@@ -49,8 +49,7 @@ def logMessage(msg):
 # ----------------------------------------------------------------------------
 # Result: free all top level structures
 # ============================================================================
-def cleanup():
-    global params
+def cleanup(params):
     polysys.cleanupSystem(params)  # before freeParams()
     del params
     if log_file.path and stdout != log_file:
@@ -96,7 +95,6 @@ def main(args):
 
     timer.startTimer()
     polysys = PolymerSystem()
-    global params
     params = Params()
 
     for p in args:
@@ -464,5 +462,6 @@ def main(args):
 
     # Finish
     log_file.printf("Total build and analysis time: %g s\n" % timer.getElapsedTime())
-    cleanup()
+    cleanup(params)
+    del params
     return 0
