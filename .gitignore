@@ -114,3 +114,6 @@ ENV/
 
 # Mac stuff
 .DS_Store
+
+# SimTool stuff
+RUNS/
