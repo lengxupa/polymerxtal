@@ -30,6 +30,7 @@ polysys = PolymerSystem()
 log_file = FILE()
 status_file = FILE()
 timer = Timer()
+params = Params()
 
 
 # ============================================================================
@@ -95,6 +96,7 @@ def main(args):
 
     timer.startTimer()
     polysys = PolymerSystem()
+    global params
     params = Params()
 
     for p in args:
@@ -462,5 +464,5 @@ def main(args):
 
     # Finish
     log_file.printf("Total build and analysis time: %g s\n" % timer.getElapsedTime())
-    #cleanup()
+    cleanup()
     return 0
