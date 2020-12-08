@@ -82,7 +82,9 @@ class Chain:
         self.num_monomers = num_monomers
         self.tacticity = tacticity
         if self.tacticity:
-            if self.tacticity not in ['isotactic', 'atactic', 'syndiotactic']:
+            if self.tacticity=='None':
+                self.tacticity=''
+            elif self.tacticity not in ['isotactic', 'atactic', 'syndiotactic']:
                 raise TypeError(
                     "Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic")
             elif not self.polymer_type.backbone_atoms:
@@ -106,6 +108,7 @@ class Chain:
         elif str(self.helice) == str(Helice(2, 1, 1)):
             self.torsions = {180}
             if self.chiriality:
+                self.chiriality=''
                 print('Zig-zag conformation does not have chiriality')
 
         self.head_tail_defect_ratio = head_tail_defect_ratio
@@ -362,3 +365,5 @@ class Chain:
         if use_visualize:
             ovito_view(f'{helix_name}.pdb', f"{helix_name}_Front.png", 'Front')
             ovito_view(f'{helix_name}.pdb', f"{helix_name}_Top.png", 'Top')
+
+        return helix_name
