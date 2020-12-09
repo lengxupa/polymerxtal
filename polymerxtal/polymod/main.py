@@ -192,6 +192,7 @@ def main(args):
     params.domain_size[1] = params.system_size[1] / float(params.num_domains_y)
     params.domain_size[2] = params.system_size[2] / float(params.num_domains_z)
 
+    
     # Log file
     log_file = stdout
     if params.log_file:

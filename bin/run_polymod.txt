@@ -18,7 +18,7 @@ torsion 4 fixed 180
 
 stereo s1 pattern 2 h_m4T180T60 h_m4T180T60
 
-density 0.00001
+density 0.0001
 
 chains 1 #40
 
