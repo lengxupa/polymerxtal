@@ -82,8 +82,8 @@ class Chain:
         self.num_monomers = num_monomers
         self.tacticity = tacticity
         if self.tacticity:
-            if self.tacticity=='None':
-                self.tacticity=''
+            if self.tacticity == 'None':
+                self.tacticity = ''
             elif self.tacticity not in ['isotactic', 'atactic', 'syndiotactic']:
                 raise TypeError(
                     "Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic")
@@ -108,7 +108,7 @@ class Chain:
         elif str(self.helice) == str(Helice(2, 1, 1)):
             self.torsions = {180}
             if self.chiriality:
-                self.chiriality=''
+                self.chiriality = ''
                 print('Zig-zag conformation does not have chiriality')
 
         self.head_tail_defect_ratio = head_tail_defect_ratio
@@ -280,7 +280,7 @@ class Chain:
         #filedata = filedata.replace('stereo_type', stereo_type)
         des.write('stereo s1 %s\n' % stereo_type)
         des.write('\n')
-        des.write('density 0.00001\n')
+        des.write('density 0.0001\n')
         des.write('\n')
         des.write('chains 1 #40\n')
         des.write('\n')
