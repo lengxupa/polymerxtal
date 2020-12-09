@@ -45,17 +45,40 @@ class Cluster(Particle):
 
 
 class Translator:
-    def move_sphere(self, sphere):
-        print('Translating sphere should be very straightforward')
-        sphere.center[0] += 1.0
+    def move_sphere(self, sphere, **kwargs):
+        for key in kwargs:
+            if key not in ['array']:
+                raise KeyError('Translator - move_sphere: Must input array')
 
-    def move_gay_berne(self, gay_berne):
-        print('Translating solid should involve COM computation and subsequent translation')
+        array = kwargs['array']
 
-    def move_cluster(self, cluster):
-        print('Translating cluster should involve COM computation and subsequent translation')
+        #print('Translating sphere should be very straightforward')
+        sphere.center[0] += array[0]
+        sphere.center[1] += array[1]
+        sphere.center[2] += array[2]
+
+    def move_gay_berne(self, gay_berne, **kwargs):
+        for key in kwargs:
+            if key not in ['array']:
+                raise KeyError('Translator - move_gay_berne: Must input array')
+
+        array = kwargs['array']
+
+        #print('Translating solid should involve COM computation and subsequent translation')
+        gay_berne.center[0] += array[0]
+        gay_berne.center[1] += array[1]
+        gay_berne.center[2] += array[2]
+
+    def move_cluster(self, cluster, **kwargs):
+        for key in kwargs:
+            if key not in ['array']:
+                raise KeyError('Translator - move_cluster: Must input array')
+
+        array = kwargs['array']
+
+        #print('Translating cluster should involve COM computation and subsequent translation')
         for particle in cluster.particles:
-            particle.move(self)
+            particle.move(self, **kwargs)
 
 
 def rotation_matrix(axis, theta):

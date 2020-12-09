@@ -57,6 +57,33 @@ def correct_chain_orientation(h, num_monomers):
     return h
 
 
+def get_mininum_position(positions):
+    x = []
+    y = []
+    z = []
+    for a_id in positions:
+        x.append(positions[a_id][0])
+        y.append(positions[a_id][1])
+        z.append(positions[a_id][2])
+    return np.array([min(x), min(y), min(z)])
+
+
+def correct_chain_position(h):
+    mini_array = get_mininum_position(h.pos)
+    chain_cluster = Cluster()
+
+    for atom in h.pos:
+        chain_cluster.add_particle(Sphere(h.pos[atom]))
+
+    translator = Translator()
+    chain_cluster.move(translator, array=-mini_array)
+
+    for i in range(h.num_atoms):
+        h.pos[i] = chain_cluster.particles[i].center
+
+    return h
+
+
 class Chain:
     def __init__(self,
                  polymer_type='PE',
@@ -355,6 +382,9 @@ class Chain:
 
         # Correct chain orientation
         h = correct_chain_orientation(h, self.num_monomers)
+
+        # Correct chain position
+        h = correct_chain_position(h)
 
         helix_name = self.polymer_type.name + "_helix_%s%s%s%s" % (
             self.helice, '_' + self.tacticity[:3] if self.tacticity else '', '+' if self.chiriality == 'right' else

@@ -261,37 +261,42 @@ def UI_SET_VALUE(widget, value):
 
 QDOT_UI = {}
 
-QDOT_UI['polymer_type'] = ui.Dropdown(name='Polymer Type', value=inputs.polymer_type.value, options=inputs.polymer_type.options)
+QDOT_UI['polymer_type'] = ui.Dropdown(name='Polymer Type',
+                                      value=inputs.polymer_type.value,
+                                      options=inputs.polymer_type.options)
 QDOT_UI['polymer_type'].dd.observe(lambda obj: UI_SET_VALUE(inputs.polymer_type, obj.new), names='value')
 QDOT_UI['helice_atoms'] = ui.Integer(name='Helice Atoms',
-                                value=inputs.helice_atoms.value,
-                                min=inputs.helice_atoms.min,
-                                max=inputs.helice_atoms.max)
+                                     value=inputs.helice_atoms.value,
+                                     min=inputs.helice_atoms.min,
+                                     max=inputs.helice_atoms.max)
 QDOT_UI['helice_atoms'].dd.observe(lambda obj: UI_SET_VALUE(inputs.helice_atoms, obj.new), names='value')
 QDOT_UI['helice_motifs'] = ui.Integer(name='Helice Motifs',
-                                value=inputs.helice_motifs.value,
-                                min=inputs.helice_motifs.min,
-                                max=inputs.helice_motifs.max)
+                                      value=inputs.helice_motifs.value,
+                                      min=inputs.helice_motifs.min,
+                                      max=inputs.helice_motifs.max)
 QDOT_UI['helice_motifs'].dd.observe(lambda obj: UI_SET_VALUE(inputs.helice_motifs, obj.new), names='value')
 QDOT_UI['helice_turns'] = ui.Integer(name='Helice Turns',
-                                value=inputs.helice_turns.value,
-                                min=inputs.helice_turns.min,
-                                max=inputs.helice_turns.max)
+                                     value=inputs.helice_turns.value,
+                                     min=inputs.helice_turns.min,
+                                     max=inputs.helice_turns.max)
 QDOT_UI['helice_turns'].dd.observe(lambda obj: UI_SET_VALUE(inputs.helice_turns, obj.new), names='value')
 QDOT_UI['monomers'] = ui.Integer(name='Monomers',
-                                value=inputs.monomers.value,
-                                min=inputs.monomers.min,
-                                max=inputs.monomers.max)
+                                 value=inputs.monomers.value,
+                                 min=inputs.monomers.min,
+                                 max=inputs.monomers.max)
 QDOT_UI['monomers'].dd.observe(lambda obj: UI_SET_VALUE(inputs.monomers, obj.new), names='value')
 QDOT_UI['tacticity'] = ui.Dropdown(name='Tacticity', value=inputs.tacticity.value, options=inputs.tacticity.options)
 QDOT_UI['tacticity'].dd.observe(lambda obj: UI_SET_VALUE(inputs.tacticity, obj.new), names='value')
-QDOT_UI['chiriality'] = ui.Dropdown(name='Chiriality', value=inputs.chiriality.value, options=inputs.chiriality.options)
+QDOT_UI['chiriality'] = ui.Dropdown(name='Chiriality',
+                                    value=inputs.chiriality.value,
+                                    options=inputs.chiriality.options)
 QDOT_UI['chiriality'].dd.observe(lambda obj: UI_SET_VALUE(inputs.chiriality, obj.new), names='value')
 QDOT_UI['head_tail_defect_ratio'] = ui.Number(name='Defect Ratio for head-to-head & tail-to-tail connections',
-                            value=inputs.head_tail_defect_ratio.value,
-                            min=inputs.head_tail_defect_ratio.min,
-                            max=inputs.head_tail_defect_ratio.max)
-QDOT_UI['head_tail_defect_ratio'].dd.observe(lambda obj: UI_SET_VALUE(inputs.head_tail_defect_ratio, obj.new), names='value')
+                                              value=inputs.head_tail_defect_ratio.value,
+                                              min=inputs.head_tail_defect_ratio.min,
+                                              max=inputs.head_tail_defect_ratio.max)
+QDOT_UI['head_tail_defect_ratio'].dd.observe(lambda obj: UI_SET_VALUE(inputs.head_tail_defect_ratio, obj.new),
+                                             names='value')
 QDOT_UI['configs'] = ui.Integer(name='Configs',
                                 value=inputs.configs.value,
                                 min=inputs.configs.min,
@@ -529,7 +534,7 @@ def fig_Log(execution):
 
 def fig_Structure(execution):
     helix_name = execution.db.read('Helix Name')
-    return imolecule.draw(execution.outdir+"/"+helix_name+".pdb")#, camera_type="orthographic") 
+    return imolecule.draw(execution.outdir + "/" + helix_name + ".pdb")  #, camera_type="orthographic")
 
 
 def fig_PDB(execution):
@@ -537,7 +542,8 @@ def fig_PDB(execution):
     out_fig = Textarea(value=out_data)
     out_fig.layout = Layout(width='100%', height='400px')
     return out_fig
-                    
+
+
 def showFig(func, param, out, state=None):
     with out:
         clear_output()
