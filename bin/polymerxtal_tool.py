@@ -252,8 +252,8 @@ def PLUGIN_PLOT_2D(X_COLUMNS, Y_COLUMNS, layout=None):
 
 ##nb = os.environ["TOOLDIR"] + "/" + 'qdot_basic.ipynb'
 #nb = findSimToolNotebook(os.environ["TOOLDIR"] + "/" + 'Chain_Helix.ipynb')
-simToolName = "Chain_Helix"
-nb = searchForSimTool('Chain_Helix')
+simToolName = "polymerxtal"
+nb = searchForSimTool('polymerxtal')
 inputs = getSimToolInputs(nb)
 
 
