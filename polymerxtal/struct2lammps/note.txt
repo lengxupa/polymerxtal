@@ -1,0 +1,3 @@
+normal:
+runCommand - os.system
+run_lammps - from polymerxtal.io import run_lammps

@@ -1,3 +1,7 @@
+"""
+This module generates LAMMPS data file using ovito
+"""
+
 import numpy as np, ovito
 
 node = ovito.io.import_file('./bonds/pdbfile.pdb')

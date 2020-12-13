@@ -7,6 +7,7 @@ dependencies:
 
   - numpy
   - matplotlib
+  - openbabel
   # - ovito # visualization script and not used for testing
   
     # Testing

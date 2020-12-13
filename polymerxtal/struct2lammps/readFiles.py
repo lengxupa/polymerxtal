@@ -8,6 +8,7 @@ import os
 
 from .getnd import getnd
 
+
 def convert_structure(infile):
 
     outfilelmpdat = 'bonds_old.lmpdat'
@@ -16,6 +17,7 @@ def convert_structure(infile):
     getnd()
 
     return outfilelmpdat, outfilepdb
+
 
 def read_n_types(lmpdatFile):
 
@@ -27,6 +29,7 @@ def read_n_types(lmpdatFile):
                 atomTypes = line.split()[0]
 
     return int(atomTypes)
+
 
 def read_atom_types(lmpdatFile, nAtomTypes):
 
@@ -49,36 +52,39 @@ def read_atom_types(lmpdatFile, nAtomTypes):
 
     return types
 
+
 def read_atom_pdb(pdbfile, nAtomTypes):
 
     types = {}
     ident = []
     with open(pdbfile, 'r') as infile:
         for line in infile:
-             if line.startswith('HETATM') or line.startswith('ATOM'):
+            if line.startswith('HETATM') or line.startswith('ATOM'):
                 atomInfo = line.replace('\n', '')
                 atomName = atomInfo[12:16].strip()
                 ident.append(atomName)
-        
-    types1 = []    
+
+    types1 = []
     for i in range(len(ident)):
         atomtype = ident[i]
         if atomtype not in types1:
-            types1.append(atomtype)   
-            types[i+1] = atomtype
-                
+            types1.append(atomtype)
+            types[i + 1] = atomtype
+
     return types1, types
 
+
 def get_mass(types):
-    
+
     m = []
     etab = ob.OBElementTable()
     for value in types:
         a = etab.GetAtomicNum(value)
         c = etab.GetMass(a)
         m.append(c)
-        
+
     return m
+
 
 def read_bonds_lmpdat(filepath):
 
@@ -103,6 +109,7 @@ def read_bonds_lmpdat(filepath):
             bonds.append([bondType, atom1, atom2])
 
     return bonds
+
 
 def read_atoms_pdb(filepath):
 
@@ -137,6 +144,7 @@ def read_atoms_pdb(filepath):
 
     return atoms
 
+
 def read_atoms_lmpdat(filepath):
 
     atoms = {}
@@ -158,6 +166,7 @@ def read_atoms_lmpdat(filepath):
 
     return atoms
 
+
 def read_image_info(lmpdat_file):
 
     images_dict = {}
@@ -177,6 +186,7 @@ def read_image_info(lmpdat_file):
             images_dict[int(atomID)] = images
 
     return images_dict
+
 
 def fix_decimal_places(number):
 

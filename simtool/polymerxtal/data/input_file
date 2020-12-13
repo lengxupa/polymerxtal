@@ -1,0 +1,98 @@
+#
+# Sample input file: order is important
+
+# Optional parameters to override default installation
+data_dir <path>       # default: installed data directory
+element_data <path>   # default: $data_dir/elements
+
+# Parameters needed to read monomers
+bond_scale <real>     # applied to equilibrium bond lengths from element_data
+temperature <real>    # K
+backbone_bond_length <real>  # Angstroms
+bond_cutoff <int>     # atoms separated by more than this many bonds 
+                      # interact only through "non-bonded" interactions
+
+# Known monomers, associated torsions, known stereochemistry options; head, 
+# tail atoms can't be in a ring
+monomer <name> <path> <head> <tail>         # .pdb, .xyz, .zm
+# torsions associated with 3..N backbone atoms
+torsion <int>|all fixed <real> | free | energy [calculate] <path>  
+
+# torsion fixed: if blank, keep default value
+# torsion energy <path>: "ang (deg)  E (kcal/mol)\n"
+                      
+stereo <name> pattern <int> <monomer> ... [term <monomer>]
+stereo <name> weight  <int> <monomer> <real> ... [term <monomer>]
+
+# z-matrix input file: babel file.pdb -ofh file.zm
+#
+# Must have head atom first, followed by remaining (N-1) backbone atoms, with
+# the tail atom in the Nth position
+
+# Specify an installed polymer: monomer, torsion, stereo
+polymer <name>  # $data_dir/polymers/<name>
+
+# Density and number of chains
+density <real>  # g/cm^3
+chains <int>     
+
+# Distribution of chain lengths: density, chains, and monomers fix volume
+monomers <int>  # mean polymerization
+monomers_stddev <real>  # default: 0.0
+
+# Explicit volume: density, chains, system_{min,max} fix monomers (Angstroms),
+# if monomers == 0
+system_min <real> <real> <real>
+system_max <real> <real> <real>
+
+# start_x start_y start_z  axis_x axis_y axis_z  radius  length (Angstroms)
+exclude invert cylinder <real> <real> <real> <real> <real> <real> <real> <real>
+
+# xmin ymin zmin xmax ymax zmax (Angstroms)
+exclude invert slab <real> <real> <real> <real> <real> <real>
+
+# xcenter ycenter zcenter radius (Angstroms)
+exclude invert sphere <real> <real> <real> <real>
+
+# Specify distribution of chain stereochemistry
+chain_stereo <int> <stereo> <real> ...
+
+# Spatial decomposition
+domains <int> <int> <int>  # threads in x y z; default is 1 1 1 
+grid_size <real>           # Angstroms
+
+# Chain packing algorithms
+sample monte_carlo | none
+torsion_step <int> <real>  # after MC configuration, take <int> steps of
+                           # +/- <real> degrees
+configs <int>         # number of MC configurations to sample, or attempts to
+                      # find a configuration that does not violate an excluded
+                      # region; always used to place first monomer; default 30
+energy LJ | self_avoid | none
+energy_cutoff <real>  # maximum interaction range, for LJ, in Angstroms
+self_avoid_cutoff <real>  # cutoff for self-avoiding, for monomer 1 placement
+                          # and self_avoid interactions
+
+# Do not store Cartesian coordinates; calculate from z-matrix every time
+recalculate_positions
+
+# Do not store spatial neighbor info; calculate every time
+recalculate_neighbors
+
+# Grow each chain in isolation; ignore any interactions with other chains
+isolate_chains
+
+# RNG
+rng_seed <int>
+
+# Output
+write wrapped_pdb | unwrapped_pdb | wrapped_xyz | unwrapped_xyz
+write torsion_rotation <monomer> <int> <int>  # torsion index, step (degrees)
+write chain_length | chain_length_histo
+chain_length_histo_bin <real>  # Angstroms
+write torsion_histo
+write intermediate # bonds, bond_types, atoms, atom_types
+
+log_file <path>      # default: stdout
+status_file <path>   # default: stdout
+

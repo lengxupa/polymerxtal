@@ -1,0 +1,29 @@
+createBondCommands.py
+	- atom_type_groups_commands()
+	- atom_type_combinations()
+	- cutoff_radii()
+	- create_bonds_commands()
+
+createBonds.py
+	- simulation_box()
+	- create_lmpdat()
+	- write_mass()
+	- write_coeff()
+	- create_atom_combinations()
+	- create_lammps_in()
+
+getnd.py
+	- getnd()
+
+readFiles.py
+	- convert_structure()
+	- read_n_types()
+	- read_atom_pdb()
+	- get_mass()
+
+runData4Lammps.py
+	- read_cell_sizes()
+
+struct2lammps.py
+	- save_structure()
+	- conect_in_pdb()
