@@ -4,9 +4,9 @@ This module handles functions related to files read.
 
 import openbabel as ob
 import os
-#from hublib.cmd import runCommand
+from hublib.cmd import runCommand
 
-from .getnd import getnd
+#from .getnd import getnd
 
 def convert_structure(infile):
 

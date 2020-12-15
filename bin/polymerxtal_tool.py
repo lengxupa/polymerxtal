@@ -535,8 +535,10 @@ def fig_Log(execution):
 
 
 def fig_Structure(execution):
-    helix_name = execution.db.read('Helix Name')
-    return imolecule.draw(execution.outdir + "/" + helix_name + ".pdb")  #, camera_type="orthographic")
+    pdbFile = execution.read('Output PDBfile',raw=True)
+    return imolecule.draw(pdbFile[7:])
+    #helix_name = execution.db.read('Helix Name')
+    #return imolecule.draw(execution.outdir + "/" + helix_name + ".pdb")  #, camera_type="orthographic")
 
 
 def fig_PDB(execution):
