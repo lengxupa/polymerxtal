@@ -19,8 +19,8 @@ class ExclCylinder:
     def __init__(self):
         self.start = np.zeros(3)  # starting point in center of one end
         self.axis = np.zeros(3)
-        self.radius = 0.  # Angstroms
-        self.length = 0.  # Angstroms
+        self.radius = 0.0  # Angstroms
+        self.length = 0.0  # Angstroms
         self.invert = 0
 
     def create(self):
@@ -34,7 +34,11 @@ class ExclCylinder:
     def insideExclCylinder(self, p):
 
         v = p - self.start
-        return np.linalg.norm(p - self.start) * np.sin(calculate_angle(-v, np.zeros(3), -self.axis)) < self.radius
+        return (
+            np.linalg.norm(p - self.start)
+            * np.sin(calculate_angle(-v, np.zeros(3), -self.axis))
+            < self.radius
+        )
 
 
 # ============================================================================
@@ -68,8 +72,14 @@ class ExclSlab:
     # Result: return 1 if the position Vector p is inside es, else return 0
     # ============================================================================
     def insideExclSlab(self, p):
-        return p[0] > self.min[0] and p[0] < self.max[0] and p[1] > self.min[1] and p[1] < self.max[1] and p[
-            2] > self.min[2] and p[2] < self.max[2]
+        return (
+            p[0] > self.min[0]
+            and p[0] < self.max[0]
+            and p[1] > self.min[1]
+            and p[1] < self.max[1]
+            and p[2] > self.min[2]
+            and p[2] < self.max[2]
+        )
 
 
 # ============================================================================
@@ -91,7 +101,7 @@ def createExclSlab():
 class ExclSphere:
     def __init__(self):
         self.center = np.zeros(3)
-        self.radius = 0.  # Angstroms
+        self.radius = 0.0  # Angstroms
         self.invert = 0
 
     def create(self):
@@ -103,7 +113,7 @@ class ExclSphere:
     # Result: return 1 if the position Vector p is inside es, else return 0
     # ============================================================================
     def insideExclSphere(self, p):
-        return np.linalg.norm(p - self.center)**2 < self.radius * self.radius
+        return np.linalg.norm(p - self.center) ** 2 < self.radius * self.radius
 
 
 # ============================================================================

@@ -17,7 +17,7 @@ def calculate_distance(rA, rB):
     -------
     distance : float
         The distance between the two points.
-    
+
     Examples
     --------
     >>> r1 = np.array([0, 0, 0])
@@ -29,7 +29,7 @@ def calculate_distance(rA, rB):
     if isinstance(rA, np.ndarray) is False or isinstance(rB, np.ndarray) is False:
         raise TypeError("rA and rB must be numpy arrays")
 
-    dist_vec = (rA - rB)
+    dist_vec = rA - rB
     distance = np.linalg.norm(dist_vec)
 
     if distance == 0.0:

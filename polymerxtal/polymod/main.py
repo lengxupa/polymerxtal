@@ -67,11 +67,11 @@ def showVersion(f):
     # fprintf(f, "%s version %s\n", prog_name, prog_version);
     # fprintf(f, "Compiled with \"%s\"\n", prog_cc_line);
     # fprintf(f, "Linked with \"%s\"\n", prog_ld_line);
-    #ifdef HAVE_OPENMP
+    # ifdef HAVE_OPENMP
     # fprintf(f, "OpenMP threading enabled\n");
-    #else
+    # else
     f.printf("OpenMP threading disabled\n")
-    #endif
+    # endif
     # fprintf(f, "Real type: %s\n", REAL_STR);
     f.printf("MAX_BONDS: %d\n" % MAX_BONDS)
 
@@ -84,8 +84,13 @@ def showVersion(f):
 # ============================================================================
 def main(args):
     done = 0
-    infile = ''
-    usage = "Usage: %s [flags] infile\n" + "Flags:\n" + "   -v   Show version and build info, then exit\n" + "   -h   Show help message, then exit\n"
+    infile = ""
+    usage = (
+        "Usage: %s [flags] infile\n"
+        + "Flags:\n"
+        + "   -v   Show version and build info, then exit\n"
+        + "   -h   Show help message, then exit\n"
+    )
     mini = np.zeros(3)
     maxi = np.zeros(3)
     total_monomers = 0
@@ -99,26 +104,28 @@ def main(args):
 
     for p in args:
         if p:
-            if '-' == p[0]:
+            if "-" == p[0]:
                 if len(p) > 2 and p[2]:
                     # multi-char flag
                     SHOW_USAGE(stderr)
-                    raise SyntaxError("\nUnknown flag: \"%s\"\n" % p)
+                    raise SyntaxError('\nUnknown flag: "%s"\n' % p)
                 if len(p) == 2:
-                    if p[1] == 'h':
+                    if p[1] == "h":
                         SHOW_USAGE(stdout)
                         done += 1
-                    elif p[1] == 'v':
+                    elif p[1] == "v":
                         showVersion(stdout)
                         done += 1
                     else:
                         SHOW_USAGE(stderr)
-                        raise SyntaxError("\nUnknown flag: \"%s\"\n" % p[1])
+                        raise SyntaxError('\nUnknown flag: "%s"\n' % p[1])
                         break
             else:
                 if infile:
                     SHOW_USAGE(stderr)
-                    raise SyntaxError("\nInput file specified twice: %s, %s\n" % (infile, p))
+                    raise SyntaxError(
+                        "\nInput file specified twice: %s, %s\n" % (infile, p)
+                    )
                 infile = p
 
     if done:
@@ -135,7 +142,7 @@ def main(args):
     monomer_mass = 0.0
     monomer_count = 0
     m = params.known_monomers
-    while m and hasattr(m, 'next'):
+    while m and hasattr(m, "next"):
         if m.central_mass > monomer_mass:
             monomer_mass = m.central_mass
         monomer_count += 1
@@ -148,18 +155,24 @@ def main(args):
     if params.explicit_volume:
         params.total_volume = 1.0
         if params.system_max[0] < params.system_min[0]:
-            raise ValueError("System minimum x (%f) > system maximum x (%f)" %
-                             (params.system_min[0], params.system_max[0]))
+            raise ValueError(
+                "System minimum x (%f) > system maximum x (%f)"
+                % (params.system_min[0], params.system_max[0])
+            )
         params.system_size[0] = params.system_max[0] - params.system_min[0]
         params.total_volume *= params.system_size[0]
         if params.system_max[1] < params.system_min[1]:
-            raise ValueError("System minimum y (%f) > system maximum y (%f)" %
-                             (params.system_min[1], params.system_max[1]))
+            raise ValueError(
+                "System minimum y (%f) > system maximum y (%f)"
+                % (params.system_min[1], params.system_max[1])
+            )
         params.system_size[1] = params.system_max[1] - params.system_min[1]
         params.total_volume *= params.system_size[1]
         if params.system_max[2] < params.system_min[2]:
-            raise ValueError("System minimum z (%f) > system maximum z (%f)" %
-                             (params.system_min[2], params.system_max[2]))
+            raise ValueError(
+                "System minimum z (%f) > system maximum z (%f)"
+                % (params.system_min[2], params.system_max[2])
+            )
         params.system_size[2] = params.system_max[2] - params.system_min[2]
         params.total_volume *= params.system_size[2]  # total box volume
         if params.inverted_volume:
@@ -169,10 +182,15 @@ def main(args):
         # Now params.total_volume holds the true polymer volume
         if 0 == params.num_monomers:
             params.num_monomers = int(
-                (params.density * CA2CC(params.total_volume)) / float(params.num_chains * AMU2GRAM(monomer_mass)))
+                (params.density * CA2CC(params.total_volume))
+                / float(params.num_chains * AMU2GRAM(monomer_mass))
+            )
     else:
         params.total_volume = CC2CA(
-            float(params.num_chains * params.num_monomers) * AMU2GRAM(monomer_mass) / params.density)  # polymer volume
+            float(params.num_chains * params.num_monomers)
+            * AMU2GRAM(monomer_mass)
+            / params.density
+        )  # polymer volume
         params.system_min[0] = 0.0
         params.system_min[1] = 0.0
         params.system_min[2] = 0.0
@@ -187,7 +205,9 @@ def main(args):
     params.half_system_size[2] = 0.5 * params.system_size[2]
 
     # Spatial domain parameters
-    params.total_domains = params.num_domains_x * params.num_domains_y * params.num_domains_z
+    params.total_domains = (
+        params.num_domains_x * params.num_domains_y * params.num_domains_z
+    )
     params.domain_size[0] = params.system_size[0] / float(params.num_domains_x)
     params.domain_size[1] = params.system_size[1] / float(params.num_domains_y)
     params.domain_size[2] = params.system_size[2] / float(params.num_domains_z)
@@ -238,21 +258,25 @@ def main(args):
         polysys.chains[i] = Chain()
         # Choose a length in Monomers
         if params.num_monomers_stddev > 0.0:
-            n = int(random.gauss(float(params.num_monomers), params.num_monomers_stddev))
+            n = int(
+                random.gauss(float(params.num_monomers), params.num_monomers_stddev)
+            )
         else:
             n = params.num_monomers
         # Choose a Stereo option for this Chain
-        j = selectWeight(params.chain_stereo_weights, params.num_stereo, polysys.rngs[0])
+        j = selectWeight(
+            params.chain_stereo_weights, params.num_stereo, polysys.rngs[0]
+        )
         s = params.chain_stereo[j]
         s.selection_count += 1
         k = n * (params.max_monomer_atoms - 2) + 2
         total_mass += n * monomer_mass
-        if s.term and hasattr(s.term, 'next'):
+        if s.term and hasattr(s.term, "next"):
             n += 1
             k += s.term.num_atoms - 2
         if n > max_monomers:
             max_monomers = n
-        #global total_monomers
+        # global total_monomers
         total_monomers += n
         polysys.chains[i] = createChain(s, n, k, not params.recalculate_positions)
         total_atoms += k
@@ -261,17 +285,20 @@ def main(args):
         polysys.chains[i].init_domain = int(random.random() * params.total_domains)
         polysys.chains[i].domain = polysys.chains[i].init_domain
     log_file.printf("\nMaximum atoms: %d\n" % total_atoms)
-    log_file.printf("Rough estimate of density: %f g/cm^3\n\n" % (AMU2GRAM(total_mass) / CA2CC(params.total_volume)))
+    log_file.printf(
+        "Rough estimate of density: %f g/cm^3\n\n"
+        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))
+    )
 
     # Build Chains
-    #ifdef HAVE_OPENMP
-    #pragma omp parallel default(shared) num_threads(params.total_domains)
+    # ifdef HAVE_OPENMP
+    # pragma omp parallel default(shared) num_threads(params.total_domains)
     #   {  /* Each thread builds in a specific Domain */
     #      buildChains(&sys, &params, omp_get_thread_num());
     #   }
-    #else
+    # else
     buildChains(polysys, params, 0)
-    #endif
+    # endif
 
     # Final log outputs
     total_mass = 0.0
@@ -292,18 +319,27 @@ def main(args):
         monomer_stddev /= float(params.num_chains - 1)  # bias corrected
     log_file.printf("Monomer selection:\n")
     m = params.known_monomers
-    while m and hasattr(m, 'next'):
-        log_file.printf("   %s: %.2f %%\n" % (m.name, 100.0 * float(m.selection_count) / float(total_monomers)))
+    while m and hasattr(m, "next"):
+        log_file.printf(
+            "   %s: %.2f %%\n"
+            % (m.name, 100.0 * float(m.selection_count) / float(total_monomers))
+        )
         m = m.next
     log_file.printf("\nStereochemistry selection:\n")
     s = params.known_stereo
-    while s and hasattr(s, 'next'):
-        log_file.printf("   %s: %.2f %%\n" % (s.name, 100.0 * float(s.selection_count) / float(params.num_chains)))
+    while s and hasattr(s, "next"):
+        log_file.printf(
+            "   %s: %.2f %%\n"
+            % (s.name, 100.0 * float(s.selection_count) / float(params.num_chains))
+        )
         s = s.next
     log_file.printf("Mean polymerization: %f\n" % monomer_mean)
     log_file.printf("   Standard deviation: %f\n" % np.sqrt(monomer_stddev))
     log_file.printf("Total atoms: %d\n" % total_atoms)
-    log_file.printf("Final density: %f g/cm^3\n" % (AMU2GRAM(total_mass) / CA2CC(params.total_volume)))
+    log_file.printf(
+        "Final density: %f g/cm^3\n"
+        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))
+    )
 
     # PDB output
     if params.write_wrapped_pdb:
@@ -352,7 +388,9 @@ def main(args):
         for i in range(params.num_chains):
             nm = polysys.chains[i].num_monomers - 1
             if not polysys.chains[i].dead:
-                bins[int(polysys.chains[i].length[nm] / params.chain_length_histo_bin)] += 1
+                bins[
+                    int(polysys.chains[i].length[nm] / params.chain_length_histo_bin)
+                ] += 1
         f = openFile("chain_length_histo.dat", "w")
         f.printf("# length (A)    count\n")
         for i in range(num_bins):
@@ -375,7 +413,9 @@ def main(args):
         f = openFile("mean_chain_length.dat", "w")
         f.printf("# monomers  mean length (A)\n")
         for i in range(max_monomers):
-            f.printf("%d  %f\n" % (i + 1, length[i] / weight[i] if weight[i] > 0.0 else 0.0))
+            f.printf(
+                "%d  %f\n" % (i + 1, length[i] / weight[i] if weight[i] > 0.0 else 0.0)
+            )
         f.fclose()
         del length
         del weight
@@ -421,15 +461,21 @@ def main(args):
                 continue
             for j in range(polysys.chains[i].curr_atom):
                 pos = polysys.chains[i].zm.getPosition(j, pos)
-                foldPosition(pos, params.system_min, params.system_max, params.system_size)
-                f.printf("%d  %d  %d  %f  %.6f  %.6f  %.6f\n" % (
-                    na,
-                    i + 1,
-                    getAtomTypeIndex(polysys.chains[i].zm.entries[j].type),
-                    0.0,  # XXX charge 
-                    pos[0],
-                    pos[1],
-                    pos[2]))
+                foldPosition(
+                    pos, params.system_min, params.system_max, params.system_size
+                )
+                f.printf(
+                    "%d  %d  %d  %f  %.6f  %.6f  %.6f\n"
+                    % (
+                        na,
+                        i + 1,
+                        getAtomTypeIndex(polysys.chains[i].zm.entries[j].type),
+                        0.0,  # XXX charge
+                        pos[0],
+                        pos[1],
+                        pos[2],
+                    )
+                )
                 na += 1
         f.fclose()
         f = openFile("bonds.dat", "w")
@@ -445,16 +491,30 @@ def main(args):
                     type1 = polysys.chains[i].zm.entries[j].type
                     k = polysys.chains[i].zm.entries[j].bond_index
                     type2 = polysys.chains[i].zm.entries[k].type
-                    f.printf("%d  %d  %d  %d\n" % (nb, getBondTypeIndex(
-                        type1, type2), na + 1, offset + polysys.chains[i].zm.entries[j].bond_index + 1))
+                    f.printf(
+                        "%d  %d  %d  %d\n"
+                        % (
+                            nb,
+                            getBondTypeIndex(type1, type2),
+                            na + 1,
+                            offset + polysys.chains[i].zm.entries[j].bond_index + 1,
+                        )
+                    )
                     nb += 1
                 na += 1
             b = polysys.chains[i].extra_bonds
-            while b and hasattr(b, 'next'):
+            while b and hasattr(b, "next"):
                 type1 = polysys.chains[i].zm.entries[b.index1].type
                 type2 = polysys.chains[i].zm.entries[b.index2].type
-                f.printf("%d  %d  %d  %d\n" %
-                         (nb, getBondTypeIndex(type1, type2), offset + b.index1 + 1, offset + b.index2 + 1))
+                f.printf(
+                    "%d  %d  %d  %d\n"
+                    % (
+                        nb,
+                        getBondTypeIndex(type1, type2),
+                        offset + b.index1 + 1,
+                        offset + b.index2 + 1,
+                    )
+                )
                 nb += 1
                 b = b.next
             offset = na

@@ -102,9 +102,9 @@ class Domain:
         for i in range(self.total_bins):
             oa = self.bins[i].oa_list
             prev = OccAtom()
-            while oa and hasattr(os, 'next'):
+            while oa and hasattr(os, "next"):
                 if oa.chain == chain_index and oa.atom >= atom_start:
-                    if prev and hasattr(prev, 'next'):
+                    if prev and hasattr(prev, "next"):
                         prev.next = oa.next
                     else:  # top of list
                         self.bins[i].oa_list = oa.next
@@ -121,9 +121,9 @@ class Domain:
 def createDomain(index, mini, maxi, p):
     d = Domain()
 
-    #printf("Creating domain %d from (%g, %g, %g) to (%g, %g, %g)\n", index,
-    #min->x, min->y, min->z, max->x, max->y, max->z);
-    #fflush(stdout);
+    # printf("Creating domain %d from (%g, %g, %g) to (%g, %g, %g)\n", index,
+    # min->x, min->y, min->z, max->x, max->y, max->z);
+    # fflush(stdout);
 
     d.index = index
     d.min = mini
@@ -159,7 +159,21 @@ def createDomain(index, mini, maxi, p):
                 d.bins[i].nbr_bins[j] = 0
             for j in range(6):
                 d.bins[i].domain_edge[j] = 0
-            getNeighborIndices(i, d.bins[i].nbr_bins, d.bins[i].domain_edge, d.num_bins_x, d.num_bins_y, d.num_bins_z)
+            getNeighborIndices(
+                i,
+                d.bins[i].nbr_bins,
+                d.bins[i].domain_edge,
+                d.num_bins_x,
+                d.num_bins_y,
+                d.num_bins_z,
+            )
         d.bins[i].oa_list = OccAtom()
-    getNeighborIndices(index, d.nbr_domains, d.system_edge, p.num_domains_x, p.num_domains_y, p.num_domains_z)
+    getNeighborIndices(
+        index,
+        d.nbr_domains,
+        d.system_edge,
+        p.num_domains_x,
+        p.num_domains_y,
+        p.num_domains_z,
+    )
     return d

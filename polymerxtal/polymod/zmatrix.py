@@ -31,9 +31,9 @@ class ZEntry:
         self.bond_index = -1
         self.angle_index = -1
         self.dihedral_index = -1
-        self.bond_length = 0.  # Angstroms
-        self.bond_angle = 0.  # degrees
-        self.torsion_angle = 0.  # degrees
+        self.bond_length = 0.0  # Angstroms
+        self.bond_angle = 0.0  # degrees
+        self.torsion_angle = 0.0  # degrees
 
 
 class ZMatrix:
@@ -62,7 +62,9 @@ class ZMatrix:
     # ============================================================================
     def clearPosition(self, index):
         if index < 0 or index >= self.num_positions:
-            raise ValueError("clearPosition(): Position index %d is out of range" % index)
+            raise ValueError(
+                "clearPosition(): Position index %d is out of range" % index
+            )
         self.positions[index][0] = NO_POSITION
         # Only x is tested in getPosition()
         # zm->positions[index].y = NO_POSITION;
@@ -119,7 +121,10 @@ class ZMatrix:
     # ============================================================================
     def getPosition(self, index, pos):
         if index < 0 or index >= self.num_entries:
-            raise ValueError("getPosition(): Position index %d is out of range (%d)" % (index, self.num_entries))
+            raise ValueError(
+                "getPosition(): Position index %d is out of range (%d)"
+                % (index, self.num_entries)
+            )
         if index < self.num_positions and self.positions[index][0] > NO_POSITION:
             pos = self.positions[index]
         else:
@@ -146,7 +151,9 @@ class ZMatrix:
                     torsion_angle = DEG2RAD(90.0)
                 else:
                     # All other atoms
-                    torsion_atom_pos = self.getPosition(ze.dihedral_index, torsion_atom_pos)
+                    torsion_atom_pos = self.getPosition(
+                        ze.dihedral_index, torsion_atom_pos
+                    )
                     torsion_angle = DEG2RAD(ze.torsion_angle)
                 a = bond_index_pos - angle_atom_pos
                 b = bond_index_pos - torsion_atom_pos
@@ -179,15 +186,24 @@ class ZMatrix:
             if 0 == i:
                 f.printf("\n")
                 continue
-            f.printf("  %2d  %5.2f" % (self.entries[i].bond_index + 1, self.entries[i].bond_length))
+            f.printf(
+                "  %2d  %5.2f"
+                % (self.entries[i].bond_index + 1, self.entries[i].bond_length)
+            )
             if 1 == i:
                 f.printf("\n")
                 continue
-            f.printf("  %2d  %6.2f" % (self.entries[i].angle_index + 1, self.entries[i].bond_angle))
+            f.printf(
+                "  %2d  %6.2f"
+                % (self.entries[i].angle_index + 1, self.entries[i].bond_angle)
+            )
             if 2 == i:
                 f.printf("\n")
                 continue
-            f.printf("  %2d  %7.2f" % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle))
+            f.printf(
+                "  %2d  %7.2f"
+                % (self.entries[i].dihedral_index + 1, self.entries[i].torsion_angle)
+            )
             f.printf("\n")
 
 

@@ -4,16 +4,17 @@ This module handles functions related to files read.
 
 import openbabel as ob
 import os
-#from hublib.cmd import runCommand
+
+# from hublib.cmd import runCommand
 
 from .getnd import getnd
 
 
 def convert_structure(infile):
 
-    outfilelmpdat = 'bonds_old.lmpdat'
-    outfilepdb = 'bonds_pdbfile.pdb'
-    os.system('obabel {0} -O {1}'.format(outfilepdb, 'bonds_test.lmpdat'))
+    outfilelmpdat = "bonds_old.lmpdat"
+    outfilepdb = "bonds_pdbfile.pdb"
+    os.system("obabel {0} -O {1}".format(outfilepdb, "bonds_test.lmpdat"))
     getnd()
 
     return outfilelmpdat, outfilepdb
@@ -25,7 +26,7 @@ def read_n_types(lmpdatFile):
     with open(lmpdatFile) as f:
         for line in f:
             line = line.lower().rstrip()
-            if line.endswith('atom types'):
+            if line.endswith("atom types"):
                 atomTypes = line.split()[0]
 
     return int(atomTypes)
@@ -35,9 +36,9 @@ def read_atom_types(lmpdatFile, nAtomTypes):
 
     types = {}
     typesRead = 0
-    with open(lmpdatFile, 'r') as infile:
+    with open(lmpdatFile, "r") as infile:
         for line in infile:
-            if line.lower().rstrip() == 'masses':
+            if line.lower().rstrip() == "masses":
                 next(infile)
                 break
 
@@ -47,7 +48,7 @@ def read_atom_types(lmpdatFile, nAtomTypes):
                 break
 
             typeID = line.rstrip().split()[0]
-            typeName = line.rstrip().split('#')[-1].strip()
+            typeName = line.rstrip().split("#")[-1].strip()
             types[typeID] = typeName
 
     return types
@@ -57,10 +58,10 @@ def read_atom_pdb(pdbfile, nAtomTypes):
 
     types = {}
     ident = []
-    with open(pdbfile, 'r') as infile:
+    with open(pdbfile, "r") as infile:
         for line in infile:
-            if line.startswith('HETATM') or line.startswith('ATOM'):
-                atomInfo = line.replace('\n', '')
+            if line.startswith("HETATM") or line.startswith("ATOM"):
+                atomInfo = line.replace("\n", "")
                 atomName = atomInfo[12:16].strip()
                 ident.append(atomName)
 
@@ -90,11 +91,11 @@ def read_bonds_lmpdat(filepath):
 
     bonds = []
     bondsRead = 0
-    with open(filepath, 'r') as infile:
+    with open(filepath, "r") as infile:
         for line in infile:
-            if line.rstrip().endswith(' bonds'):
+            if line.rstrip().endswith(" bonds"):
                 nBonds = int(line.split()[0])
-            if line.rstrip() == 'Bonds':
+            if line.rstrip() == "Bonds":
                 next(infile)
                 break
         for line in infile:
@@ -115,10 +116,10 @@ def read_atoms_pdb(filepath):
 
     atoms = {}
 
-    with open(filepath, 'r') as infile:
+    with open(filepath, "r") as infile:
         for line in infile:
-            if line.startswith('HETATM') or line.startswith('ATOM'):
-                atomInfo = line.replace('\n', '')
+            if line.startswith("HETATM") or line.startswith("ATOM"):
+                atomInfo = line.replace("\n", "")
 
                 serialNumber = atomInfo[6:11].strip()
                 atomName = atomInfo[12:16].strip()
@@ -149,14 +150,14 @@ def read_atoms_lmpdat(filepath):
 
     atoms = {}
     bondsRead = 0
-    with open(filepath, 'r') as infile:
+    with open(filepath, "r") as infile:
         for line in infile:
-            if line.rstrip().startswith('Atoms'):
+            if line.rstrip().startswith("Atoms"):
                 next(infile)
                 break
 
         for line in infile:
-            if line == '\n':
+            if line == "\n":
                 break
 
             coordinates = line.strip().split()[4:7]
@@ -171,14 +172,14 @@ def read_image_info(lmpdat_file):
 
     images_dict = {}
     bondsRead = 0
-    with open(lmpdat_file, 'r') as infile:
+    with open(lmpdat_file, "r") as infile:
         for line in infile:
-            if line.rstrip().startswith('Atoms'):
+            if line.rstrip().startswith("Atoms"):
                 next(infile)
                 break
 
         for line in infile:
-            if line == '\n':
+            if line == "\n":
                 break
 
             images = line.strip().split()[7:]

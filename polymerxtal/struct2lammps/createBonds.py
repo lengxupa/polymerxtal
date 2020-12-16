@@ -2,9 +2,10 @@
 This module handles functions related to create bonds
 """
 
-#from hublib.cmd import runCommand
+# from hublib.cmd import runCommand
 import numpy as np
 import openbabel as ob
+import os
 import subprocess
 import sys
 
@@ -14,42 +15,57 @@ from .createBondCommands import create_bonds_commands
 from .readFiles import read_n_types, read_atom_pdb, get_mass
 from .runData4Lammps import read_cell_sizes
 
-%use lammps-31Mar17
 
-def create_bonds(outfilelmpdat, outfilepdb, bondscale, files_in_lattice, user_boundaries):
+def create_bonds(
+    outfilelmpdat, outfilepdb, bondscale, files_in_lattice, user_boundaries
+):
 
-    ntypes = read_n_types('bonds_test.lmpdat')
+    ntypes = read_n_types("bonds_test.lmpdat")
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
-    create_lmpdat('bonds_new.lmpdat', files_in_lattice, uboundaries, outfilepdb)
-    write_mass('bonds_new.lmpdat', ntypes, mass)
-    write_coeff('bonds_new.lmpdat', ntypes)
+    create_lmpdat("bonds_new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
+    write_mass("bonds_new.lmpdat", ntypes, mass)
+    write_coeff("bonds_new.lmpdat", ntypes)
 
     create_lammps_in(outfilelmpdat, ntypes, outfilepdb, bondscale)
-    return_code = run_lammps('bonds_bondcreate.in')
+    return_code = run_lammps("bonds_bondcreate.in")
     if return_code != 0:
-        print('LAMMPS did not finish succesfully, can not continue')
-        raise Exception('LAMMPS did not finish succesfully, can not continue')
-    translate_write_connectivity('./bonds/new.lmpdat', './bonds/bonded.lmpdat', './bonds/pdbfile.pdb')
-    print('Bonds have been identified')
+        print("LAMMPS did not finish succesfully, can not continue")
+        raise Exception("LAMMPS did not finish succesfully, can not continue")
+    translate_write_connectivity(
+        "./bonds/new.lmpdat", "./bonds/bonded.lmpdat", "./bonds/pdbfile.pdb"
+    )
+    print("Bonds have been identified")
 
 
 def simulation_box(outfilelmpdat, file_with_lattice, user_boundaries):
 
     if file_with_lattice:
         cell_sizes = read_cell_sizes(outfilelmpdat)
-        print('Box size parameters read:')
+        print("Box size parameters read:")
         for k, v in cell_sizes.items():
             if len(cell_sizes[k]) < 3:
-                print('{0}: {1:.3f} {2:.3f}'.format(k, float(v[0]), float(v[1])))
+                print("{0}: {1:.3f} {2:.3f}".format(k, float(v[0]), float(v[1])))
         uboundaries = user_boundaries
 
     else:
-        print('Box size parameters read:')
-        print('x: {0:.3f} {1:.3f}'.format(float(user_boundaries[0]), float(user_boundaries[1])))
-        print('y: {0:.3f} {1:.3f}'.format(float(user_boundaries[2]), float(user_boundaries[3])))
-        print('z: {0:.3f} {1:.3f}'.format(float(user_boundaries[4]), float(user_boundaries[5])))
+        print("Box size parameters read:")
+        print(
+            "x: {0:.3f} {1:.3f}".format(
+                float(user_boundaries[0]), float(user_boundaries[1])
+            )
+        )
+        print(
+            "y: {0:.3f} {1:.3f}".format(
+                float(user_boundaries[2]), float(user_boundaries[3])
+            )
+        )
+        print(
+            "z: {0:.3f} {1:.3f}".format(
+                float(user_boundaries[4]), float(user_boundaries[5])
+            )
+        )
 
         a = float(user_boundaries[1])
         b = float(user_boundaries[3])
@@ -60,9 +76,9 @@ def simulation_box(outfilelmpdat, file_with_lattice, user_boundaries):
         x = a
         xy = round(b * (np.cos(np.deg2rad(gamma))), 5)
         xz = round(c * (np.cos(np.deg2rad(beta))), 5)
-        y = np.sqrt(b**2 - xy**2)
+        y = np.sqrt(b ** 2 - xy ** 2)
         yz = round(b * (c * np.cos(np.deg2rad(alpha))) - xy * xz, 5)
-        z = np.sqrt(c**2 - xz**2 - yz**2)
+        z = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
 
         boundaries = np.zeros(9)
         boundaries[0] = 0
@@ -80,91 +96,104 @@ def simulation_box(outfilelmpdat, file_with_lattice, user_boundaries):
 
 def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
 
-    extra_commands = '''
+    extra_commands = """
 5 extra bond per atom
 10 extra angle per atom
 25 extra dihedral per atom
 25 extra improper per atom
 
-'''
-    with open('bonds_old.lmpdat') as oldFile, open('bonds_new.lmpdat', 'w') as newFile:
+"""
+    with open("bonds_old.lmpdat") as oldFile, open("bonds_new.lmpdat", "w") as newFile:
 
-        newFile.write('LAMMPS data file \n')
-        newFile.write('\n')
+        newFile.write("LAMMPS data file \n")
+        newFile.write("\n")
 
         for line in oldFile:
-            if line.endswith(' atoms\n'):
+            if line.endswith(" atoms\n"):
                 newFile.write(line)
-            elif line.endswith(' atom types\n'):
+            elif line.endswith(" atom types\n"):
                 newFile.write(line)
-                newFile.write('\n0 bonds\n1 bond types\n')
+                newFile.write("\n0 bonds\n1 bond types\n")
                 newFile.write(extra_commands)
 
-            elif line.endswith('xhi\n'):
+            elif line.endswith("xhi\n"):
                 if file_with_lattice:
                     newFile.write(line)
                 else:
-                    newFile.write('{0} {1} xlo xhi\n'.format(uboundaries[0], uboundaries[1]))
-            elif line.endswith('yhi\n'):
+                    newFile.write(
+                        "{0} {1} xlo xhi\n".format(uboundaries[0], uboundaries[1])
+                    )
+            elif line.endswith("yhi\n"):
                 if file_with_lattice:
                     newFile.write(line)
                 else:
-                    newFile.write('{0} {1} ylo yhi\n'.format(uboundaries[2], uboundaries[3]))
-            elif line.endswith('zhi\n'):
+                    newFile.write(
+                        "{0} {1} ylo yhi\n".format(uboundaries[2], uboundaries[3])
+                    )
+            elif line.endswith("zhi\n"):
                 if file_with_lattice:
                     newFile.write(line)
                     break
                 else:
-                    newFile.write('{0} {1} zlo zhi\n\n'.format(uboundaries[4], uboundaries[5]))
-                    if uboundaries[6] != 0.0 or uboundaries[7] != 0.0 or uboundaries[8] != 0.0:
-                        newFile.write('{0} {1} {2} xy xz yz \n\n'.format(uboundaries[6], uboundaries[7],
-                                                                         uboundaries[8]))
+                    newFile.write(
+                        "{0} {1} zlo zhi\n\n".format(uboundaries[4], uboundaries[5])
+                    )
+                    if (
+                        uboundaries[6] != 0.0
+                        or uboundaries[7] != 0.0
+                        or uboundaries[8] != 0.0
+                    ):
+                        newFile.write(
+                            "{0} {1} {2} xy xz yz \n\n".format(
+                                uboundaries[6], uboundaries[7], uboundaries[8]
+                            )
+                        )
                     break
 
         for line in oldFile:
             print(line)
-            if line == '\n':
+            if line == "\n":
                 break
             else:
                 newFile.write(line)
 
         for line in oldFile:
-            newFile.write('\n')
-            if line.startswith('Atoms'):
+            newFile.write("\n")
+            if line.startswith("Atoms"):
                 newFile.write(line)
-                newFile.write('\n')
+                newFile.write("\n")
                 next(oldFile)
                 break
             else:
                 newFile.write(line)
 
         for line in oldFile:
-            if line == '\n':
+            if line == "\n":
                 break
             else:
                 newFile.write(line)
 
 
 def write_mass(lmpdatFile, ntypes, mass):
-    with open(lmpdatFile, 'a') as f:
-        f.write('\nMasses \n \n')
+    with open(lmpdatFile, "a") as f:
+        f.write("\nMasses \n \n")
         for i in range(ntypes):
-            f.write('{0} {1} \n'.format(i + 1, mass[i]))
+            f.write("{0} {1} \n".format(i + 1, mass[i]))
 
 
 def write_coeff(lmpdatFile, ntypes):
-    with open(lmpdatFile, 'a') as f:
-        f.write('\nPair Coeffs \n \n')
+    with open(lmpdatFile, "a") as f:
+        f.write("\nPair Coeffs \n \n")
         for i in range(ntypes):
-            f.write('{}    0.100000     2.00000 \n'.format(i + 1))
+            f.write("{}    0.100000     2.00000 \n".format(i + 1))
 
-        f.write('\nBond Coeffs \n \n')
-        f.write('1    350.000     1.00000 \n')
+        f.write("\nBond Coeffs \n \n")
+        f.write("1    350.000     1.00000 \n")
 
 
 def create_lammps_in(lmpdatFile, ntypes, outfilepdb, bondscale):
 
-    constant_string1 = '''###### LAMMPS Fix/Bond Create input file #######
+    constant_string1 = """###### LAMMPS Fix/Bond Create input file #######
 units          real
 atom_style     full
 boundary       p p p
@@ -181,14 +210,14 @@ timestep       1
 thermo         1
 thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz
 
-'''
+"""
 
     atomCombinations = create_atom_combinations(ntypes)
-    outInfile = 'bonds_bondcreate.in'
-    with open(outInfile, 'w') as f:
+    outInfile = "bonds_bondcreate.in"
+    with open(outInfile, "w") as f:
         f.write(constant_string1)
         f.write(create_bonds_commands(lmpdatFile, outfilepdb, bondscale))
-        f.write('write_data bonds_bonded.lmpdat \n')
+        f.write("write_data bonds_bonded.lmpdat \n")
 
 
 def create_atom_combinations(nAtoms):
@@ -201,7 +230,7 @@ def create_atom_combinations(nAtoms):
     return combinations
 
 
-#def run_lammps():
+# def run_lammps():
 
 #    return_code = os.system('lmp_serial < ./bonds/bondcreate.in > out')
 #    return return_code
@@ -229,7 +258,7 @@ def create_connectivity(infile):
     if len(links_dict) < len(atoms):
         print(len(atoms), len(links_dict))
         print(
-            'WARNING: Some atoms are not connected, increasing the bondscale might change this. Data file will be still generated'
+            "WARNING: Some atoms are not connected, increasing the bondscale might change this. Data file will be still generated"
         )
 
     return links_dict
@@ -246,18 +275,24 @@ def translate_write_connectivity(infile_lmpdat, connected_infile_lmpdat, infile_
         pdb_connections = map(lambda x: ID_dict[x], lmpdat_connections)
         connectivity_pdb[pdb_key] = pdb_connections
 
-    with open('./bonds/pdbfile.pdb') as oldFile, open('./bonds/connected_pdb.pdb', 'w') as newFile:
+    with open("./bonds/pdbfile.pdb") as oldFile, open(
+        "./bonds/connected_pdb.pdb", "w"
+    ) as newFile:
         for line in oldFile:
-            if line.startswith('ATOM') or line.startswith('HETATM') or line.startswith('COMPND'):
+            if (
+                line.startswith("ATOM")
+                or line.startswith("HETATM")
+                or line.startswith("COMPND")
+            ):
                 newFile.write(line)
-            if line.startswith('MASTER'):
+            if line.startswith("MASTER"):
                 masterLine = line
 
         for key in sorted(connectivity_pdb.keys()):
             connected_atoms = map(str, connectivity_pdb[key])
-            connected_atoms = map(lambda x: '{:>5}'.format(x), connected_atoms)
-            newFile.write('CONECT   {0:>5} {1}\n'.format(key, ''.join(connected_atoms)))
-        newFile.write(masterLine + 'END')
+            connected_atoms = map(lambda x: "{:>5}".format(x), connected_atoms)
+            newFile.write("CONECT   {0:>5} {1}\n".format(key, "".join(connected_atoms)))
+        newFile.write(masterLine + "END")
 
 
 def find_key(pdb_key, lmpdat_atoms):
@@ -275,7 +310,7 @@ def find_key(pdb_key, lmpdat_atoms):
 
 def create_ID_dictionary(infile_pdb, infile_lmpdat):
 
-    #ID dict: key = lmpdat ID
+    # ID dict: key = lmpdat ID
     #         value = pdb ID
     pdb_atoms = readFiles.read_atoms_pdb(infile_pdb)
     lmpdat_atoms = readFiles.read_atoms_lmpdat(infile_lmpdat)
@@ -285,7 +320,9 @@ def create_ID_dictionary(infile_pdb, infile_lmpdat):
         if key not in lmpdat_atoms.keys():
             new_key = find_key(key, lmpdat_atoms)
             if new_key == None:
-                sys.stderr.write('Coordinates in pdbfile.pdb and bonded.lmpdat are different')
+                sys.stderr.write(
+                    "Coordinates in pdbfile.pdb and bonded.lmpdat are different"
+                )
             ID_dict[lmpdat_atoms[new_key]] = pdb_atoms[key]
         else:
             ID_dict[lmpdat_atoms[key]] = pdb_atoms[key]

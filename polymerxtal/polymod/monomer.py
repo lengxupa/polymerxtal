@@ -54,8 +54,8 @@ class Holder:
 # Used only in this file; store name-value pairs when parsing zmatrix file
 class ZVar:
     def __init__(self):
-        self.name = ''
-        self.value = ''
+        self.name = ""
+        self.value = ""
 
     def create(self):
         self.next = ZVar()
@@ -76,7 +76,7 @@ def createHolder(num_atoms):
 
     for i in range(num_atoms):
         h.pos[i] = np.zeros(3)
-        h.el_names[i] = ''
+        h.el_names[i] = ""
         h.atom_types[i] = AtomType()
     h.num_atoms = num_atoms
     return h
@@ -95,7 +95,7 @@ def addZVar(name, value):
     zv.name = name
     zv.value = value
 
-    #printf("variable: %s = %s\n", zv->name, zv->value);  fflush(stdout);
+    # printf("variable: %s = %s\n", zv->name, zv->value);  fflush(stdout);
 
     zv.next = z_variables
     z_variables = zv
@@ -112,7 +112,7 @@ def addZVar(name, value):
 def getRealValue(string):
     zv = z_variables
 
-    while zv and hasattr(av, 'next'):
+    while zv and hasattr(av, "next"):
         if zv.name == string:
             return getRealValue(zv.value)
         zv = zv.next
@@ -127,11 +127,11 @@ def getRealValue(string):
 def cleanupZVars():
 
     zv1 = z_variables
-    while zv1 and hasattr(av1, 'next'):
+    while zv1 and hasattr(av1, "next"):
         zv2 = zv1.next
         zv1.next = ZVars()
-        zv1.name = ''
-        zv1.value = ''
+        zv1.name = ""
+        zv1.value = ""
         del zv1
         zv1 = zv2
     z_variables = ZVars()
@@ -194,7 +194,7 @@ def readZM(s, zmptr):
     # var = value
     # ...
     #
-    # type:   element string e.g. "C", "H", "O"
+    # #type:   element string e.g. "C", "H", "O"
     # length: Angstroms
     # angle:  degrees
     #
@@ -287,12 +287,12 @@ def readZM(s, zmptr):
     for i in range(h.num_atoms):
         h.pos[i] = zmptr.getPosition(i, h.pos[i])
 
-    #for (i = 0; i < h->num_atoms; i++)
-    #{
+    # for (i = 0; i < h->num_atoms; i++)
+    # {
     #   printf("Atom %d: (%g, %g, %g)\n", i+1, h->pos[i].x, h->pos[i].y,
     #       h->pos[i].z);
-    #}
-    #fflush(stdout);
+    # }
+    # fflush(stdout);
 
     # Cleanup
     cleanupZVars()
@@ -401,7 +401,7 @@ def createBond(index1, index2):
 def clearBondVisits(blist):
     b = blist
 
-    while b and hasattr(b, 'next'):
+    while b and hasattr(b, "next"):
         b.visited = 0
         b = b.next
 
@@ -429,7 +429,12 @@ def findBonds(h, eq_bond_scale):
             if d < (di + dj) * eq_bond_scale:
                 # Bond
                 b = createBond(i, j)
-                if blist and hasattr(blist, 'next') and bcurr and hasattr(bcurr, 'next'):
+                if (
+                    blist
+                    and hasattr(blist, "next")
+                    and bcurr
+                    and hasattr(bcurr, "next")
+                ):
                     bcurr.next = b
                 else:
                     blist = b
@@ -444,7 +449,7 @@ def findBonds(h, eq_bond_scale):
 
 
 def FIND_BOND(b, ndx):
-    while b and hasattr(b, 'next') and ndx != b.index1 and ndx != b.index2:
+    while b and hasattr(b, "next") and ndx != b.index1 and ndx != b.index2:
         b = b.next
     return b
 
@@ -462,9 +467,9 @@ def OTHER_INDEX(b, ndx):
 def findRing(target, prev, current, blist):
     b = blist
 
-    while b and hasattr(b, 'next'):
+    while b and hasattr(b, "next"):
         b = FIND_BOND(b, current)
-        if b and hasattr(b, 'next'):
+        if b and hasattr(b, "next"):
             n = OTHER_INDEX(b, current)
             if n != prev and (not b.visited):
                 b.visited += 1
@@ -493,7 +498,7 @@ def setAtomTypes(h, blist):
         at.num_bonds = 0
         ring = 0
         b = blist
-        while b and hasattr(b, 'next'):
+        while b and hasattr(b, "next"):
             if i == b.index1 or i == b.index2:
                 at.num_bonds += 1
                 clearBondVisits(blist)
@@ -532,7 +537,7 @@ def setBondTypes(h, blist):
     at2 = AtomType()
 
     b = blist
-    while b and hasattr(b, 'next'):
+    while b and hasattr(b, "next"):
         at1 = h.atom_types[b.index1]
         at2 = h.atom_types[b.index2]
         if -1 == getBondTypeIndex(at1, at2):
@@ -548,7 +553,7 @@ ANGLE_DIFF = 60.0
 # Entry in a linked list
 class Monomer:
     def __init__(self):
-        self.name = ''
+        self.name = ""
         self.num_atoms = 0
         self.num_extra_bonds = 0
         self.num_bb = 0  # Number of backbone atoms; head: 0;  tail: num_bb-1
@@ -561,9 +566,9 @@ class Monomer:
         self.torsion_energies = {}
         self.torsion_probs = {}
         self.torsion_prob_min = {}
-        self.head_mass = 0.
-        self.tail_mass = 0.
-        self.central_mass = 0.  # all atoms except head and tail
+        self.head_mass = 0.0
+        self.tail_mass = 0.0
+        self.central_mass = 0.0  # all atoms except head and tail
         self.num_torsions = {}
 
     def create(self):
@@ -594,11 +599,11 @@ class Monomer:
             b = blist
             d2min = REAL_MAX
             bnear = Bond()
-            while b and hasattr(b, 'next'):
+            while b and hasattr(b, "next"):
                 # Visit all bonds involving atom indices[i-1]; find the bonded atom
                 # nearest to the tail atom.
                 b = FIND_BOND(b, indices[i - 1])
-                if b and hasattr(b, 'next'):
+                if b and hasattr(b, "next"):
                     j = 0
                     while j < i_not_bb:
                         if OTHER_INDEX(b, indices[i - 1]) == not_bb[j]:
@@ -607,12 +612,18 @@ class Monomer:
                     if j == i_not_bb:
                         # atom to which indices[i-1] is bonded has not already been
                         # rejected from the backbone
-                        d2 = np.linalg.norm(h.pos[OTHER_INDEX(b, indices[i - 1])] - h.pos[tail_index])**2
+                        d2 = (
+                            np.linalg.norm(
+                                h.pos[OTHER_INDEX(b, indices[i - 1])]
+                                - h.pos[tail_index]
+                            )
+                            ** 2
+                        )
                         if d2 < d2min:
                             d2min = d2
                             bnear = b
                     b = b.next
-            if bnear and hasattr(bnear, 'next'):
+            if bnear and hasattr(bnear, "next"):
                 n = OTHER_INDEX(bnear, indices[i - 1])
                 bond_used = 0
                 for j in range(i):
@@ -623,14 +634,14 @@ class Monomer:
                     rev_indices[indices[i]] = i
                     self.zm.entries[i].bond_index = i - 1
 
-                    #printf("backbone atom %d: %d\n", i+1, indices[i]+1); fflush(stdout);
+                    # printf("backbone atom %d: %d\n", i+1, indices[i]+1); fflush(stdout);
 
                     i += 1
                     if n == tail_index:
                         have_backbone += 1
                         self.num_bb = i
 
-                        #printf("found tail!\n"); fflush(stdout);
+                        # printf("found tail!\n"); fflush(stdout);
 
                 else:
                     # Chosen bond (nearest to tail) is already in the backbone!
@@ -650,7 +661,7 @@ class Monomer:
                 # Find a bond involving atom indices[j]
                 b = blist
                 b = FIND_BOND(b, indices[j])
-                while b and hasattr(b, 'next'):
+                while b and hasattr(b, "next"):
                     k = OTHER_INDEX(b, indices[j])
                     n = 0
                     while n < i:
@@ -705,7 +716,9 @@ class Monomer:
             self.zm.entries[i].angle_index = k
             v1 = h.pos[indices[i]] - h.pos[indices[j]]
             v2 = h.pos[indices[k]] - h.pos[indices[j]]
-            self.zm.entries[i].bond_angle = RAD2DEG(calculate_angle(-v1, np.zeros(3), -v2))
+            self.zm.entries[i].bond_angle = RAD2DEG(
+                calculate_angle(-v1, np.zeros(3), -v2)
+            )
             if np.isnan(self.zm.entries[i].bond_angle):
                 raise ValueError("Bond angle for atom %d is NaN" % (i + 1))
 
@@ -725,11 +738,20 @@ class Monomer:
                 n = 0
                 while n == j or n == k:
                     n += 1
-            if -3 == h.atom_types[indices[i]].num_bonds and -3 != h.atom_types[indices[n]].num_bonds:
+            if (
+                -3 == h.atom_types[indices[i]].num_bonds
+                and -3 != h.atom_types[indices[n]].num_bonds
+            ):
                 # Ring atom: choose dihedral also on ring, if possible
                 for q in range(i - 1, -1, -1):
-                    if -3 == h.atom_types[indices[q]].num_bonds and (j != q and k != q) and (
-                            self.zm.entries[q].bond_index == j or self.zm.entries[q].bond_index == k):
+                    if (
+                        -3 == h.atom_types[indices[q]].num_bonds
+                        and (j != q and k != q)
+                        and (
+                            self.zm.entries[q].bond_index == j
+                            or self.zm.entries[q].bond_index == k
+                        )
+                    ):
                         n = q
                         break
             self.zm.entries[i].dihedral_index = n
@@ -742,8 +764,8 @@ class Monomer:
             if np.isnan(ang):
                 raise ValueError("Torsion angle for atom %d is NaN" % (i + 1))
 
-        #define ANGLE_TARGET 10.0
-        #ang = round(ang/ANGLE_TARGET)*ANGLE_TARGET;
+            # define ANGLE_TARGET 10.0
+            # ang = round(ang/ANGLE_TARGET)*ANGLE_TARGET;
 
             self.zm.entries[i].torsion_angle = ang
             zei = self.zm.entries[i]
@@ -752,10 +774,10 @@ class Monomer:
             d2min = 1e9
             for j in range(360):
                 v1 = self.zm.getPosition(i, v1)
-                d1 = np.linalg.norm(v1 - h.pos[indices[i]])**2
+                d1 = np.linalg.norm(v1 - h.pos[indices[i]]) ** 2
                 if d1 < TARGET_SQ_DIST:
                     break
-                #printf("atom %d: sq_dist = %g\n", i+1, d1);
+                # printf("atom %d: sq_dist = %g\n", i+1, d1);
                 if d1 < d2min:
                     d2min = d1
                     ang = self.zm.entries[i].torsion_angle
@@ -764,7 +786,7 @@ class Monomer:
                     self.zm.entries[i].torsion_angle -= 360.0
             if 359 == j:
                 self.zm.entries[i].torsion_angle = ang
-            #if 0
+            # if 0
             # for (j = 0; j < i; j++)
             # {
             #    zej = &m->zm->entries[j];
@@ -790,8 +812,8 @@ class Monomer:
             # if (zei->torsion_angle < 0.0)
             #    zei->torsion_angle = 360.0 + zei->torsion_angle;
 
-            #endif
-            #if 0
+            # endif
+            # if 0
             # Now, some torsion angles may still be wrong, because acos() (in
             # getAngle()) returns the princpal value of the angle between Vectors;
             # this MAY NOT be a problem, if the new torsion angle does not put the
@@ -814,11 +836,11 @@ class Monomer:
             #    zei->torsion_angle = 0.0;
             # if ((zei->torsion_angle < 190.5) && (zei->torsion_angle > 169.5))
             #    zei->torsion_angle = 180.0;
-            #endif
+            # endif
 
         # Update bonds to reflect (possibly) new indices
         b = blist
-        while b and hasattr(b, 'next'):
+        while b and hasattr(b, "next"):
             b.index1 = rev_indices[b.index1]
             b.index2 = rev_indices[b.index2]
             b = b.next
@@ -836,7 +858,7 @@ class Monomer:
     def findExtraBonds(self, blist):
         b = blist
 
-        while b and hasattr(b, 'next'):
+        while b and hasattr(b, "next"):
             i1 = self.zm.entries[b.index1].bond_index
             i2 = self.zm.entries[b.index2].bond_index
             if b.index1 != i2 and b.index2 != i1:
@@ -886,7 +908,9 @@ class Monomer:
         # Convert energies to Boltzmann probabilities, using temperature
         psum = 0.0
         for i in range(n):
-            self.torsion_probs[index][i] = np.exp((Emin - self.torsion_energies[index][i]) / kT)
+            self.torsion_probs[index][i] = np.exp(
+                (Emin - self.torsion_energies[index][i]) / kT
+            )
             psum += self.torsion_probs[index][i]
         # Normalize
         if psum > 1.0:
@@ -914,7 +938,7 @@ def readMonomer(name, path, head_index, tail_index, eq_bond_scale=1.2):
 
     # printf("\nMonomer %s...\n", name); fflush(stdout);
     # Read atomic species and positions into h
-    p = path.rfind('.')
+    p = path.rfind(".")
     if not p:
         raise NameError("Unable to determine file type of monomer file %s" % path)
     p += 1

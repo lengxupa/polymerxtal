@@ -8,7 +8,7 @@ def fchdir(fd):
     # trying to insert to fd directory
     try:
         os.chdir(fd)
-        #print("Inserting inside-", os.getcwd())
+        # print("Inserting inside-", os.getcwd())
 
     # Caching the exception
     except:
@@ -16,7 +16,7 @@ def fchdir(fd):
         return -1
 
         # handling with finally
-        #finally:
+        # finally:
         print("Restoring the path")
         os.chdir(cwd)
         print("Current directory is-", os.getcwd())

@@ -27,7 +27,7 @@ from .zmatrix import ZMatrix
 current_location = os.path.dirname(__file__)
 
 # Build the path to data_dir.
-prog_datadir = os.path.join(current_location, '..', 'data')
+prog_datadir = os.path.join(current_location, "..", "data")
 
 # File scope
 read_elements = 0
@@ -61,8 +61,8 @@ class Params:
         self.excluded_slabs = ExclSlab()  # list
         self.data_dir = prog_datadir  # directory name for data files
         self.element_data = "elements"  # path to element data file
-        self.log_file = ''  # stdout by default
-        self.status_file = ''  # stdout by default
+        self.log_file = ""  # stdout by default
+        self.status_file = ""  # stdout by default
         self.excluded_cylinders = ExclCylinder()  # list
         self.excluded_spheres = ExclSphere()  # list
         self.chain_stereo_weights = {}  # size num_stereo
@@ -119,7 +119,7 @@ class Params:
 
             el_path = "%s/%s" % (self.data_dir, self.element_data)
             readElements(el_path)
-            el_path = ''
+            el_path = ""
             read_elements += 1
 
     # ============================================================================
@@ -130,12 +130,14 @@ class Params:
     def readParams(self, path):
         s = createScanner(path)
         done = 0
-        name = ''
-        file_name = ''
-        full_path = ''
+        name = ""
+        file_name = ""
+        full_path = ""
 
         def CHOKE_PARSE(param):
-            raise SyntaxError("File %s, line %d: unknown %s, %s" % (s.path, s.lineno, param, s.tokstr))
+            raise SyntaxError(
+                "File %s, line %d: unknown %s, %s" % (s.path, s.lineno, param, s.tokstr)
+            )
 
         while not done:
             tokval = s.getToken()
@@ -144,12 +146,12 @@ class Params:
 
             elif tokval == TOK_DATA_DIR:
                 s.getToken()
-                self.data_dir = ''
+                self.data_dir = ""
                 self.data_dir = s.tokstr
 
             elif tokval == TOK_ELEMENT_DATA:
                 s.getToken()
-                self.element_data = ''
+                self.element_data = ""
                 self.element_data = s.tokstr
 
             elif tokval == TOK_BOND_SCALE:
@@ -226,7 +228,11 @@ class Params:
                         raise ValueError("Excluded slab min z > max z")
                     es.next = self.excluded_slabs
                     self.excluded_slabs = es
-                    self.excluded_volume += (es.max[0] - es.min[0]) * (es.max[1] - es.min[1]) * (es.max[2] - es.min[2])
+                    self.excluded_volume += (
+                        (es.max[0] - es.min[0])
+                        * (es.max[1] - es.min[1])
+                        * (es.max[2] - es.min[2])
+                    )
                 elif t == TOK_SPHERE:
                     esph = createExclSphere()
                     esph.invert = n
@@ -239,7 +245,9 @@ class Params:
                     esph.radius = s.getRealToken()
                     esph.next = self.excluded_spheres
                     self.excluded_spheres = esph
-                    self.excluded_volume += 4.0 * np.pi * esph.radius * esph.radius * esph.radius / 3.0
+                    self.excluded_volume += (
+                        4.0 * np.pi * esph.radius * esph.radius * esph.radius / 3.0
+                    )
                 else:
                     CHOKE_PARSE("exclusion")
 
@@ -319,14 +327,14 @@ class Params:
                 elif t == TOK_TORSION_ROTATION:
                     s.getToken()
                     msearch = findMonomer(s.tokstr, self)
-                    if (not msearch) or not hasattr(msearch, 'next'):
+                    if (not msearch) or not hasattr(msearch, "next"):
                         CHOKE_PARSE("monomer")
                     a = s.getIntToken() - 1  # torsion index
                     b = s.getIntToken()  # angle step
                     leng = len(msearch.name) + 22
                     f = "%s_torsion_%2d_%3ddeg.pdb" % (msearch.name, a, b)
                     writeInternalRotationPDB(msearch, a, b, f)
-                    f = ''
+                    f = ""
                 elif t == TOK_CHAIN_LENGTH:
                     self.write_chain_length = 1
                 elif t == TOK_CHAIN_LENGTH_HISTO:
@@ -349,14 +357,17 @@ class Params:
                 m = readMonomer(name, f, a, b, self.bond_scale)
                 m.next = self.known_monomers
                 self.known_monomers = m
-                name = ''
-                f = ''
+                name = ""
+                f = ""
                 if m.num_atoms > self.max_monomer_atoms:
                     self.max_monomer_atoms = m.num_atoms
 
             elif tokval == TOK_TORSION:
-                if not (m and hasattr(m, 'next')):
-                    raise TypeError("File %s, line %d: no monomer specified for torsion" % (s.path, s.lineno))
+                if not (m and hasattr(m, "next")):
+                    raise TypeError(
+                        "File %s, line %d: no monomer specified for torsion"
+                        % (s.path, s.lineno)
+                    )
                 if TOK_ALL == s.getToken():
                     a = 2
                     b = m.num_bb
@@ -364,7 +375,10 @@ class Params:
                     s.pushToken()
                     b = s.getIntToken()
                     if b < 1 or b > m.num_bb:
-                        raise ValueError("File %s, line %d: invalid torsion index %d" % (s.path, s.lineno, b))
+                        raise ValueError(
+                            "File %s, line %d: invalid torsion index %d"
+                            % (s.path, s.lineno, b)
+                        )
                     a = b - 1
                 tmp = s.getToken()
                 if tmp == TOK_FIXED:
@@ -388,7 +402,13 @@ class Params:
                         s.getToken()
                         for n in range(a, b):
                             m.torsions[n] = TORSION_ENERGY_CALC
-                            calculateTorsionEnergies(m, n, self.bond_cutoff, self.backbone_bond_length, s.tokstr)
+                            calculateTorsionEnergies(
+                                m,
+                                n,
+                                self.bond_cutoff,
+                                self.backbone_bond_length,
+                                s.tokstr,
+                            )
                             m.readTorsionEnergies(n, s.tokstr, self.temperature)
                     else:
                         for n in range(a, b):
@@ -408,17 +428,17 @@ class Params:
                     CHOKE_PARSE("stereo option")
                 b = s.getIntToken()  # number of monomers in the stereo
                 st = createStereo(name, a, b)
-                name = ''
+                name = ""
                 for n in range(b):
                     s.getToken()
                     msearch = findMonomer(s.tokstr, self)
-                    if not (msearch and hasattr(msearch, 'next')):
+                    if not (msearch and hasattr(msearch, "next")):
                         CHOKE_PARSE("monomer")
                     st.addStereoMonomer(msearch, 0.0 if a else s.getRealToken())
                 if TOK_TERM == s.getToken():
                     s.getToken()
                     msearch = findMonomer(s.tokstr, self)
-                    if not (msearch and hasattr(msearch, 'next')):
+                    if not (msearch and hasattr(msearch, "next")):
                         CHOKE_PARSE("monomer")
                     st.term = msearch
                 else:
@@ -431,7 +451,7 @@ class Params:
                 for n in range(self.num_stereo):
                     s.getToken()
                     st = findStereo(s.tokstr, self)
-                    if not (st and hasattr(st, 'next')):
+                    if not (st and hasattr(st, "next")):
                         CHOKE_PARSE("stereo")
                     self.chain_stereo[n] = st
                     self.chain_stereo_weights[n] = s.getRealToken()
@@ -439,16 +459,18 @@ class Params:
             elif tokval == TOK_POLYMER:
                 s.getToken()
                 self.getElements()
-                q = s.tokstr.rfind('/')
+                q = s.tokstr.rfind("/")
                 if q == -1:
-                    raise ValueError("Expecting <polymer>/<torsion_option> polymer argument")
+                    raise ValueError(
+                        "Expecting <polymer>/<torsion_option> polymer argument"
+                    )
                 leng = len(self.data_dir) + len(s.tokstr) + 11
                 full_path = "%s/polymers/%s" % (self.data_dir, s.tokstr)
                 storeDir()
                 changeDir(full_path)
-                self.readParams(s.tokstr[q + 1:])
+                self.readParams(s.tokstr[q + 1 :])
                 restoreDir()
-                full_path = ''
+                full_path = ""
 
             elif tokval == TOK_ISOLATE_CHAINS:
                 self.isolate_chains += 1
@@ -462,11 +484,11 @@ class Params:
         del s
 
         # Sanity checks
-        if self.temperature <= 0.:
+        if self.temperature <= 0.0:
             raise ValueError("Invalid temperature: %f", self.temperature)
         if 0 == self.num_stereo:
             st = findStereo("default", self)
-            if not (st and hasattr(st, 'next')):
+            if not (st and hasattr(st, "next")):
                 raise TypeError("No chain stereo chemistry options specified")
             self.num_stereo = 1
             self.chain_stereo = {}
@@ -483,14 +505,17 @@ class Params:
 
         f.printf("Read data from %s\n" % self.data_dir)
         f.printf("Element info: %s/%s\n\n" % (self.data_dir, self.element_data))
-        f.printf("Scale equilibrium bond lengths by %f to identify bonds\n\n" % self.bond_scale)
+        f.printf(
+            "Scale equilibrium bond lengths by %f to identify bonds\n\n"
+            % self.bond_scale
+        )
 
         writeAtomTypes(f)
         writeBondTypes(f)
         f.printf("\n")
 
         m = self.known_monomers
-        while m and hasattr(m, 'next'):
+        while m and hasattr(m, "next"):
             f.printf("Monomer %s:\n" % m.name)
             m.zm.writeZMatrix(f, 0)
             f.printf("Internal coordinates with Dreiding types:\n")
@@ -507,17 +532,24 @@ class Params:
                     f.printf("bonded interactions (E(phi)) specified\n")
                 elif m.torsions[i] == Torsion.TORSION_ENERGY_CALC:
                     f.printf("bonded interactions (E(phi)) calculated internally\n")
-            f.printf("   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds)
+            f.printf(
+                "   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds
+            )
             b = m.extra_bonds
-            while b and hasattr(b, 'next'):
-                f.printf("      Between atoms %d and %d\n" % (b.index1 + 1, b.index2 + 1))
+            while b and hasattr(b, "next"):
+                f.printf(
+                    "      Between atoms %d and %d\n" % (b.index1 + 1, b.index2 + 1)
+                )
                 b = b.next
             m = m.next
 
         f.printf("\nStereochemistry options:\n")
         s = self.known_stereo
-        while s and hasattr(s, 'next'):
-            f.printf("   %s (%s): " % (s.name, "pattern" if s.pattern else "weighted selection"))
+        while s and hasattr(s, "next"):
+            f.printf(
+                "   %s (%s): "
+                % (s.name, "pattern" if s.pattern else "weighted selection")
+            )
             for i in range(s.num_monomers):
                 f.printf("%s " % s.monomers[i].name)
                 if not s.pattern:
@@ -528,56 +560,101 @@ class Params:
             s = s.next
 
         f.printf("\nSystem dimensions:\n")
-        f.printf("   Minimum (%f, %f, %f)\n" % (self.system_min[0], self.system_min[1], self.system_min[2]))
-        f.printf("   Maximum (%f, %f, %f)\n" % (self.system_max[0], self.system_max[1], self.system_max[2]))
-        if (self.excluded_cylinders and hasattr(self.excluded_cylinders, 'next')) or (self.excluded_slabs and hasattr(
-                self.excluded_slabs, 'next')) or (self.excluded_spheres and hasattr(self.excluded_spheres, 'next')):
+        f.printf(
+            "   Minimum (%f, %f, %f)\n"
+            % (self.system_min[0], self.system_min[1], self.system_min[2])
+        )
+        f.printf(
+            "   Maximum (%f, %f, %f)\n"
+            % (self.system_max[0], self.system_max[1], self.system_max[2])
+        )
+        if (
+            (self.excluded_cylinders and hasattr(self.excluded_cylinders, "next"))
+            or (self.excluded_slabs and hasattr(self.excluded_slabs, "next"))
+            or (self.excluded_spheres and hasattr(self.excluded_spheres, "next"))
+        ):
             ec = self.excluded_cylinders
             es = self.excluded_slabs
             esph = self.excluded_spheres
 
-            while ec and hasattr(ec, 'next'):
+            while ec and hasattr(ec, "next"):
                 if ec.invert:
                     f.printf("   Excluded inverted")
                 else:
                     f.printf("   Excluded")
-                f.printf(" cylinder: start at (%f, %f, %f), " % (ec.start[0], ec.start[1], ec.start[2]))
-                f.printf("axis (%f, %f, %f), radius %f, length %f\n" %
-                         (ec.axis[0], ec.axis[1], ec.axis[2], ec.radius, ec.length))
+                f.printf(
+                    " cylinder: start at (%f, %f, %f), "
+                    % (ec.start[0], ec.start[1], ec.start[2])
+                )
+                f.printf(
+                    "axis (%f, %f, %f), radius %f, length %f\n"
+                    % (ec.axis[0], ec.axis[1], ec.axis[2], ec.radius, ec.length)
+                )
                 ec = ec.next
-            while es and hasattr(es, 'next'):
+            while es and hasattr(es, "next"):
                 if es.invert:
                     f.printf("   Excluded inverted")
                 else:
                     f.printf("   Excluded")
-                    f.printf(" slab: from (%f, %f, %f) to (%f, %f, %f)\n" %
-                             (es.min[0], es.min[1], es.min[2], es.max[0], es.max[1], es.max[2]))
+                    f.printf(
+                        " slab: from (%f, %f, %f) to (%f, %f, %f)\n"
+                        % (
+                            es.min[0],
+                            es.min[1],
+                            es.min[2],
+                            es.max[0],
+                            es.max[1],
+                            es.max[2],
+                        )
+                    )
                 es = es.next
-            while esph and hasattr(esph, 'next'):
+            while esph and hasattr(esph, "next"):
                 if esph.invert:
                     f.printf("   Excluded inverted")
                 else:
                     f.printf("   Excluded")
-                f.printf(" sphere: centered at (%f, %f, %f) with radius %g\n" %
-                         (esph.center[0], esph.center[1], esph.center[2], esph.radius))
+                f.printf(
+                    " sphere: centered at (%f, %f, %f) with radius %g\n"
+                    % (esph.center[0], esph.center[1], esph.center[2], esph.radius)
+                )
                 esph = esph.next
         f.printf("Total polymer volume: %g A^3\n\n" % self.total_volume)
 
         f.printf("Total domains: %d\n" % self.total_domains)
-        f.printf("   %d domain%s in X (size %f)\n" %
-                 (self.num_domains_x, "s" if self.num_domains_x > 1 else "", self.domain_size[0]))
-        f.printf("   %d domain%s in Y (size %f)\n" %
-                 (self.num_domains_y, "s" if self.num_domains_y > 1 else "", self.domain_size[1]))
-        f.printf("   %d domain%s in Z (size %f)\n" %
-                 (self.num_domains_z, "s" if self.num_domains_z > 1 else "", self.domain_size[2]))
+        f.printf(
+            "   %d domain%s in X (size %f)\n"
+            % (
+                self.num_domains_x,
+                "s" if self.num_domains_x > 1 else "",
+                self.domain_size[0],
+            )
+        )
+        f.printf(
+            "   %d domain%s in Y (size %f)\n"
+            % (
+                self.num_domains_y,
+                "s" if self.num_domains_y > 1 else "",
+                self.domain_size[1],
+            )
+        )
+        f.printf(
+            "   %d domain%s in Z (size %f)\n"
+            % (
+                self.num_domains_z,
+                "s" if self.num_domains_z > 1 else "",
+                self.domain_size[2],
+            )
+        )
 
         f.printf("\nChain density: %f g/cm^3\n" % self.density)
         f.printf("%d chains\n" % self.num_chains)
         f.printf("%d monomers per chain\n" % self.num_monomers)
         f.printf("   %f deviation in monomers per chain\n\n" % self.num_monomers_stddev)
         for i in range(self.num_stereo):
-            f.printf("%f %% of chains will be %s\n" %
-                     (self.chain_stereo_weights[i] * 100.0, self.chain_stereo[i].name))
+            f.printf(
+                "%f %% of chains will be %s\n"
+                % (self.chain_stereo_weights[i] * 100.0, self.chain_stereo[i].name)
+            )
 
         f.printf("\nChain growth:\n")
         f.printf("   consider %d configurations\n" % self.num_configs)
@@ -590,13 +667,24 @@ class Params:
             else:
                 f.printf("none\n")
             f.printf("   Bond cutoff for bonded interactions: %d\n" % self.bond_cutoff)
-            f.printf("   Interaction range for non-bonded interactions: %f A\n" % self.energy_cutoff)
+            f.printf(
+                "   Interaction range for non-bonded interactions: %f A\n"
+                % self.energy_cutoff
+            )
             f.printf("   Grid size for neighbor bins: %f A\n" % self.grid_size)
-        f.printf("   Rotate varying torsions %f degrees when packing\n" % self.torsion_step)
-        f.printf("   Backbone bond length between monomers: %f A\n" % self.backbone_bond_length)
+        f.printf(
+            "   Rotate varying torsions %f degrees when packing\n" % self.torsion_step
+        )
+        f.printf(
+            "   Backbone bond length between monomers: %f A\n"
+            % self.backbone_bond_length
+        )
 
         f.printf("\nRNG seed: %d\n" % self.rng_seed)
-        f.printf("%s atomic positions\n" % ("Recalculate" if self.recalculate_positions else "Store"))
+        f.printf(
+            "%s atomic positions\n"
+            % ("Recalculate" if self.recalculate_positions else "Store")
+        )
         if self.isolate_chains:
             f.printf("Grow isolated chains\n")
         if self.write_wrapped_pdb:
@@ -610,7 +698,10 @@ class Params:
         if self.write_chain_length:
             f.printf("Write chain length\n")
         if self.write_chain_length_histo:
-            f.printf("Write chain length histogram (bin size %f A)\n" % self.chain_length_histo_bin)
+            f.printf(
+                "Write chain length histogram (bin size %f A)\n"
+                % self.chain_length_histo_bin
+            )
         if self.write_torsion_histo:
             f.printf("Write torsion angle histogram\n")
         if self.write_intermediate:
@@ -626,7 +717,7 @@ class Params:
 def findStereo(name, p):
     st = p.known_stereo
 
-    while st and hasattr(st, 'next'):
+    while st and hasattr(st, "next"):
         if name == st.name:
             break
         st = st.next
@@ -642,7 +733,7 @@ def findStereo(name, p):
 def findMonomer(name, p):
     m = p.known_monomers
 
-    while m and hasattr(m, 'next'):
+    while m and hasattr(m, "next"):
         if name == m.name:
             break
         m = m.next

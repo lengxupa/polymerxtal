@@ -37,7 +37,9 @@ class Energy:
         p2 = getElementLJ_R0(type1) * getElementLJ_R0(type2) / r2  # (R/R0)^-2
         p6 = p2 * p2 * p2
 
-        return np.sqrt(getElementLJ_D0(type1) * getElementLJ_D0(type2)) * p6 * (p6 - 2.0)
+        return (
+            np.sqrt(getElementLJ_D0(type1) * getElementLJ_D0(type2)) * p6 * (p6 - 2.0)
+        )
 
     # ============================================================================
     # energyHardCore()

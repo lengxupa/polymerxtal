@@ -12,8 +12,10 @@ import os
 
 @pytest.fixture(scope="module")
 def methane_molecule():
-    symbols = np.array(['C', 'H', 'H', 'H', 'H'])
-    coordinates = np.array([[1, 1, 1], [2.4, 1, 1], [-0.4, 1, 1], [1, 1, 2.4], [1, 1, -0.4]])
+    symbols = np.array(["C", "H", "H", "H", "H"])
+    coordinates = np.array(
+        [[1, 1, 1], [2.4, 1, 1], [-0.4, 1, 1], [1, 1, 2.4], [1, 1, -0.4]]
+    )
     return symbols, coordinates
 
 
@@ -33,9 +35,13 @@ def test_molecular_mass(methane_molecule):
 
     calculated_mass = polymerxtal.crystal.calculate_molecular_mass(symbols)
 
-    actual_mass = polymerxtal.data.atomic_weights['C'] + polymerxtal.data.atomic_weights[
-        'H'] + polymerxtal.data.atomic_weights['H'] + polymerxtal.data.atomic_weights[
-            'H'] + polymerxtal.data.atomic_weights['H']
+    actual_mass = (
+        polymerxtal.data.atomic_weights["C"]
+        + polymerxtal.data.atomic_weights["H"]
+        + polymerxtal.data.atomic_weights["H"]
+        + polymerxtal.data.atomic_weights["H"]
+        + polymerxtal.data.atomic_weights["H"]
+    )
 
     assert actual_mass == calculated_mass
 

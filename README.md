@@ -17,6 +17,7 @@ This package requires the following:
   - numpy
   - matplotlib
   - ovito
+  - openbabel
 
 Features should be developed on branches. To create and switch to a branch, use the command
 
