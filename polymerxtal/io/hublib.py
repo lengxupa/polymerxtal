@@ -6,7 +6,7 @@ For now lets see how this works.  Just implement "setenv", "prepend", and "use".
 Works for all currently installed modules except two old ones that use local shell variables.
 """
 
-from IPython.core.magic import register_line_magic
+# from IPython.core.magic import register_line_magic
 import os
 from string import Template
 import sys

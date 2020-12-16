@@ -9,6 +9,10 @@ from time import strftime
 from .hublib import check_nanohub
 
 LAMMPS_EXEC = os.environ.get("LAMMPS_EXEC")
+if LAMMPS_EXEC is None:
+    LOADEDMODULES = os.environ.get("LOADEDMODULES")
+    if "lammps/31Mar17" in LOADEDMODULES:
+        LAMMPS_EXEC = "lmp"
 verbose = False
 
 
