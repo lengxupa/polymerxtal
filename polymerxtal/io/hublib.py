@@ -54,10 +54,9 @@ def _set(a, b):
     d[a] = b
 
 
-def use(name):
+def _use(name):
 
     fname = None
-    print("debug hublib.py: use - EPATH -", EPATH)
     for e in EPATH:
         ename = os.path.join(e, name)
         if os.path.isfile(ename):
@@ -83,3 +82,7 @@ def use(name):
             line = line.split("=")
             if len(line) == 2:
                 _set(line[0].strip(), line[1].strip())
+
+
+def use(name):
+    _use(name)
