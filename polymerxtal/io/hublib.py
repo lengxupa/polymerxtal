@@ -12,18 +12,17 @@ from string import Template
 import sys
 
 EPATH = []
+d = {}
 
 
 def check_nanohub():
     if os.environ["HOME"].split("/")[2] == "nanohub":
+        global EPATH
         EPATH = os.environ["ENVIRON_CONFIG_DIRS"].split()
         use("lammps-31Mar17")
         return True
     else:
         return False
-
-
-d = {}
 
 
 def setenv(line):
@@ -58,6 +57,7 @@ def _set(a, b):
 def use(name):
 
     fname = None
+    print("debug hublib.py: use - EPATH -", EPATH)
     for e in EPATH:
         ename = os.path.join(e, name)
         if os.path.isfile(ename):
