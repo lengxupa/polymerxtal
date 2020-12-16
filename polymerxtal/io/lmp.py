@@ -6,18 +6,10 @@ import os
 from subprocess import call, Popen, PIPE
 from time import strftime
 
-from .hublib import use
+from .hublib import check_nanohub
 
 LAMMPS_EXEC = os.environ.get("LAMMPS_EXEC")
 verbose = False
-
-
-def check_nanohub():
-    if os.environ["HOME"].split("/")[2] == "nanohub":
-        use("lammps-31Mar17")
-        return True
-    else:
-        return False
 
 
 def check_lmps_exec():

@@ -6,12 +6,23 @@ For now lets see how this works.  Just implement "setenv", "prepend", and "use".
 Works for all currently installed modules except two old ones that use local shell variables.
 """
 
-import sys
+from IPython.core.magic import register_line_magic
 import os
 from string import Template
-from IPython.core.magic import register_line_magic
+import sys
 
-EPATH = os.environ["ENVIRON_CONFIG_DIRS"].split()
+EPATH = []
+
+
+def check_nanohub():
+    if os.environ["HOME"].split("/")[2] == "nanohub":
+        EPATH = os.environ["ENVIRON_CONFIG_DIRS"].split()
+        use("lammps-31Mar17")
+        return True
+    else:
+        return False
+
+
 d = {}
 
 
