@@ -4,14 +4,18 @@ https://github.com/openbabel/openbabel/blob/master/src/charges/qeq.cpp
 
 """
 
+import os
 import numpy as np
 from scipy.special import erf
 import string
 
+current_location = os.path.dirname(__file__)
+
+
 def get_parameters(infile):
 
     eV = 3.67493245e-2
-    Angstrom = 1./0.529177249
+    Angstrom = 1.0 / 0.529177249
 
     parameters = {}
 
@@ -23,15 +27,16 @@ def get_parameters(infile):
             data = line.rstrip().split()
 
             element = data[0]
-            elecnegativity = float(data[1])*eV
-            hardness = float(data[2])*eV
-            sradius = float(data[3])*Angstrom
+            elecnegativity = float(data[1]) * eV
+            hardness = float(data[2]) * eV
+            sradius = float(data[3]) * Angstrom
 
-            basis =  1.0/(sradius*sradius)
+            basis = 1.0 / (sradius * sradius)
 
             parameters[element] = [elecnegativity, hardness, basis]
 
     return parameters
+
 
 def get_elements(infile):
 
@@ -44,11 +49,12 @@ def get_elements(infile):
             data = line.rstrip().split()
 
             typeID = int(data[0])
-            typeElement = data[1].split('_')[0]
+            typeElement = data[1].split("_")[0]
 
             atomElements[typeID] = typeElement
 
     return atomElements
+
 
 def read_total_charge(inpfile):
 
@@ -56,16 +62,18 @@ def read_total_charge(inpfile):
 
         for line in f:
 
-            if line.startswith('TCHARGE'):
+            if line.startswith("TCHARGE"):
 
                 total_charge = float(line.rstrip().split()[1])
 
                 return total_charge
 
-def calculate_coulomb_integral(a, b, R):
-    p = np.sqrt(a*b/(a+b))
 
-    return erf(p*R)/R
+def calculate_coulomb_integral(a, b, R):
+    p = np.sqrt(a * b / (a + b))
+
+    return erf(p * R) / R
+
 
 def solve_system(C, D):
 
@@ -73,12 +81,13 @@ def solve_system(C, D):
 
     return charges
 
+
 def fill_J(atoms, J, BasisSet, CoulombMaxDistance):
 
     nAtoms = len(atoms)
 
     for k in range(1, nAtoms):
-        for l in range(k+1, nAtoms):
+        for l in range(k + 1, nAtoms):
 
             atom1 = atoms[k]
             atom2 = atoms[l]
@@ -86,7 +95,7 @@ def fill_J(atoms, J, BasisSet, CoulombMaxDistance):
             xyz_atom1 = np.array(atom1[4:7])
             xyz_atom2 = np.array(atom2[4:7])
 
-            R = np.linalg.norm(xyz_atom1-xyz_atom2)
+            R = np.linalg.norm(xyz_atom1 - xyz_atom2)
 
             if R < CoulombMaxDistance:
 
@@ -94,27 +103,25 @@ def fill_J(atoms, J, BasisSet, CoulombMaxDistance):
 
             else:
 
-                coulomb = 1.0/R
+                coulomb = 1.0 / R
 
             J[k][l] = coulomb
             J[l][k] = coulomb
 
-    for i in range(nAtoms+1):
+    for i in range(nAtoms + 1):
 
         J[nAtoms][i] = 1.0
 
         J[i][nAtoms] = 1.0
 
 
-
-
 def create_C(Q_total, Q_past, fixed, J):
-
 
     C = np.zeros((nAtoms, nAtoms))
 
     for i in range(nAtoms):
         C[0][i] = Q_past[i]
+
 
 def compute_QEq_charges(atoms, charges_past):
 
@@ -126,9 +133,11 @@ def compute_QEq_charges(atoms, charges_past):
     Voltage = charges_past
     BasisSet = np.zeros(nAtoms)
 
-    parameters = get_parameters('./data4lammps/data/qeq.txt')
+    datadir = os.path.join(current_location, "data")
 
-    atomElements = get_elements('./types/atom_type.dat')
+    parameters = get_parameters(os.path.join(datadir, "qeq.txt"))
+
+    atomElements = get_elements("./types/atom_type.dat")
 
     for i in range(nAtoms):
 
@@ -139,12 +148,14 @@ def compute_QEq_charges(atoms, charges_past):
         J[i][i] = parameters[atomElement][1]
         BasisSet[i] = parameters[atomElement][2]
 
-    total_charge = read_total_charge('./types/atoms.dat')
+    total_charge = read_total_charge("./types/atoms.dat")
 
-    print('Total molecule charge: {}'.format(total_charge))
+    print("Total molecule charge: {}".format(total_charge))
 
     SmallestGuassianExponent = min(BasisSet)
-    CoulombMaxDistance = 2*np.sqrt(-np.log(CoulombThreshold) / SmallestGuassianExponent)
+    CoulombMaxDistance = 2 * np.sqrt(
+        -np.log(CoulombThreshold) / SmallestGuassianExponent
+    )
 
     fill_J(atoms, J, BasisSet, CoulombMaxDistance)
 
@@ -155,10 +166,11 @@ def compute_QEq_charges(atoms, charges_past):
 
     return charges
 
+
 def Qeq_charge_equilibration(atoms):
 
     nAtoms = len(atoms)
-    new_charges = np.zeros(nAtoms+1)
+    new_charges = np.zeros(nAtoms + 1)
 
     for i in range(1):
 

@@ -4,7 +4,7 @@ This module handles commands related to create bonds
 
 import openbabel as ob
 
-from readFiles import read_n_types, read_atom_pdb
+from .readFiles import read_n_types, read_atom_pdb
 
 
 def create_bonds_commands(infile, pdbfile, bondscale):

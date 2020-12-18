@@ -1,5 +1,0 @@
-#!/bin/sh
-
-/usr/bin/invoke_app "$@" -C "start_jupyter -t -T @tool bin/struct2lammps.ipynb" -t struc2lammpsdf \
-                         -u anaconda3-5.1 \
-                         -u lammps-31Mar17

@@ -18,6 +18,7 @@ This package requires the following:
   - matplotlib
   - ovito
   - openbabel
+  - scipy
 
 Features should be developed on branches. To create and switch to a branch, use the command
 

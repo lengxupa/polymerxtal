@@ -1,4 +1,0 @@
-struct2lammps.py
-	- Create_Data_File()
-createBonds.py
-	- create_bonds()

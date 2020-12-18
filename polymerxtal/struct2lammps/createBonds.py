@@ -12,7 +12,7 @@ import sys
 from polymerxtal.io import run_lammps
 
 from .createBondCommands import create_bonds_commands
-from .readFiles import read_n_types, read_atom_pdb, get_mass
+from .readFiles import *
 from .runData4Lammps import read_cell_sizes
 
 
@@ -20,16 +20,16 @@ def create_bonds(
     outfilelmpdat, outfilepdb, bondscale, files_in_lattice, user_boundaries
 ):
 
-    ntypes = read_n_types("bonds_test.lmpdat")
+    ntypes = read_n_types("./bonds/test.lmpdat")
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
-    create_lmpdat("bonds_new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
-    write_mass("bonds_new.lmpdat", ntypes, mass)
-    write_coeff("bonds_new.lmpdat", ntypes)
+    create_lmpdat("./bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
+    write_mass("./bonds/new.lmpdat", ntypes, mass)
+    write_coeff("./bonds/new.lmpdat", ntypes)
 
     create_lammps_in(outfilelmpdat, ntypes, outfilepdb, bondscale)
-    return_code = run_lammps("bonds_bondcreate.in")
+    return_code = run_lammps("./bonds/bondcreate.in")
     if return_code != 0:
         print("LAMMPS did not finish succesfully, can not continue")
         raise Exception("LAMMPS did not finish succesfully, can not continue")
@@ -103,7 +103,9 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
 25 extra improper per atom
 
 """
-    with open("bonds_old.lmpdat") as oldFile, open("bonds_new.lmpdat", "w") as newFile:
+    with open("./bonds/old.lmpdat") as oldFile, open(
+        "./bonds/new.lmpdat", "w"
+    ) as newFile:
 
         newFile.write("LAMMPS data file \n")
         newFile.write("\n")
@@ -205,7 +207,7 @@ dihedral_style harmonic
 improper_style harmonic
 
 box            tilt large
-read_data      bonds_new.lmpdat
+read_data      ./bonds/new.lmpdat
 timestep       1
 thermo         1
 thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz
@@ -213,11 +215,11 @@ thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz
 """
 
     atomCombinations = create_atom_combinations(ntypes)
-    outInfile = "bonds_bondcreate.in"
+    outInfile = "./bonds/bondcreate.in"
     with open(outInfile, "w") as f:
         f.write(constant_string1)
         f.write(create_bonds_commands(lmpdatFile, outfilepdb, bondscale))
-        f.write("write_data bonds_bonded.lmpdat \n")
+        f.write("write_data ./bonds/bonded.lmpdat \n")
 
 
 def create_atom_combinations(nAtoms):
@@ -240,8 +242,8 @@ def create_connectivity(infile):
 
     links_dict = {}
     links = []
-    atoms = readFiles.read_atoms_lmpdat(infile)
-    bonds = readFiles.read_bonds_lmpdat(infile)
+    atoms = read_atoms_lmpdat(infile)
+    bonds = read_bonds_lmpdat(infile)
     print("Number of atoms: ", len(atoms))
     print("Number of bonds: ", len(bonds))
 
@@ -312,8 +314,8 @@ def create_ID_dictionary(infile_pdb, infile_lmpdat):
 
     # ID dict: key = lmpdat ID
     #         value = pdb ID
-    pdb_atoms = readFiles.read_atoms_pdb(infile_pdb)
-    lmpdat_atoms = readFiles.read_atoms_lmpdat(infile_lmpdat)
+    pdb_atoms = read_atoms_pdb(infile_pdb)
+    lmpdat_atoms = read_atoms_lmpdat(infile_lmpdat)
     ID_dict = {}
 
     for key in pdb_atoms.keys():

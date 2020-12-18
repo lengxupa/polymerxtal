@@ -14,5 +14,7 @@ except:
 
 def getnd():
     if use_ovito:
-        node = ovito.io.import_file("bonds_pdbfile.pdb")
-        ovito.io.export_file(node, "bonds_old.lmpdat", "lammps_data", atom_style="full")
+        node = ovito.io.import_file("./bonds/pdbfile.pdb")
+        ovito.io.export_file(
+            node, "./bonds/old.lmpdat", "lammps_data", atom_style="full"
+        )

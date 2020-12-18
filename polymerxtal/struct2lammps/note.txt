@@ -1,3 +1,16 @@
 normal:
+PCFF.getAngleCoeffs - PCFF_getAngleCoeffs
+PCFF.getAngletypes - PCFF_getAngletypes
+PCFF.getAtommass - PCFF_getAtommass
+PCFF.getBondCoeffs - PCFF_getBondCoeffs
+PCFF.getDihsCoeffs - PCFF_getDihsCoeffs
+PCFF.getDihstypes - PCFF_getDihstypes
+PCFF.getImpsCoeffs - PCFF_getImpsCoeffs
+PCFF.getImpstypes - PCFF_getImpstypes
+PCFF.getPairCoeffs - PCFF_getPairCoeffs
+PCFF.readPairCoeffs - PCFF_readPairCoeffs
 runCommand - os.system
 run_lammps - from polymerxtal.io import run_lammps
+
+./bonds/
+./types/
