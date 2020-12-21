@@ -1,0 +1,1 @@
+/apps/struc2lammpsdf/r68/bin/readFiles.py
