@@ -148,4 +148,5 @@ def ovito_view(sample_path, filename, view="Perspective"):
             "Cannot use function ovito_view - the package ovito is not installed or cannot be found."
         )
 
-ovito_view(sys.argv[1], sys.argv[2], view=sys.argv[3])
+if use_ovito and check_nanohub():
+    ovito_view(sys.argv[1], sys.argv[2], view=sys.argv[3])
