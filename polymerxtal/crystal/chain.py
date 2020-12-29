@@ -5,12 +5,22 @@ This module is for functions Chain class.
 import numpy as np
 import os, random
 
-from polymerxtal.data import atomic_radii
-from polymerxtal.io import run_polymod, readbond, write_pdb
+try:
+    from ovito.io import import_file
+
+    use_ovito = True
+except:
+    from polymerxtal.data import atomic_radii
+
+    use_ovito = False
+
+from polymerxtal.io import *
 from polymerxtal.polymod import readPDB
+from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
 
 from .helice import Helice
+from .infinite import create_infinite_chain, correct_infinite_chain_position
 from .monomer import PolymerType, polymer_types
 from .move import Sphere, Cluster, Translator, Rotator
 from .unit import chain_periodicity
@@ -19,17 +29,31 @@ from .unit import chain_periodicity
 def validate_coords(coords_path, bond_path):
     h = readPDB(coords_path)
     bonds = readbond(bond_path)
-    for i in range(h.num_atoms):
-        for j in range(i + 1, h.num_atoms):
-            if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
-                if (h.el_names[i] in atomic_radii) and (h.el_names[j] in atomic_radii):
+    if use_ovito:
+        pipeline = import_file(coords_path)
+        types = pipeline.source.data.particles.particle_types
+        for i in range(h.num_atoms):
+            for j in range(i + 1, h.num_atoms):
+                if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
                     if np.linalg.norm(h.pos[i] - h.pos[j]) <= (
-                        atomic_radii[h.el_names[i]] + atomic_radii[h.el_names[j]]
+                        types.type_by_name(h.el_names[i]).radius
+                        + types.type_by_name(h.el_names[j]).radius
                     ):
                         return False
-                else:
-                    if np.linalg.norm(h.pos[i] - h.pos[j]) < 1.5:
-                        return False
+    else:
+        for i in range(h.num_atoms):
+            for j in range(i + 1, h.num_atoms):
+                if ([i + 1, j + 1] not in bonds) and ([j + 1, i + 1] not in bonds):
+                    if (h.el_names[i] in atomic_radii) and (
+                        h.el_names[j] in atomic_radii
+                    ):
+                        if np.linalg.norm(h.pos[i] - h.pos[j]) <= (
+                            atomic_radii[h.el_names[i]] + atomic_radii[h.el_names[j]]
+                        ):
+                            return False
+                    else:
+                        if np.linalg.norm(h.pos[i] - h.pos[j]) < 1.5:
+                            return False
     return True
 
 
@@ -55,7 +79,7 @@ def correct_chain_orientation(h, num_monomers):
     for i in range(h.num_atoms):
         h.pos[i] = chain_cluster.particles[i].center
 
-    return h
+    return h, unit_distance
 
 
 def get_mininum_position(positions):
@@ -85,16 +109,28 @@ def correct_chain_position(h):
     return h
 
 
+def get_maximum_position(positions):
+    x = []
+    y = []
+    z = []
+    for a_id in positions:
+        x.append(positions[a_id][0])
+        y.append(positions[a_id][1])
+        z.append(positions[a_id][2])
+    return np.array([max(x), max(y), max(z)])
+
+
 class Chain:
     def __init__(
         self,
         polymer_type="PE",
         helice=Helice(),
-        num_monomers=40,
+        num_monomers=30,
         tacticity="",
         chiriality="",
         head_tail_defect_ratio=0,
         configs=30,
+        infinite=False,
     ):
 
         if polymer_type not in polymer_types:
@@ -110,12 +146,27 @@ class Chain:
                 "and should be in the range of [0,1]",
             )
 
+        if num_monomers < helice.motifs:
+            raise ValueError(
+                f"Number of monomers should be equal or larger than {helice.motifs} in order to generate Helice_{helice} chain.\nCurrent number of monomers is {num_monomers}"
+            )
+
+        if infinite:
+            if num_monomers % helice.motifs:
+                raise ValueError(
+                    f"Number of monomers should be multiple of {helice.motifs} in order to generate infinite periodic Helice_{helice} chain.\nCurrent number of monomers is {num_monomers}"
+                )
+            elif num_monomers * helice.atoms < 3:
+                raise ValueError(
+                    f"Number of backbone atoms should be more than 2 in order to create infinite periodic chain.\nCurrent number of backbone atoms along the periodic chain is {num_monomers*helice.atoms}\nPlease increate number of monomers."
+                )
+
         self.polymer_type = polymer_types[polymer_type]
         self.helice = helice
         if len(self.polymer_type.backbone_atoms) != self.helice.atoms:
             raise ValueError(f"Number of backbone_atoms must be {self.helice.atoms}")
 
-        self.num_monomers = num_monomers
+        self.num_monomers = num_monomers + 2 if infinite else num_monomers
         self.tacticity = tacticity
         if self.tacticity:
             if self.tacticity == "None":
@@ -150,6 +201,7 @@ class Chain:
 
         self.head_tail_defect_ratio = head_tail_defect_ratio
         self.configs = configs
+        self.infinite = infinite
         self.pattern = 0
         self.monomers = []
         self.weights = {}
@@ -395,13 +447,15 @@ class Chain:
             print("Try Configuration", config_index)
 
             # Build polymod input file
-            self.input_polymod("run_polymod.txt", config_index)
+            if not os.path.exists(".tmp"):
+                os.mkdir(".tmp")
+            self.input_polymod(".tmp/run_polymod.txt", config_index)
             # input_polymod('run_polymod.txt',monomer_path,helice,backbone_atoms=backbone_atoms,tacticity=tacticity,side_atom=side_atom,chiriality=chiriality,num_monomers=num_monomers)
             # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, num_monomers=num_monomers)
 
             # Run polymod
-            run_polymod("run_polymod.txt", validate_bond=True)
-            if validate_coords("chains_unwrapped.pdb", "bonds.dat"):
+            run_polymod(".tmp/run_polymod.txt", validate_bond=True)
+            if validate_coords(".tmp/chains_unwrapped.pdb", ".tmp/bonds.dat"):
                 config_success = 1
                 print("Success for Configuration", config_index)
                 break
@@ -409,13 +463,15 @@ class Chain:
                 print("Fail for Configuration", config_index)
 
         if config_success:
-            return readPDB("chains_unwrapped.pdb")
+            return readPDB(".tmp/chains_unwrapped.pdb")
         else:
             raise Exception(
                 f"Unable to generate a successful Helice_{self.helice} configuration with {self.polymer_type.name} due to unavoided overlap of atoms."
             )
 
-    def build_chain(self, use_visualize=False):
+    def build_chain(
+        self, use_visualize=False, create_lmpdata_file=False, create_lmpinput_file=False
+    ):
         # Build the path to the sample files.
         # in_path = os.path.join(current_location, '..', 'data', 'polymod_input', 'sample_chain.txt')
         # monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
@@ -424,12 +480,20 @@ class Chain:
         h = self.build_helix()
 
         # Correct chain orientation
-        h = correct_chain_orientation(h, self.num_monomers)
+        h, unit_distance = correct_chain_orientation(h, self.num_monomers)
+
+        # Create infinite periodic polymer helix chain
+        if self.infinite:
+            h = create_infinite_chain(h, self.num_monomers)
 
         # Correct chain position
         h = correct_chain_position(h)
 
-        helix_name = self.polymer_type.name + "_helix_%s%s%s%s" % (
+        # Further correct chain position for infinite chain
+        if self.infinite:
+            h = correct_infinite_chain_position(h)
+
+        helix_name = self.polymer_type.name + "_helix_%s%s%s%s%s" % (
             self.helice,
             "_" + self.tacticity[:3] if self.tacticity else "",
             "+"
@@ -438,12 +502,49 @@ class Chain:
             if self.chiriality == "left"
             else "",
             "_custom" if self.head_tail_defect_ratio else "",
+            "_inf" if self.infinite else "",
         )
         write_pdb(f"{helix_name}.pdb", h.el_names, h.pos)
 
+        # Create LAMMPS data file
+        if create_lmpdata_file:
+            maxi_array = get_maximum_position(h.pos)
+            if self.infinite:
+                Create_Data_File(
+                    f"{helix_name}.pdb",
+                    xhi=maxi_array[0],
+                    yhi=maxi_array[1],
+                    zhi=unit_distance * (self.num_monomers - 2) / self.helice.motifs,
+                    outputName=f"{helix_name}",
+                )
+            else:
+                Create_Data_File(
+                    f"{helix_name}.pdb",
+                    xhi=maxi_array[0],
+                    yhi=maxi_array[1],
+                    zhi=maxi_array[2],
+                    outputName=f"{helix_name}",
+                )
+            if create_lmpinput_file:
+                write_lmp_ifile(
+                    datafile=f"{helix_name}.data", potentialfile="X6paircoeffs.txt"
+                )
+
         # View chain structure
         if use_visualize:
-            ovito_view(f"{helix_name}.pdb", f"{helix_name}_Front.png", "Front")
-            ovito_view(f"{helix_name}.pdb", f"{helix_name}_Top.png", "Top")
+            write_pdb(f"{helix_name}_view.pdb", h.el_names, h.pos, connect=False)
+            if create_lmpdata_file:
+                ovito_view(
+                    f"{helix_name}.data", f"{helix_name}_Front.png", view="Front"
+                )
+                ovito_view(f"{helix_name}.data", f"{helix_name}_Top.png", view="Top")
+            else:
+                # write_pdb(f"{helix_name}_ovito.pdb", h.el_names, h.pos, connect=False)
+                ovito_view(
+                    f"{helix_name}_view.pdb", f"{helix_name}_Front.png", view="Front"
+                )
+                ovito_view(
+                    f"{helix_name}_view.pdb", f"{helix_name}_Top.png", view="Top"
+                )
 
         return helix_name

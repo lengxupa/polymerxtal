@@ -14,9 +14,9 @@ from .runData4Lammps import run_data4lammps
 def save_structure(file, outfilePDB=""):
 
     if not outfilePDB:
-        if not os.path.exists("bonds"):
-            os.mkdir("bonds")
-        outfilePDB = "./bonds/pdbfile.pdb"
+        if not os.path.exists(".tmp/bonds"):
+            os.mkdir(".tmp/bonds")
+        outfilePDB = ".tmp/bonds/pdbfile.pdb"
     structure_name = file
     os.rename(structure_name, structure_name.replace(" ", ""))
     structure_path = structure_name.replace(" ", "")
@@ -65,6 +65,7 @@ def Create_Data_File(
     alpha=90,
     beta=90,
     gamma=90,
+    outputName="",
 ):
     infile = save_structure(file)
 
@@ -84,7 +85,7 @@ def Create_Data_File(
 
     if extension == ".pdb" and conect_in_pdb(infile):
         print("Connectivity already in {}. Copying information ...".format(infile))
-        os.system(f"cp {infile} ./bonds/connected_pdb.pdb")
+        os.system(f"cp {infile} .tmp/bonds/connected_pdb.pdb")
         outfilelmpdat, outfilepdb = convert_structure(infile)
         boundaries = simulation_box(outfilelmpdat, lattice_in_file, boundaries)
         infile_is_pdb = True
@@ -94,9 +95,10 @@ def Create_Data_File(
         outfilelmpdat, outfilepdb = convert_structure(infile)
         create_bonds(outfilelmpdat, outfilepdb, bondscale, lattice_in_file, boundaries)
 
-    outputName = infile.split("/")[-1].split(".")[0]
+    if not outputName:
+        outputName = infile.split("/")[-1].split(".")[0]
     create_dreiding_types(
-        "./bonds/connected_pdb.pdb", outputName, infile_is_pdb, ffield
+        ".tmp/bonds/connected_pdb.pdb", outputName, infile_is_pdb, ffield
     )
     print("Getting information...")
     run_data4lammps(charge, infile_is_pdb, boundaries, ffield)

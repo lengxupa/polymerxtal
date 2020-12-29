@@ -138,6 +138,6 @@ def ovito_view(sample_path, filename, view="Perspective"):
         pipeline.remove_from_scene()
 
     else:
-        raise ModuleNotFoundError(
+        print(
             "Cannot use function ovito_view - the package ovito is not installed or cannot be found."
         )

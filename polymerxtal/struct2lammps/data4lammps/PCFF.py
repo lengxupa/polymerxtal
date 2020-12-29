@@ -4,7 +4,7 @@ current_location = os.path.dirname(__file__)
 #####################################################################################
 ##get parameter file name, with installed path
 def getPCFFParamFile():
-    datadir = os.path.join(current_location, "data")
+    datadir = os.path.join(current_location, "..", "..", "data")
     # cwd = os.path.dirname(os.path.abspath(sys.argv[0]))
     # datadir = os.path.join(cwd, "..", "data")
     return os.path.join(datadir, "PCFF31parameters.txt")

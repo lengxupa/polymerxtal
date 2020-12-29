@@ -266,8 +266,8 @@ def success_run_polymod(infile):
         return False
 
 
-def readbond(a):
-    src = open(a, "r")
+def readbond(bond_file):
+    src = open(bond_file, "r")
     flag = 0
     bonds = []
     for line in src.readlines():
@@ -279,7 +279,7 @@ def readbond(a):
             if flag:  # and eval(ln[1]) == 2:
                 bonds.append([eval(ln[2]), eval(ln[3])])
     if not flag:
-        raise Exception(f"{a} file does not formatted correctly")
+        raise Exception(f"{bond_file} file does not formatted correctly")
     src.close()
     return bonds
 
@@ -301,10 +301,25 @@ def validate_bonds(coords, path):
         True if all the bonds are connected within 1.8 Angstrongs, False if otherwise
     """
     bonds = readbond(path)
-    for atom in bonds:
-        if np.linalg.norm(coords[atom[0] - 1] - coords[atom[1] - 1]) > 1.8:
+    for bond in bonds:
+        if np.linalg.norm(coords[bond[0] - 1] - coords[bond[1] - 1]) > 1.8:
             return False
     return True
+
+
+def get_connectivity(path):
+    bonds = readbond(path)
+    connectivity = {}
+    for bond in bonds:
+        atom1 = bond[0]
+        atom2 = bond[1]
+        if atom1 not in connectivity:
+            connectivity[atom1] = []
+        connectivity[atom1].append(atom2)
+        if atom2 not in connectivity:
+            connectivity[atom2] = []
+        connectivity[atom2].append(atom1)
+    return connectivity
 
 
 def run_polymod(infile, validate_bond=False):
@@ -312,13 +327,13 @@ def run_polymod(infile, validate_bond=False):
         pass
 
     if validate_bond:
-        h = readPDB("chains_unwrapped.pdb")
-        while not validate_bonds(h.pos, "bonds.dat"):
+        h = readPDB(".tmp/chains_unwrapped.pdb")
+        while not validate_bonds(h.pos, ".tmp/bonds.dat"):
 
             while not success_run_polymod(infile):
                 pass
 
-            h = readPDB("chains_unwrapped.pdb")
+            h = readPDB(".tmp/chains_unwrapped.pdb")
 
     # return h
 

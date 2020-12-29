@@ -17,6 +17,7 @@ verbose = False
 
 
 def check_lmps_exec():
+    """Check lammps executable exists"""
     if LAMMPS_EXEC is None:
         print("you must set environment variable LAMMPS_EXEC")
         return False
@@ -84,35 +85,100 @@ def read_data(data_file):
     return data_dir
 
 
-def write_lmp_ifile(lmp_file_location, datafile, potential_headfile, potentialfile):
+def write_lmp_ifile(
+    lmp_file_location="LAMMPSinputfile.txt",
+    datafile="",
+    potential_headfile="",
+    potentialfile="",
+):
+    """Write a LAMMPS input file given a file location and datafile.
 
-    # Write a LAMMPS input file given a file location and datafile.
-    # Where/what is in.lapps? Seems like a template.
-    # I have removed in.lammps and changed to a direct write
-    des = open("inr.lammps", "w")
-    des.write("newton          on\n")
+    Parameters
+    ----------
+    lmp_file_location : str (optional)
+        The path of LAMMPS input file to output.
+    datafile : str (optional)
+        The path of the LAMMPS data file to read.
+    potential_headfile : str (optional)
+        The path of part of the LAMMPS input file including potential style definitions.
+    potentialfile : str (optional)
+        The path of part of the LAMMPS input file including potential coefficients.
+
+    Returns
+    -------
+    None
+    """
+
+    des = open(lmp_file_location, "w")
+    # des.write("newton          on\n")
     des.write("boundary        p p p\n")
     des.write("units           real\n")
     des.write("\n")
-    des.write("include      ../%s\n" % potential_headfile)
-    des.write("read_data       ../%s\n" % datafile)
-    des.write("include      ../%s\n" % potentialfile)
-    des.write("\n")
-    des.write("compute         graincm all com\n")
-    des.write("variable        M equal mass(all)\n")
-    des.write("variable        maxcx equal bound(all,xmax)\n")
-    des.write("variable        mincx equal bound(all,xmin)\n")
-    des.write("variable        maxcy equal bound(all,ymax)\n")
-    des.write("variable        mincy equal bound(all,ymin)\n")
-    des.write("variable        maxcz equal bound(all,zmax)\n")
-    des.write("variable        mincz equal bound(all,zmin)\n")
-    des.write("\n")
+    des.write("atom_style        full\n")
+    des.write("special_bonds     lj/coul 0.0 0.0 1.0 dihedral yes\n")
+    des.write("dielectric        1.0\n")
+    des.write("pair_style        lj/cut  12.0\n")
+    des.write("bond_style        harmonic\n")
+    des.write("angle_style       harmonic\n")
+    des.write("dihedral_style    harmonic\n")
+    des.write("improper_style    harmonic\n")
+    if potential_headfile:
+        des.write("include      %s\n" % potential_headfile)
+    if datafile:
+        des.write("read_data       %s\n" % datafile)
+    des.write("neighbor          0.3 bin\n")
     des.write(
-        "fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy v_maxcz v_mincz v_M file tmp.out\n"
+        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz pxy pxz pyz lx ly lz vol density\n"
     )
-    # Here is the tmp.out output after running LAMMPS
-    des.write("run             0\n")
+    des.write("thermo            10\n")
+    des.write("thermo_modify     flush yes\n")
     des.write("\n")
+    des.write("pair_style        buck/coul/long  12.0 12.0\n")
+    des.write("kspace_style      pppm 1e-4\n")
+    if potentialfile:
+        des.write("include      %s\n" % potentialfile)
+    des.write("\n")
+    des.write("fix 1 all nve\n")
+    des.write("run               0\n")
+    des.write("\n")
+    des.write("# Minimization parameters\n")
+    des.write("minimize          1.0e-9 1.0e-9 5000 100000\n")
+    des.write("# Dump minimized system\n")
+    des.write("dump              1 all atom 1 min.dump\n")
+    des.write("dump_modify       1 image yes scale no\n")
+    des.write("fix 1 all nve\n")
+    des.write("run               0\n")
+    des.write("unfix 1\n")
+    des.write("\n")
+    des.write("undump            1\n")
+    des.write("write_data min.data\n")
+    des.write("\n")
+    des.write("# MD parameters\n")
+    des.write("run_style         respa 3 2 2 bond 1 pair 2 kspace 3\n")
+    des.write("reset_timestep    0\n")
+    des.write("timestep          4\n")
+    des.write("dump              1 all atom 100 md.dump\n")
+    des.write("dump_modify       1 image yes scale no\n")
+    des.write("fix 1 all nvt temp 300.0 300.0 400.0\n")
+    des.write("run 1000\n")
+    des.write("write_restart restart.lammps\n")
+    des.write("write_data md.data\n")
+    des.write("\n")
+    # des.write("compute         graincm all com\n")
+    # des.write("variable        M equal mass(all)\n")
+    # des.write("variable        maxcx equal bound(all,xmax)\n")
+    # des.write("variable        mincx equal bound(all,xmin)\n")
+    # des.write("variable        maxcy equal bound(all,ymax)\n")
+    # des.write("variable        mincy equal bound(all,ymin)\n")
+    # des.write("variable        maxcz equal bound(all,zmax)\n")
+    # des.write("variable        mincz equal bound(all,zmin)\n")
+    # des.write("\n")
+    # des.write(
+    #    "fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy v_maxcz v_mincz v_M file tmp.out\n"
+    # )
+    # Here is the tmp.out output after running LAMMPS
+    # des.write("run             0\n")
+    # des.write("\n")
     des.close()
 
 
@@ -321,3 +387,69 @@ def get_boundaries(direction):
 
     #    print('Coordinates cylinder: ', coord, 'Radius distance :', radius)
     return mass, com, boundaries, coord, radius
+
+
+def write_data(data_dir, ofile, velocities=True, atom_only=False):
+    """Write a LAMMPS data file
+
+    Parameters
+    ----------
+    dir_data : dict
+        Dictionary storing data to form LAMMPS data file.
+    ofile : str
+        The path of LAMMPS data file to output.
+    velocities : bool (optional)
+        Decide ouput velocities information or not.
+    atom_only : bool (optional)
+        Decide output atoms information only or not.
+
+    Returns
+    -------
+    data_dir : dict
+        Data from the LAMMPS data file as a dictionary.
+    """
+    des = open(ofile, "w")
+    des.write("LAMMPS data file via Tongtong\n")
+    des.write("\n")
+    if atom_only:
+        head_list = ["atom"]
+        main_list = ["Masses", "Atoms", "Velocities"]
+    else:
+        head_list = ["atom", "bond", "angle", "dihedral", "improper"]
+        main_list = [
+            "Masses",
+            "Pair Coeffs",
+            "Bond Coeffs",
+            "Angle Coeffs",
+            "Dihedral Coeffs",
+            "Improper Coeffs",
+            "Atoms",
+            "Velocities",
+            "Bonds",
+            "Angles",
+            "Dihedrals",
+            "Impropers",
+        ]
+    for head in head_list:
+        if (head + "s") in data_dir:
+            des.write("%d %s\n" % (data_dir[head + "s"], (head + "s")))
+            des.write("%d %s\n" % (data_dir[head + " types"], (head + " types")))
+    des.write("\n")
+    for xyz in ["x", "y", "z"]:
+        des.write(
+            "%f %f %s %s\n"
+            % (data_dir[xyz + "lo"], data_dir[xyz + "hi"], (xyz + "lo"), (xyz + "hi"))
+        )
+    des.write("\n")
+    if not velocities:
+        main_list.remove("Velocities")
+    for key in main_list:
+        if key in data_dir and len(data_dir[key]):
+            des.write(key + (" # full\n" if key == "Atoms" else "\n"))
+            des.write("\n")
+            for i in data_dir[key]:
+                des.write(
+                    str(i) + " " + " ".join(str(j) for j in data_dir[key][i]) + "\n"
+                )
+            des.write("\n")
+    des.close()

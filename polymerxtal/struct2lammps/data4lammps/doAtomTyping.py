@@ -6,7 +6,7 @@ import sys
 ############################################################
 def getAtomtypes():
     atomtypes = []
-    fin = open("./types/atom_type.dat", "r")
+    fin = open(".tmp/types/atom_type.dat", "r")
     for line in fin:
         words = str.split(line[0 : len(line) - 1])
         atype = str(
@@ -25,7 +25,7 @@ def getRingatoms(N):
     for i in range(N):
         atominring.append(0)
 
-    fin = open("./types/atominring.dat", "r")
+    fin = open(".tmp/types/atominring.dat", "r")
     for line in fin:
         words = str.split(line[0 : len(line) - 1])
         atomID = eval(words[0])
@@ -40,7 +40,7 @@ def getBondorders(NB):
     for i in range(NB):
         bondorder.append(0)
 
-    fin = open("./types/bondorder.dat", "r")
+    fin = open(".tmp/types/bondorder.dat", "r")
     for line in fin:
         words = str.split(line[0 : len(line) - 1])
         bondID = eval(words[0])
@@ -98,7 +98,7 @@ def linkelems(atomlinks, atoms, atomtypes):
 #####################################################################
 ##Sort atom information
 def getAtoms():
-    fin = open("./types/atoms.dat", "r")
+    fin = open(".tmp/types/atoms.dat", "r")
     dataline = fin.readline()
     words = str.split(dataline)
     totalatoms = eval(words[0])
@@ -132,7 +132,7 @@ def getAtoms():
 
 #####################################################################################
 def getBonds():
-    fin = open("./types/bonds.dat", "r")
+    fin = open(".tmp/types/bonds.dat", "r")
     bonds = []
 
     dataline = fin.readline()
@@ -598,7 +598,7 @@ def outputTyping(forcefield, atomtypes, bondtypes, atoms, bonds):
     with open("forcefield.name", "w") as f:
         f.write(forcefield + "\n")
 
-    with open("./types/newatom_type.dat", "w") as fout:
+    with open(".tmp/types/newatom_type.dat", "w") as fout:
 
         assert len(atomtypes) > 0
         for i in range(len(atomtypes)):
@@ -606,7 +606,7 @@ def outputTyping(forcefield, atomtypes, bondtypes, atoms, bonds):
             atype = atomtypes[i]
             fout.write("{0} {1}\n".format(ntype, atype))
 
-    with open("./types/newbond_type.dat", "w") as fout:
+    with open(".tmp/types/newbond_type.dat", "w") as fout:
         for i in range(len(bondtypes)):
             ntype = i + 1
             a1typeID = bondtypes[i][0]
@@ -615,7 +615,7 @@ def outputTyping(forcefield, atomtypes, bondtypes, atoms, bonds):
             a2type = atomtypes[a2typeID - 1]
             fout.write("{0} {1} {2}\n".format(ntype, a1type, a2type))
 
-    outfile = "./types/newatoms.dat"
+    outfile = ".tmp/types/newatoms.dat"
     fout = open(outfile, "w")
     fout.write("{0} Atoms\n".format(len(atoms)))
     fout.write("\n")
@@ -628,7 +628,7 @@ def outputTyping(forcefield, atomtypes, bondtypes, atoms, bonds):
         fout.write(outline + "\n")
     fout.close()
 
-    outfile = "./types/newbonds.dat"
+    outfile = ".tmp/types/newbonds.dat"
     fout = open(outfile, "w")
     fout.write("Bonds\n")
     fout.write("\n")

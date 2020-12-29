@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_calculate_distance():
     """Test that calculate_distance function calculates what we expect."""
 

@@ -12,9 +12,9 @@ from .getnd import getnd
 
 def convert_structure(infile):
 
-    outfilelmpdat = "./bonds/old.lmpdat"
-    outfilepdb = "./bonds/pdbfile.pdb"
-    os.system("obabel {0} -O {1}".format(outfilepdb, "./bonds/test.lmpdat"))
+    outfilelmpdat = ".tmp/bonds/old.lmpdat"
+    outfilepdb = ".tmp/bonds/pdbfile.pdb"
+    os.system("obabel {0} -O {1}".format(outfilepdb, ".tmp/bonds/test.lmpdat"))
     getnd()
 
     return outfilelmpdat, outfilepdb

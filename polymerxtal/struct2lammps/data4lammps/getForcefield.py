@@ -5,7 +5,7 @@ current_location = os.path.dirname(__file__)
 #####################################################################################
 ##get parameter file name, with installed path
 def getDreidingParamFile():
-    datadir = os.path.join(current_location, "data")
+    datadir = os.path.join(current_location, "..", "..", "data")
     # cwd=os.path.dirname(os.path.abspath(sys.argv[0]))
     # datadir=os.path.join(cwd, '..', 'data')
     return os.path.join(datadir, "DreidingX6parameters.txt")
@@ -72,7 +72,7 @@ def getBondCoeffs(bondtypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "BOND_STRETCH":
             flag = 1
             dataline = fin.readline()
@@ -155,7 +155,7 @@ def getAngleCoeffs(angletypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "ANGLE_BEND":
             flag = 1
             dataline = fin.readline()
@@ -219,7 +219,7 @@ def getDihsCoeffs(dihstypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "TORSIONS":
             flag = 1
             dataline = fin.readline()
@@ -329,38 +329,25 @@ def getDihsCoeffs(dihstypes):
                 + str(dihstypeID)
                 + " might be not assigned correctly."
             )
-            flag = 0
-            a3type = atom3type[0]
-            a2type = atom2type[0]
-            for j in range(len(dihscoeffs)):
-                btypeID = dihscoeffs[j][0]
-                kv = dihscoeffs[j][1]
-                nv = dihscoeffs[j][2]
-                dv = dihscoeffs[j][3]
-                b3type = dihscoeffs[j][6]
-                b2type = dihscoeffs[j][5]
-                if (a3type == b3type[0] and a2type == b2type[0]) or (
-                    a3type == b2type[0] and a2type == b3type[0]
-                ):
-                    dihscoeffs.append(
-                        [
-                            dihstypeID,
-                            kv,
-                            nv,
-                            dv,
-                            atom1type,
-                            atom2type,
-                            atom3type,
-                            atom4type,
-                        ]
-                    )
-                    flag = 1
-                    break
-            if flag == 0:
+            zero_kv_atomtypes = [
+                "H_",
+                "C_1",
+                "N_1",
+                "O_1",
+                "F_",
+                "Cl",
+                "Br",
+                "I_",
+                "Na",
+                "Ca",
+                "Fe",
+                "Zn",
+            ]
+            if (atom2type in zero_kv_atomtypes) or (atom3type in zero_kv_atomtypes):
                 dihscoeffs.append(
                     [
                         dihstypeID,
-                        0.11111,
+                        0,
                         3.0,
                         1.0,
                         atom1type,
@@ -369,6 +356,47 @@ def getDihsCoeffs(dihstypes):
                         atom4type,
                     ]
                 )
+            else:
+                flag = 0
+                a3type = atom3type[0]
+                a2type = atom2type[0]
+                for j in range(len(dihscoeffs)):
+                    btypeID = dihscoeffs[j][0]
+                    kv = dihscoeffs[j][1]
+                    nv = dihscoeffs[j][2]
+                    dv = dihscoeffs[j][3]
+                    b3type = dihscoeffs[j][6]
+                    b2type = dihscoeffs[j][5]
+                    if (a3type == b3type[0] and a2type == b2type[0]) or (
+                        a3type == b2type[0] and a2type == b3type[0]
+                    ):
+                        dihscoeffs.append(
+                            [
+                                dihstypeID,
+                                kv,
+                                nv,
+                                dv,
+                                atom1type,
+                                atom2type,
+                                atom3type,
+                                atom4type,
+                            ]
+                        )
+                        flag = 1
+                        break
+                if flag == 0:
+                    dihscoeffs.append(
+                        [
+                            dihstypeID,
+                            0.11111,
+                            3.0,
+                            1.0,
+                            atom1type,
+                            atom2type,
+                            atom3type,
+                            atom4type,
+                        ]
+                    )
     ##sorting
     dihscoeffs.sort()
     return dihscoeffs, warning
@@ -386,7 +414,7 @@ def getImpsCoeffs(impstypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "INVERSIONS":
             flag = 1
             dataline = fin.readline()
@@ -455,7 +483,7 @@ def getPairCoeffs(atomtypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "DIAGONAL_VDW":
             flag = 1
             dataline = fin.readline()

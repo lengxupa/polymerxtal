@@ -34,7 +34,7 @@ def create_dreiding_types(pdb_file, outputname, infile_is_pdb, ffname):
     bond_types = []  # for each bond
     find_bond_types(s, known_bond_types, bond_types, atom_types)
 
-    infile_pdb = "./bonds/pdbfile.pdb"
+    infile_pdb = ".tmp/bonds/pdbfile.pdb"
     infile2_lmpdat = "./bonds/new.lmpdat"
     infile_lmpdat = "./bonds/bonded.lmpdat"
 
@@ -53,7 +53,7 @@ def create_dreiding_types(pdb_file, outputname, infile_is_pdb, ffname):
 def write_bond_type_dat(known_bond_types, known_atom_types, fftyper):
 
     """Write all bond types to bond_type.dat as input to data4Lammps"""
-    with open("./types/bond_type.dat", "w") as f:
+    with open(".tmp/types/bond_type.dat", "w") as f:
         for i in range(len(known_bond_types)):
             bt = known_bond_types[i]
             ts1 = fftyper.type_str(known_atom_types[bt[0]])
@@ -65,7 +65,9 @@ def write_bonds_dat(s, bond_types, infile_pdb, infile2_lmpdat):
 
     # ID_dict1 = create_ID_dictionary1(infile_pdb, infile2_lmpdat)
     """Write all bonds in s to bonds.dat as input to data4Lammps"""
-    with open("./types/bonds.dat", "w") as f, open("./types/bondorder.dat", "w") as f1:
+    with open(".tmp/types/bonds.dat", "w") as f, open(
+        ".tmp/types/bondorder.dat", "w"
+    ) as f1:
         f.write("BONDS\n\n")
         for i in range(s.NumBonds()):
             b = s.GetBond(i)
@@ -84,7 +86,7 @@ def write_bonds_dat(s, bond_types, infile_pdb, infile2_lmpdat):
 def write_atom_type_dat(known_atom_types, fftyper):
 
     """Write all atomic species to atom_type.dat as input to data4Lammps"""
-    with open("./types/atom_type.dat", "w") as f:
+    with open(".tmp/types/atom_type.dat", "w") as f:
         for i in range(len(known_atom_types)):
             at = known_atom_types[i]
             f.write("%d  %s\n" % (i + 1, fftyper.type_str(at)))
@@ -96,11 +98,13 @@ def write_atoms_dat(s, atom_types, infile_is_pdb, infile_pdb, infile_lmpdat):
 
     images = [0, 0, 0]
     # ID_dict1 = create_ID_dictionary1(infile_pdb, infile_lmpdat)
-    atoms = read_atoms_pdb("./bonds/connected_pdb.pdb")
+    atoms = read_atoms_pdb(".tmp/bonds/connected_pdb.pdb")
 
-    if not os.path.exists("types"):
-        os.mkdir("types")
-    with open("./types/atoms.dat", "w") as f, open("./types/atominring.dat", "w") as f1:
+    if not os.path.exists(".tmp/types"):
+        os.mkdir(".tmp/types")
+    with open(".tmp/types/atoms.dat", "w") as f, open(
+        ".tmp/types/atominring.dat", "w"
+    ) as f1:
         natoms = s.NumAtoms()
         f.write("%d atoms\n\nATOMS\n\n" % natoms)
 
@@ -266,8 +270,8 @@ def read_structure(path):
 
 def create_bonds_obabel(s):
 
-    connectivity = connectivity_pdb("./bonds/connected_pdb.pdb")
-    atoms = read_atoms_pdb("./bonds/connected_pdb.pdb")
+    connectivity = connectivity_pdb(".tmp/bonds/connected_pdb.pdb")
+    atoms = read_atoms_pdb(".tmp/bonds/connected_pdb.pdb")
     nAtoms = s.NumAtoms()
     print(nAtoms)
 
@@ -277,9 +281,9 @@ def create_bonds_obabel(s):
         aiID = atoms[pi]
         if not (aiID in connectivity.keys()):
             continue
-        if not (aiID in connectivity.keys()):
-            continue
-        for j in range(i, nAtoms - 1):
+        # if not (aiID in connectivity.keys()):
+        #    continue
+        for j in range(i + 1, nAtoms):
             aj = s.GetAtom(j + 1)
             pj = (aj.GetX(), aj.GetY(), aj.GetZ())
             ajID = atoms[pj]

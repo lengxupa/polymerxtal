@@ -4,6 +4,7 @@ Functions for calculating molecule properties.
 import numpy as np
 
 from polymerxtal.data import atomic_weights, atomic_radii
+
 from .measure import calculate_distance
 
 

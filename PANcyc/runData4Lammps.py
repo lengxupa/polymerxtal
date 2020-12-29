@@ -1,1 +1,0 @@
-/apps/struc2lammpsdf/r68/bin/runData4Lammps.py

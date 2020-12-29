@@ -155,7 +155,9 @@ def getGasteigerCharge(Gparas, atomtypes, atoms, bonds):
 
 ############################################################
 def Goutput(Q):
-    fout = open("Gasteiger_Q.txt", "w")
+    if not os.path.exists(".tmp"):
+        os.mkdir(".tmp")
+    fout = open(".tmp/Gasteiger_Q.txt", "w")
     fout.write("atom_i \t Qi" + "\n")
     # print >>fout,"atom_i \t Qi"
     for i in range(1, len(Q)):

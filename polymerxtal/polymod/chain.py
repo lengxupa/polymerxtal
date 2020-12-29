@@ -153,11 +153,12 @@ class Chain:
             if fold_pos:
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
             #         1     7   13  18     23     31   39   47
+            el_name = getElementName(self.zm.entries[i].type.element_index)
             f.printf(
-                "ATOM  %5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f\n"
+                "ATOM  %5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f"
                 % (
                     i_atom,
-                    getElementName(self.zm.entries[i].type.element_index),
+                    el_name,
                     RESIDUE_NAME,
                     CHAIN_ID,
                     RESIDUE_SEQ,
@@ -165,6 +166,8 @@ class Chain:
                     pos[1],
                     pos[2],
                 )
+                + " " * 22
+                + "%2s\n" % el_name
             )
             i_atom += 1
             if i_atom > 99999:

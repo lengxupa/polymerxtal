@@ -22,8 +22,10 @@ class Backbone:
 
 
 def get_tail_torsion(mpath, head, tail):
-    logfile = "latch.log"
-    infile = "latch.in"
+    if not os.path.exists(".tmp"):
+        os.mkdir(".tmp")
+    logfile = ".tmp/latch.log"
+    infile = ".tmp/latch.in"
     des = open(infile, "w")
     des.write("bond_scale  1.2\n")
     des.write("monomer m1 %s %d %d\n" % (mpath, head, tail))

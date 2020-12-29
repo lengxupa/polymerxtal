@@ -20,7 +20,7 @@ def create_bonds(
     outfilelmpdat, outfilepdb, bondscale, files_in_lattice, user_boundaries
 ):
 
-    ntypes = read_n_types("./bonds/test.lmpdat")
+    ntypes = read_n_types(".tmp/bonds/test.lmpdat")
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
@@ -34,7 +34,7 @@ def create_bonds(
         print("LAMMPS did not finish succesfully, can not continue")
         raise Exception("LAMMPS did not finish succesfully, can not continue")
     translate_write_connectivity(
-        "./bonds/new.lmpdat", "./bonds/bonded.lmpdat", "./bonds/pdbfile.pdb"
+        "./bonds/new.lmpdat", "./bonds/bonded.lmpdat", ".tmp/bonds/pdbfile.pdb"
     )
     print("Bonds have been identified")
 
@@ -103,7 +103,7 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
 25 extra improper per atom
 
 """
-    with open("./bonds/old.lmpdat") as oldFile, open(
+    with open(".tmp/bonds/old.lmpdat") as oldFile, open(
         "./bonds/new.lmpdat", "w"
     ) as newFile:
 
@@ -277,8 +277,8 @@ def translate_write_connectivity(infile_lmpdat, connected_infile_lmpdat, infile_
         pdb_connections = map(lambda x: ID_dict[x], lmpdat_connections)
         connectivity_pdb[pdb_key] = pdb_connections
 
-    with open("./bonds/pdbfile.pdb") as oldFile, open(
-        "./bonds/connected_pdb.pdb", "w"
+    with open(".tmp/bonds/pdbfile.pdb") as oldFile, open(
+        ".tmp/bonds/connected_pdb.pdb", "w"
     ) as newFile:
         for line in oldFile:
             if (

@@ -300,6 +300,9 @@ def main(args):
     buildChains(polysys, params, 0)
     # endif
 
+    if not os.path.exists(".tmp"):
+        os.mkdir(".tmp")
+
     # Final log outputs
     total_mass = 0.0
     total_atoms = 0
@@ -350,7 +353,7 @@ def main(args):
                 polysys.chains[i].writeChainPDB(n, 1, f, params)
         f.fclose()
     if params.write_unwrapped_pdb:
-        f = openFile("chains_unwrapped.pdb", "w")
+        f = openFile(".tmp/chains_unwrapped.pdb", "w")
         n = 1
         for i in range(params.num_chains):
             if not polysys.chains[i].dead:
@@ -444,16 +447,16 @@ def main(args):
     if params.write_intermediate:
         pos = np.zeros(3)
 
-        f = openFile("atom_type.dat", "w")
+        f = openFile(".tmp/atom_type.dat", "w")
         writeAtomTypesDreiding(f)
         f.fclose()
-        f = openFile("bond_type.dat", "w")
+        f = openFile(".tmp/bond_type.dat", "w")
         writeBondTypesDreiding(f)
         f.fclose()
         na = 0
         for i in range(params.num_chains):
             na += polysys.chains[i].curr_atom
-        f = openFile("atoms.dat", "w")
+        f = openFile(".tmp/atoms.dat", "w")
         f.printf("%d atoms\n\nATOMS\n\n" % na)
         na = 1
         for i in range(params.num_chains):
@@ -478,7 +481,7 @@ def main(args):
                 )
                 na += 1
         f.fclose()
-        f = openFile("bonds.dat", "w")
+        f = openFile(".tmp/bonds.dat", "w")
         f.printf("BONDS\n\n")
         na = 0
         nb = 1

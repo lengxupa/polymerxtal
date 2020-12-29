@@ -409,7 +409,7 @@ def createReaxDatafile(
     # Output atom data
     fout.write("\n")
     # print >>fout
-    fout.write("Atoms" + "\n")
+    fout.write("Atoms # full" + "\n")
     # print >>fout, "Atoms"
     fout.write("\n")
     # print >>fout
@@ -444,16 +444,16 @@ def createReaxDatafile(
 def createDatafile(
     forcefield, structureName, xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz, chargeMethod
 ):
-    inpfile = "./types/newatom_type.dat"
+    inpfile = ".tmp/types/newatom_type.dat"
     if str(forcefield).upper() == "DREIDING":
         atomtypes, anychange = checkAtomtype(inpfile)
     else:
         atomtypes = Atomtypes(inpfile)
         anychange = []
-    inpfile = "./types/newatoms.dat"
+    inpfile = ".tmp/types/newatoms.dat"
     baseatoms = AtomsInfo(inpfile)
     # Update bondtype if default types used
-    inpfile = "./types/newbond_type.dat"
+    inpfile = ".tmp/types/newbond_type.dat"
     bondtypes = getBondtypes(inpfile)
     for i in range(len(bondtypes)):
         atom1type = bondtypes[i][1]
@@ -465,7 +465,7 @@ def createDatafile(
                 bondtypes[i][1] = defatype
             if atom2type.upper() == replaced.upper():
                 bondtypes[i][2] = defatype
-    inpfile = "./types/newbonds.dat"
+    inpfile = ".tmp/types/newbonds.dat"
     basebonds = getBonds(inpfile, 0, 1)
 
     print("Equilibrating charge... \n")
@@ -527,8 +527,8 @@ def createDatafile(
     # Output Lammps data file
     ####################################################################
     # Output head of data file for lammps
-    # datafile=structureName+".data"
-    datafile = "LAMMPSDataFile.data"
+    datafile = structureName + ".data"
+    # datafile = "LAMMPSDataFile.data"
     fout = open(datafile, "w")
     fout.write("LAMMPS data file using " + forcefield + " for " + structureName + "\n")
     # print >>fout,"LAMMPS data file using "+forcefield+" for "+structureName
@@ -588,7 +588,7 @@ def createDatafile(
     # Output data
     fout.write("\n")
     # print >>fout
-    fout.write("Atoms" + "\n")
+    fout.write("Atoms # full" + "\n")
     # print >>fout, "Atoms"
     fout.write("\n")
     # print >>fout

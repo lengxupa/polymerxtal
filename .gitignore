@@ -111,6 +111,7 @@ ENV/
 # temporary data files
 *.in
 *.out
+.tmp/
 
 # Mac stuff
 .DS_Store
