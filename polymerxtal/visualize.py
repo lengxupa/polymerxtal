@@ -4,6 +4,7 @@ Functions for visualization of molecules
 
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -14,6 +15,8 @@ try:
     use_ovito = True
 except:
     use_ovito = False
+
+from polymerxtal.io import check_nanohub
 
 from .data import atom_colors
 
@@ -137,7 +140,12 @@ def ovito_view(sample_path, filename, view="Perspective"):
 
         pipeline.remove_from_scene()
 
+    elif check_nanohub():
+        os.system(f'ovitos visualize.py {sample_path} {filename} {view}')
+
     else:
         print(
             "Cannot use function ovito_view - the package ovito is not installed or cannot be found."
         )
+
+ovito_view(sys.argv[1], sys.argv[2], view=sys.argv[3])

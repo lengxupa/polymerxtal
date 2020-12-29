@@ -20,6 +20,7 @@ def check_nanohub():
         global EPATH
         EPATH = os.environ["ENVIRON_CONFIG_DIRS"].split()
         use("lammps-31Mar17")
+        use('ovito-2.9.0')
         return True
     else:
         return False
