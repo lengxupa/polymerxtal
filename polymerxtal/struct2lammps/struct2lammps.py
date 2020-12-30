@@ -85,7 +85,7 @@ def Create_Data_File(
 
     if extension == ".pdb" and conect_in_pdb(infile):
         print("Connectivity already in {}. Copying information ...".format(infile))
-        os.system(f"cp {infile} .tmp/bonds/connected_pdb.pdb")
+        os.system("cp %s .tmp/bonds/connected_pdb.pdb" % infile)
         outfilelmpdat, outfilepdb = convert_structure(infile)
         boundaries = simulation_box(outfilelmpdat, lattice_in_file, boundaries)
         infile_is_pdb = True
