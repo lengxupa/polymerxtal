@@ -65,7 +65,8 @@ class PolymerType:
             and backbone_el == backbone_el[::-1]
         ):
             raise Exception(
-                f"Polymer type {self.name} does not have defects for head to head or tail to tail connections"
+                "Polymer type %s does not have defects for head to head or tail to tail connections"
+                % (self.name)
             )
 
         bonds = build_bond_list(h.pos, elements=h.el_names)

@@ -14,11 +14,13 @@ except:
     use_ovito = False
 
 from polymerxtal.polymod import readPDB
-from polymerxtal.io.hublib import check_nanohub 
-use_nanohub=check_nanohub()
+from polymerxtal.io.hublib import check_nanohub
+
+use_nanohub = check_nanohub()
 
 # Get the location of the current module
 current_location = os.path.dirname(__file__)
+
 
 def readbond(bond_file):
     src = open(bond_file, "r")
@@ -33,9 +35,10 @@ def readbond(bond_file):
             if flag:  # and eval(ln[1]) == 2:
                 bonds.append([eval(ln[2]), eval(ln[3])])
     if not flag:
-        raise Exception("%s file does not formatted correctly" %bond_file)
+        raise Exception("%s file does not formatted correctly" % bond_file)
     src.close()
     return bonds
+
 
 def validate_bonds(coords, path):
     """
@@ -78,8 +81,10 @@ def validate_coords(coords_path, bond_path):
                         else:
                             return False
     elif use_nanohub:
-        validate_path = os.path.join(current_location,"validate.py")
-        return_code=os.system('ovitos %s %s %s' %(validate_path, coords_path, bond_path))
+        validate_path = os.path.join(current_location, "validate.py")
+        return_code = os.system(
+            "ovitos %s %s %s" % (validate_path, coords_path, bond_path)
+        )
         if return_code:
             return False
     else:
@@ -98,8 +103,10 @@ def validate_coords(coords_path, bond_path):
                             return False
     return True
 
+
 def main(coords_path, bond_path):
     validate_coords(coords_path, bond_path)
+
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2])

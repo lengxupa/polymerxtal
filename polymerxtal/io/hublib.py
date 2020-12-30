@@ -20,7 +20,7 @@ def check_nanohub():
         global EPATH
         EPATH = os.environ["ENVIRON_CONFIG_DIRS"].split()
         use("lammps-31Mar17")
-        use('ovito-2.9.0')
+        use("ovito-2.9.0")
         return True
     else:
         return False
@@ -64,7 +64,7 @@ def _use(name):
             fname = ename
             break
     if fname is None:
-        raise ValueError(f"use: could not find module: {name}")
+        raise ValueError("use: could not find module: %s" % name)
 
     with open(fname) as fp:
         for line in fp:

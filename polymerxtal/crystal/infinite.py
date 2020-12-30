@@ -67,10 +67,11 @@ def build_bonds_data(path, atom_remove_list, atom_link_list, atom_ids):
         atom2 = bond[1]
         if atom2 in atom_remove_list:
             continue
-        bonds_file.write(f"{bond_id} 1 {atom_ids[atom1]} {atom_ids[atom2]}\n")
+        bonds_file.write("%d 1 %d %d\n" % (bond_id, atom_ids[atom1], atom_ids[atom2]))
         bond_id += 1
     bonds_file.write(
-        f"{bond_id} 1 {atom_ids[atom_link_list[0]]} {atom_ids[atom_link_list[1]]}\n"
+        "%d 1 %d %d\n"
+        % (bond_id, atom_ids[atom_link_list[0]], atom_ids[atom_link_list[1]])
     )
     bonds_file.close()
 

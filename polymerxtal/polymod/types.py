@@ -18,7 +18,7 @@ class AtomType:
         self.num_bonds = -1  # negative value: resonant (-3), H-bond (-1)
 
     def __str__(self):
-        return f"element_index: {self.element_index}\nnum_bonds: {self.num_bonds}"
+        return "element_index: %d\nnum_bonds: %d" % (self.element_index, self.num_bonds)
 
     # ============================================================================
     # writeAtomType()

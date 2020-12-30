@@ -6,6 +6,7 @@ from polymerxtal.polymod import main, readPDB
 
 from .validate import validate_bonds, readbond
 
+
 def generate_polymod_input(polymer_custom_input):
     polymer_custom_output = polymer_custom_input + "_latch.in"
     polymer_type_custom = {}

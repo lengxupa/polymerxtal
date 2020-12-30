@@ -71,9 +71,10 @@ def test_calculate_angle_many(p1, p2, p3, expected_angle):
 
     calculated_angle = polymerxtal.crystal.calculate_angle(p1, p2, p3, degrees=True)
 
-    assert expected_angle == pytest.approx(
-        calculated_angle
-    ), f"{calculated_angle} {expected_angle}"
+    assert expected_angle == pytest.approx(calculated_angle), "%f %f" % (
+        calculated_angle,
+        expected_angle,
+    )
 
 
 @pytest.mark.parametrize(

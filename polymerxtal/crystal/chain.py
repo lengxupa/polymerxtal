@@ -11,10 +11,14 @@ from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
 
 from polymerxtal.crystal.helice import Helice
-from polymerxtal.crystal.infinite import create_infinite_chain, correct_infinite_chain_position
+from polymerxtal.crystal.infinite import (
+    create_infinite_chain,
+    correct_infinite_chain_position,
+)
 from polymerxtal.crystal.monomer import PolymerType, polymer_types
 from polymerxtal.crystal.move import Sphere, Cluster, Translator, Rotator
 from polymerxtal.crystal.unit import chain_periodicity
+
 
 def calculate_rotation(vk):
     z = np.array([0, 0, 1])
@@ -106,18 +110,27 @@ class Chain:
             )
 
         if num_monomers < helice.motifs:
-            raise ValueError("Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent number of monomers is %d" %(helice.motifs,helice,num_monomers))
+            raise ValueError(
+                "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent number of monomers is %d"
+                % (helice.motifs, helice, num_monomers)
+            )
 
         if infinite:
             if num_monomers % helice.motifs:
-                raise ValueError("Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s chain.\nCurrent number of monomers is %d" %(helice.motifs,helice,num_monomers))
+                raise ValueError(
+                    "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s chain.\nCurrent number of monomers is %d"
+                    % (helice.motifs, helice, num_monomers)
+                )
             elif num_monomers * helice.atoms < 3:
-                raise ValueError("Number of backbone atoms should be more than 2 in order to create infinite periodic chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate number of monomers." %(num_monomers*helice.atoms))
+                raise ValueError(
+                    "Number of backbone atoms should be more than 2 in order to create infinite periodic chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate number of monomers."
+                    % (num_monomers * helice.atoms)
+                )
 
         self.polymer_type = polymer_types[polymer_type]
         self.helice = helice
         if len(self.polymer_type.backbone_atoms) != self.helice.atoms:
-            raise ValueError("Number of backbone_atoms must be %d" %self.helice.atoms)
+            raise ValueError("Number of backbone_atoms must be %d" % self.helice.atoms)
 
         self.num_monomers = num_monomers + 2 if infinite else num_monomers
         self.tacticity = tacticity
@@ -304,9 +317,17 @@ class Chain:
             for T in [60, 180, 300]:
                 m = self.backbones[key].name + "T" + str(T)
                 if m in self.monomers:
-                    des.write("monomer %s %s %d %d\n" %(m,self.backbones[key].path,self.backbones[key].head_index,self.backbones[key].tail_index))
+                    des.write(
+                        "monomer %s %s %d %d\n"
+                        % (
+                            m,
+                            self.backbones[key].path,
+                            self.backbones[key].head_index,
+                            self.backbones[key].tail_index,
+                        )
+                    )
                     des.write("\n")
-                    des.write("torsion 3 fixed %f\n" %T)
+                    des.write("torsion 3 fixed %f\n" % T)
                     des.write(
                         "torsion 4 fixed %s\n" % self.backbones[key].name.split("T")[1]
                     )
@@ -416,7 +437,10 @@ class Chain:
         if config_success:
             return readPDB(".tmp/chains_unwrapped.pdb")
         else:
-            raise Exception("Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of atoms." %(self.helice,self.polymer_type.name))
+            raise Exception(
+                "Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of atoms."
+                % (self.helice, self.polymer_type.name)
+            )
 
     def build_chain(
         self, use_visualize=False, create_lmpdata_file=False, create_lmpinput_file=False
@@ -453,28 +477,47 @@ class Chain:
             "_custom" if self.head_tail_defect_ratio else "",
             "_inf" if self.infinite else "",
         )
-        write_pdb(helix_name+".pdb", h.el_names, h.pos)
+        write_pdb(helix_name + ".pdb", h.el_names, h.pos)
 
         # Create LAMMPS data file
         if create_lmpdata_file:
             maxi_array = get_maximum_position(h.pos)
             if self.infinite:
-                Create_Data_File(helix_name+".pdb",xhi=maxi_array[0],yhi=maxi_array[1],zhi=unit_distance * (self.num_monomers - 2) / self.helice.motifs,outputName=helix_name)
+                Create_Data_File(
+                    helix_name + ".pdb",
+                    xhi=maxi_array[0],
+                    yhi=maxi_array[1],
+                    zhi=unit_distance * (self.num_monomers - 2) / self.helice.motifs,
+                    outputName=helix_name,
+                )
             else:
-                Create_Data_File(helix_name+".pdb",xhi=maxi_array[0],yhi=maxi_array[1],zhi=maxi_array[2],outputName=helix_name)
+                Create_Data_File(
+                    helix_name + ".pdb",
+                    xhi=maxi_array[0],
+                    yhi=maxi_array[1],
+                    zhi=maxi_array[2],
+                    outputName=helix_name,
+                )
             if create_lmpinput_file:
-                write_lmp_ifile(datafile=helix_name+".data", potentialfile="X6paircoeffs.txt")
+                write_lmp_ifile(
+                    datafile=helix_name + ".data", potentialfile="X6paircoeffs.txt"
+                )
 
         # View chain structure
         if use_visualize:
-            write_pdb(helix_name+"_view.pdb", h.el_names, h.pos, connect=False)
+            write_pdb(helix_name + "_view.pdb", h.el_names, h.pos, connect=False)
             if create_lmpdata_file:
-                ovito_view(helix_name+".data", helix_name+"_Front.png", view="Front")
-                ovito_view(helix_name+".data", helix_name+"_Top.png", view="Top")
+                ovito_view(
+                    helix_name + ".data", helix_name + "_Front.png", view="Front"
+                )
+                ovito_view(helix_name + ".data", helix_name + "_Top.png", view="Top")
             else:
                 # write_pdb(f"{helix_name}_ovito.pdb", h.el_names, h.pos, connect=False)
-                ovito_view(helix_name+"_view.pdb", helix_name+"_Front.png", view="Front")
-                ovito_view(helix_name+"_view.pdb", helix_name+"_Top.png", view="Top")
+                ovito_view(
+                    helix_name + "_view.pdb", helix_name + "_Front.png", view="Front"
+                )
+                ovito_view(
+                    helix_name + "_view.pdb", helix_name + "_Top.png", view="Top"
+                )
 
         return helix_name
-

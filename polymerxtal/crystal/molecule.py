@@ -25,7 +25,11 @@ class Molecule:
         self.num_atoms = len(symbols)
 
     def __str__(self):
-        return f"name: {self.name}\ncharge: {self.charge}\nsymbols: {self.symbols}"
+        return "name: %s\ncharge: %f\nsymbols: %s" % (
+            self.name,
+            self.charge,
+            self.symbols,
+        )
 
 
 def build_bond_list(

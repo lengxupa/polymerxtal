@@ -10,4 +10,4 @@ class Helice:
         self.turns = turns
 
     def __str__(self):
-        return f"{self.atoms}_{self.motifs}_{self.turns}"
+        return "%d_%d_%d" % (self.atoms, self.motifs, self.turns)
