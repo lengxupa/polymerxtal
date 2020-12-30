@@ -11,8 +11,7 @@ except:
         OB_version = 2
     except:
         try:
-            from ovito.io import import_file
-            from ovito.vis import Viewport
+            import ovito
 
             use_ovito = True
         except:

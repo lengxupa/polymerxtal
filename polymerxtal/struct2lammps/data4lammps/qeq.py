@@ -6,8 +6,24 @@ https://github.com/openbabel/openbabel/blob/master/src/charges/qeq.cpp
 
 import os
 import numpy as np
-from scipy.special import erf
 import string
+
+try:
+    from scipy.special import erf
+except:
+    try:
+        import ovito
+
+        use_ovito = True
+    except:
+        use_ovito = False
+
+    from polymerxtal.io import check_nanohub
+
+    use_nanohub = check_nanohub()
+
+    if not (use_ovito and use_nanohub):
+        raise ImportError("No module named 'scipy'")
 
 current_location = os.path.dirname(__file__)
 

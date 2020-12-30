@@ -12,8 +12,7 @@ try:
     import openbabel as ob
 except:
     try:
-        from ovito.io import import_file
-        from ovito.vis import Viewport
+        import ovito
 
         use_ovito = True
     except:
