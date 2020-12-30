@@ -4,6 +4,7 @@ Functions for visualization of molecules
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import sys
 
 from mpl_toolkits.mplot3d import Axes3D
