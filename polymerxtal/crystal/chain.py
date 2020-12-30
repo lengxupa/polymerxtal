@@ -3,7 +3,7 @@ This module is for functions Chain class.
 """
 
 import numpy as np
-import os, random
+import os, random, sys
 
 try:
     from ovito.io import import_file
@@ -20,11 +20,11 @@ from polymerxtal.polymod import readPDB
 from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
 
-from .helice import Helice
-from .infinite import create_infinite_chain, correct_infinite_chain_position
-from .monomer import PolymerType, polymer_types
-from .move import Sphere, Cluster, Translator, Rotator
-from .unit import chain_periodicity
+from polymerxtal.crystal.helice import Helice
+from polymerxtal.crystal.infinite import create_infinite_chain, correct_infinite_chain_position
+from polymerxtal.crystal.monomer import PolymerType, polymer_types
+from polymerxtal.crystal.move import Sphere, Cluster, Translator, Rotator
+from polymerxtal.crystal.unit import chain_periodicity
 
 # Get the location of the current module
 current_location = os.path.dirname(__file__)
@@ -42,7 +42,7 @@ def validate_coords(coords_path, bond_path):
                         types.type_by_name(h.el_names[i]).radius
                         + types.type_by_name(h.el_names[j]).radius
                     ):
-                        if use_nanohub:
+                        if __name__ == "__main__":
                             raise Exception("Non-bonded atoms are too close")
                         else:
                             return False
@@ -560,5 +560,9 @@ class Chain:
 
         return helix_name
 
-if use_ovito and use_nanohub:
-    validate_coords(sys.argv[1], sys.argv[2])
+def main(coords_path, bond_path):
+    validate_coords(coords_path, bond_path)
+
+if __name__ == "__main__":
+    print('debug - runnning validate_coords')
+    main(sys.argv[1], sys.argv[2])

@@ -32,5 +32,8 @@ def getnd():
     else:
     	print("Cannot use function getnd - the package ovito is not installed or cannot be found.")
 
-if use_ovito and use_nanohub:
+def main():
 	getnd()
+	
+if __name__ == "__main__":
+	main()

@@ -20,7 +20,7 @@ except:
 from polymerxtal.io import check_nanohub
 use_nanohub=check_nanohub()
 
-from .data import atom_colors
+from polymerxtal.data import atom_colors
 
 # Get the location of the current module
 current_location = os.path.dirname(__file__)
@@ -153,5 +153,8 @@ def ovito_view(sample_path, filename, view="Perspective"):
             "Cannot use function ovito_view - the package ovito is not installed or cannot be found."
         )
 
-if use_ovito and use_nanohub:
-    ovito_view(sys.argv[1], sys.argv[2], view=sys.argv[3])
+def main(sample_path, filename, view):
+    ovito_view(sample_path, filename, view=view)
+    
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3])
