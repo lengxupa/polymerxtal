@@ -11,7 +11,7 @@
 from enum import Enum
 import numpy as np
 
-from polymerxtal.crystal import calculate_angle
+from polymerxtal.crystal.measure import calculate_angle
 
 from .config import REAL_MAX
 from .element import getElementIndex, getElementName, getElementMass, getElementR0

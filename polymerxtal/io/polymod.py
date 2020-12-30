@@ -2,10 +2,9 @@
 Functions for manipulating Polymer Modeler files.
 """
 
-import numpy as np
-
 from polymerxtal.polymod import main, readPDB
 
+from .validate import validate_bonds, readbond
 
 def generate_polymod_input(polymer_custom_input):
     polymer_custom_output = polymer_custom_input + "_latch.in"
@@ -264,47 +263,6 @@ def success_run_polymod(infile):
         return True
     except KeyError:
         return False
-
-
-def readbond(bond_file):
-    src = open(bond_file, "r")
-    flag = 0
-    bonds = []
-    for line in src.readlines():
-        ln = line.split()
-        if ln:
-            if ln[0] == "BONDS":
-                flag = 1
-                continue
-            if flag:  # and eval(ln[1]) == 2:
-                bonds.append([eval(ln[2]), eval(ln[3])])
-    if not flag:
-        raise Exception(f"{bond_file} file does not formatted correctly")
-    src.close()
-    return bonds
-
-
-def validate_bonds(coords, path):
-    """
-    Validate all bonds are sucessfully connected
-
-    Parameters
-    ----------
-    coords: dict or list of numpy-arrays
-        atom coordinates
-    path: str
-        path to bonds.dat which contains bonds info
-
-    Returns
-    -------
-    bool
-        True if all the bonds are connected within 1.8 Angstrongs, False if otherwise
-    """
-    bonds = readbond(path)
-    for bond in bonds:
-        if np.linalg.norm(coords[bond[0] - 1] - coords[bond[1] - 1]) > 1.8:
-            return False
-    return True
 
 
 def get_connectivity(path):
