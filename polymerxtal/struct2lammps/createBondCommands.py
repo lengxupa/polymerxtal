@@ -2,7 +2,23 @@
 This module handles commands related to create bonds
 """
 
-import openbabel as ob
+try:
+    import openbabel as ob
+except:
+    try:
+        from ovito.io import import_file
+        from ovito.vis import Viewport
+
+        use_ovito = True
+    except:
+        use_ovito = False
+
+    from polymerxtal.io import check_nanohub
+
+    use_nanohub = check_nanohub()
+
+    if not (use_ovito and use_nanohub):
+        raise ImportError("No module named 'openbabel'")
 
 from .readFiles import read_n_types, read_atom_pdb
 
