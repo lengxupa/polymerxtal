@@ -18,9 +18,12 @@ except:
     use_ovito = False
 
 from polymerxtal.io import check_nanohub
+use_nanohub=check_nanohub()
 
 from .data import atom_colors
 
+# Get the location of the current module
+current_location = os.path.dirname(__file__)
 
 def draw_molecule(coordinates, symbols, draw_bonds=None, save_location=None, dpi=300):
 
@@ -141,13 +144,14 @@ def ovito_view(sample_path, filename, view="Perspective"):
 
         pipeline.remove_from_scene()
 
-    elif check_nanohub():
-        os.system(f'ovitos visualize.py {sample_path} {filename} {view}')
+    elif use_nanohub:
+        visualize_path = os.path.join(current_location,"visualize.py")
+        os.system(f'ovitos {visualize_path} {sample_path} {filename} {view}')
 
     else:
         print(
             "Cannot use function ovito_view - the package ovito is not installed or cannot be found."
         )
 
-if use_ovito and check_nanohub():
+if use_ovito and use_nanohub:
     ovito_view(sys.argv[1], sys.argv[2], view=sys.argv[3])

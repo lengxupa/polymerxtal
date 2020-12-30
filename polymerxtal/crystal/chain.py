@@ -15,6 +15,7 @@ except:
     use_ovito = False
 
 from polymerxtal.io import *
+use_nanohub=check_nanohub()
 from polymerxtal.polymod import readPDB
 from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
@@ -25,6 +26,8 @@ from .monomer import PolymerType, polymer_types
 from .move import Sphere, Cluster, Translator, Rotator
 from .unit import chain_periodicity
 
+# Get the location of the current module
+current_location = os.path.dirname(__file__)
 
 def validate_coords(coords_path, bond_path):
     h = readPDB(coords_path)
@@ -39,7 +42,15 @@ def validate_coords(coords_path, bond_path):
                         types.type_by_name(h.el_names[i]).radius
                         + types.type_by_name(h.el_names[j]).radius
                     ):
-                        return False
+                        if use_nanohub:
+                            raise Exception("Non-bonded atoms are too close")
+                        else:
+                            return False
+    elif use_nanohub:
+        chain_path = os.path.join(current_location,"chain.py")
+        return_code=os.system(f'ovitos {chain_path} {coords_path} {bond_path}')
+        if return_code:
+            return False
     else:
         for i in range(h.num_atoms):
             for j in range(i + 1, h.num_atoms):
@@ -548,3 +559,6 @@ class Chain:
                 )
 
         return helix_name
+
+if use_ovito and use_nanohub:
+    validate_coords(sys.argv[1], sys.argv[2])
