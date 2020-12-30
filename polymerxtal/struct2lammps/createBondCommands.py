@@ -17,7 +17,7 @@ except:
     use_nanohub = check_nanohub()
 
     if not (use_ovito and use_nanohub):
-        raise ImportError("No module named 'openbabel'")
+        import openbabel as ob
 
 from .readFiles import read_n_types, read_atom_pdb
 

@@ -2,7 +2,6 @@
 Functions for visualization of molecules
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys
@@ -20,6 +19,12 @@ except:
 from polymerxtal.io import check_nanohub
 
 use_nanohub = check_nanohub()
+
+try:
+    import matplotlib.pyplot as plt
+except:
+    if not (use_ovito and use_nanohub):
+        import matplotlib.pyplot as plt
 
 from polymerxtal.data import atom_colors
 

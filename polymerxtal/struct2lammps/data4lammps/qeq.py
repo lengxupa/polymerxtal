@@ -23,7 +23,7 @@ except:
     use_nanohub = check_nanohub()
 
     if not (use_ovito and use_nanohub):
-        raise ImportError("No module named 'scipy'")
+        from scipy.special import erf
 
 current_location = os.path.dirname(__file__)
 

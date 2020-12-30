@@ -23,7 +23,7 @@ except:
     use_nanohub = check_nanohub()
 
     if not (use_ovito and use_nanohub):
-        raise ImportError("No module named 'openbabel'")
+        import openbabel as ob
 
 
 from polymerxtal.io import run_lammps
