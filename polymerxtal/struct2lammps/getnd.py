@@ -27,4 +27,5 @@ def getnd():
     else:
     	print("Cannot use function getnd - the package ovito is not installed or cannot be found.")
 
-getnd()
+if use_ovito and check_nanohub():
+	getnd()
