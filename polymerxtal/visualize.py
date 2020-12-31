@@ -3,7 +3,6 @@ Functions for visualization of molecules
 """
 
 import numpy as np
-import os
 import sys
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -16,20 +15,16 @@ try:
 except:
     use_ovito = False
 
-from polymerxtal.io import check_nanohub
-
-use_nanohub = check_nanohub()
-
 try:
     import matplotlib.pyplot as plt
 except:
+    from polymerxtal.io import check_nanohub
+
+    use_nanohub = check_nanohub()
     if not (use_ovito and use_nanohub):
         import matplotlib.pyplot as plt
 
 from polymerxtal.data import atom_colors
-
-# Get the location of the current module
-current_location = os.path.dirname(__file__)
 
 
 def draw_molecule(coordinates, symbols, draw_bonds=None, save_location=None, dpi=300):
@@ -150,10 +145,6 @@ def ovito_view(sample_path, filename, view="Perspective"):
         )
 
         pipeline.remove_from_scene()
-
-    elif use_nanohub:
-        visualize_path = os.path.join(current_location, "visualize.py")
-        os.system("ovitos %s %s %s %s" % (visualize_path, sample_path, filename, view))
 
     else:
         print(
