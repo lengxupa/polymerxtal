@@ -240,6 +240,13 @@ def UI_SET_VALUE(widget, value):
 
 QDOT_UI = {}
 
+QDOT_UI["infinite"] = ui.Checkbox(
+    name="Periodic Infinite Chain",
+    value=True,
+)
+QDOT_UI["infinite"].dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.infinite, obj.new), names="value"
+)
 QDOT_UI["polymer_type"] = ui.Dropdown(
     name="Polymer Type",
     value=inputs.polymer_type.value,
@@ -248,32 +255,11 @@ QDOT_UI["polymer_type"] = ui.Dropdown(
 QDOT_UI["polymer_type"].dd.observe(
     lambda obj: UI_SET_VALUE(inputs.polymer_type, obj.new), names="value"
 )
-QDOT_UI["helice_atoms"] = ui.Integer(
-    name="Helice Atoms",
-    value=inputs.helice_atoms.value,
-    min=inputs.helice_atoms.min,
-    max=inputs.helice_atoms.max,
+QDOT_UI["helicity"] = ui.Dropdown(
+    name="Helicity", value=inputs.helicity.value, options=inputs.helicity.options
 )
-QDOT_UI["helice_atoms"].dd.observe(
-    lambda obj: UI_SET_VALUE(inputs.helice_atoms, obj.new), names="value"
-)
-QDOT_UI["helice_motifs"] = ui.Integer(
-    name="Helice Motifs",
-    value=inputs.helice_motifs.value,
-    min=inputs.helice_motifs.min,
-    max=inputs.helice_motifs.max,
-)
-QDOT_UI["helice_motifs"].dd.observe(
-    lambda obj: UI_SET_VALUE(inputs.helice_motifs, obj.new), names="value"
-)
-QDOT_UI["helice_turns"] = ui.Integer(
-    name="Helice Turns",
-    value=inputs.helice_turns.value,
-    min=inputs.helice_turns.min,
-    max=inputs.helice_turns.max,
-)
-QDOT_UI["helice_turns"].dd.observe(
-    lambda obj: UI_SET_VALUE(inputs.helice_turns, obj.new), names="value"
+QDOT_UI["helicity"].dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.helicity, obj.new), names="value"
 )
 QDOT_UI["monomers"] = ui.Integer(
     name="Monomers",
@@ -296,17 +282,26 @@ QDOT_UI["chiriality"] = ui.Dropdown(
 QDOT_UI["chiriality"].dd.observe(
     lambda obj: UI_SET_VALUE(inputs.chiriality, obj.new), names="value"
 )
-QDOT_UI["head_tail_defect_ratio"] = ui.Number(
-    name="Defect Ratio for head-to-head & tail-to-tail connections",
+
+QDOT_UI["defect_checkbox"] = ui.Checkbox(
+    name="Include Connectivity Defects",
+    description = 'Include head-to-head & tail-to-tail connectivity defects in crystals',
+    value=True,
+)
+
+QDOT_UI["connectivity"] = ui.Number(
+    name="Defect Ratio",
+    description="Defect Ratio for head-to-head & tail-to-tail connections",
     value=inputs.head_tail_defect_ratio.value,
     min=inputs.head_tail_defect_ratio.min,
-    max=inputs.head_tail_defect_ratio.max,
+    max=inputs.head_tail_defect_ratio.max
 )
-QDOT_UI["head_tail_defect_ratio"].dd.observe(
+QDOT_UI["connectivity"].dd.observe(
     lambda obj: UI_SET_VALUE(inputs.head_tail_defect_ratio, obj.new), names="value"
 )
 QDOT_UI["configs"] = ui.Integer(
     name="Configs",
+    description="Number of attempts to find a configuration that does not violate excluded region",
     value=inputs.configs.value,
     min=inputs.configs.min,
     max=inputs.configs.max,
@@ -315,30 +310,89 @@ QDOT_UI["configs"].dd.observe(
     lambda obj: UI_SET_VALUE(inputs.configs, obj.new), names="value"
 )
 
+QDOT_UI["defects"] = VBox(
+    [
+        QDOT_UI["connectivity"],
+        QDOT_UI["configs"]
+    ]
+)
+
+QDOT_UI["defect"] = VBox(
+    [
+        QDOT_UI["defect_checkbox"],
+        QDOT_UI["defects"]
+    ]
+)
+
+def on_defect_checkbox(change):
+    if change['new']:
+        QDOT_UI["defects"].layout.display = ''
+    else:
+        QDOT_UI["defects"].layout.display = 'none'
+
+QDOT_UI["defect_checkbox"].dd.observe(on_defect_checkbox, names="value")
+
+QDOT_UI["create_lmpdata_file"] = ui.Checkbox(
+    name="LAMMPS Data File",
+    value=True,
+)
+
+ffieldB = ui.Dropdown(options = ['Dreiding'],  #, 'PCFF'
+                   value = 'Dreiding', 
+                   name = 'Force field')
+
+bondB = ui.Number(value = 1.1, name = 'Bondscale',description='Applied to equilibrium bond lengths',min=1,
+    max=2)
+
+chargeB = ui.Dropdown(options = ['Gasteiger'],
+                   value = 'Gasteiger', 
+                   name = 'Charge')
+QDOT_UI["create_lmpinput_file"] = ui.Checkbox(
+    name="LAMMPS Input File",
+    value=True,
+)
+QDOT_UI["create_lmpinput_file"].dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.create_lmpinput_file, obj.new), names="value"
+)
+box = VBox([ffieldB, bondB, chargeB, QDOT_UI["create_lmpinput_file"]])
+
+def on_lmpdata_checkbox(change):
+    if change['new']:
+        box.layout.display = ''
+    else:
+        box.layout.display = 'none'
+    UI_SET_VALUE(inputs.create_lmpdata_file, change.new)
+        
+QDOT_UI["create_lmpdata_file"].dd.observe(on_lmpdata_checkbox, names="value"
+)
+
+QDOT_UI["lmpdata_file"] = VBox([QDOT_UI["create_lmpdata_file"],box])
+
+
 QDOT_UI["button"] = Button(description="Build")
 QDOT_UI["button"].layout = Layout(width="99%")
 QDOT_UI["sim_progress"] = Output()
 
 QDOT_UI["a1"] = VBox(
     [
+        QDOT_UI["infinite"],
         QDOT_UI["polymer_type"],
-        QDOT_UI["helice_atoms"],
-        QDOT_UI["helice_motifs"],
-        QDOT_UI["helice_turns"],
+        QDOT_UI["helicity"],
         QDOT_UI["monomers"],
         QDOT_UI["tacticity"],
         QDOT_UI["chiriality"],
+        QDOT_UI["defect"]
     ]
 )
+
 QDOT_UI["a2"] = VBox(
     [
-        QDOT_UI["head_tail_defect_ratio"],
-        QDOT_UI["configs"],
+        QDOT_UI["lmpdata_file"]
     ]
 )
 QDOT_UI["a"] = Accordion(children=[QDOT_UI["a1"], QDOT_UI["a2"]])
 QDOT_UI["a"].set_title(0, "Structure")
-QDOT_UI["a"].set_title(1, "Optional")
+QDOT_UI["a"].set_title(1, "Output")
 
 QDOT_UI["l1"] = VBox([QDOT_UI["a"], QDOT_UI["button"], QDOT_UI["sim_progress"]])
 QDOT_UI["l2"] = Tab(children=[])
@@ -564,18 +618,64 @@ def fig_Log(execution):
 
 
 def fig_Structure(execution):
-    pdbFile = execution.read("Output PDBfile", raw=True)
+    pdbFile = execution.read("PDBview", raw=True)
     return imolecule.draw(pdbFile[7:])
     # helix_name = execution.db.read('Helix Name')
     # return imolecule.draw(execution.outdir + "/" + helix_name + ".pdb")  #, camera_type="orthographic")
 
 
 def fig_PDB(execution):
-    out_data = execution.read("Output PDB")
+    pdbFile = execution.read("PDB", raw=True)
+    out_data=''
+    with open(pdbFile[7:], 'r') as input_text:
+        out_data = input_text.read()
+    out_fig = Textarea(value=out_data)
+    out_fig.layout = Layout(width="100%", height="400px")
+    download = ui.Download(pdbFile[7:],  style = 'success',tooltip = 'DOWNLOAD PDB FILE',label = 'Download PDBfile', icon = 'arrow-circle-down')
+    out_put = VBox([out_fig, download.w])
+    return out_put
+
+def fig_LAMMPSData(execution):
+    dataFile = execution.read('LAMMPSDataFile', raw=True)
+    out_data=''
+    with open(dataFile[7:], 'r') as input_text:
+        out_data = input_text.read()
+    out_fig = Textarea(value=out_data)
+    out_fig.layout = Layout(width="100%", height="400px")
+    download = ui.Download(dataFile[7:],  style = 'success',tooltip = 'DOWNLOAD DATA FILE',label = 'Download Datafile', icon = 'arrow-circle-down')
+    out_put = VBox([out_fig, download.w])
+    return out_put
+
+def fig_DataWarnings(execution):
+    datawaringFile = execution.read('Datafile_warnings', raw=True)
+    out_data=''
+    with open(datawaringFile[7:], 'r') as input_text:
+        out_data = input_text.read()
     out_fig = Textarea(value=out_data)
     out_fig.layout = Layout(width="100%", height="400px")
     return out_fig
 
+def fig_LAMMPSInput(execution):
+    inputFile = execution.read('LAMMPSinputfile', raw=True)
+    out_data=''
+    with open(inputFile[7:], 'r') as input_text:
+        out_data = input_text.read()
+    out_fig = Textarea(value=out_data)
+    out_fig.layout = Layout(width="100%", height="400px")
+    download = ui.Download(inputFile[7:],  style = 'success',tooltip = 'DOWNLOAD LAMMPS INPUT FILE',label = 'Download Inputfile', icon = 'arrow-circle-down')
+    out_put = VBox([out_fig, download.w])
+    return out_put
+
+def fig_X6paircoeffs(execution):
+    X6pairFile = execution.read('X6paircoeffs', raw=True)
+    out_data=''
+    with open(X6pairFile[7:], 'r') as input_text:
+        out_data = input_text.read()
+    out_fig = Textarea(value=out_data)
+    out_fig.layout = Layout(width="100%", height="400px")
+    download = ui.Download(X6pairFile[7:],  style = 'success',tooltip = 'DOWNLOAD X6paircoeffs.txt',label = 'Download X6paircoeffs.txt', icon = 'arrow-circle-down')
+    out_put = VBox([out_fig, download.w])
+    return out_put
 
 def showFig(func, param, out, state=None):
     with out:
@@ -601,7 +701,7 @@ def on_button_clicked(b):
         )
         buttons.append(but0)
 
-        but1 = Button(description="Output Structure", layout=Layout(width="auto"))
+        but1 = Button(description="Structure", layout=Layout(width="auto"))
         but1.on_click(
             lambda event, param=r, func=fig_Structure, out=output: showFig(
                 func, param, out
@@ -609,14 +709,34 @@ def on_button_clicked(b):
         )
         buttons.append(but1)
 
-        but2 = Button(description="Output PDB", layout=Layout(width="auto"))
+        but2 = Button(description="PDB", layout=Layout(width="auto"))
         but2.on_click(
-            lambda event, param=r.db, func=fig_PDB, out=output: showFig(
+            lambda event, param=r, func=fig_PDB, out=output: showFig(
                 func, param, out
             )
         )
         buttons.append(but2)
 
+        if 'LAMMPSDataFile' in r.savedOutputs:
+            but3 = Button(description="LAMMPS Data", layout=Layout(width="auto"))
+            but3.on_click(lambda event, param=r, func=fig_LAMMPSData, out=output: showFig(func, param, out))
+            buttons.append(but3)
+
+        if 'Datafile_warnings' in r.savedOutputs:
+            but4 = Button(description="Datafile Warnings", layout=Layout(width="auto"))
+            but4.on_click(lambda event, param=r, func=fig_DataWarnings, out=output: showFig(func, param, out))
+            buttons.append(but4)
+
+        if 'LAMMPSinputfile' in r.savedOutputs:
+            but5 = Button(description="LAMMPS Input", layout=Layout(width="auto"))
+            but5.on_click(lambda event, param=r, func=fig_LAMMPSInput, out=output: showFig(func, param, out))
+            buttons.append(but5)
+            
+            if 'X6paircoeffs' in r.savedOutputs:
+                but6 = Button(description="X6paircoeffs.txt", layout=Layout(width="auto"))
+                but6.on_click(lambda event, param=r, func=fig_X6paircoeffs, out=output: showFig(func, param, out))
+                buttons.append(but6)
+            
         new_box = HBox(
             [
                 VBox(buttons, layout=Layout(width="150px")),

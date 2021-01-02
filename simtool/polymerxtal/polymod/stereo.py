@@ -14,7 +14,7 @@ from .utils import selectWeight
 
 class Stereo:
     def __init__(self):
-        self.name = ''
+        self.name = ""
         self.pattern = 0  # flag: pattern or weight
         self.pattern_index = -1  # running index for a pattern
         self.curr_monomer = -1  # running index for added Monomers

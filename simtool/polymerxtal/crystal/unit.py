@@ -34,18 +34,30 @@ def chain_periodicity(h, num_monomers):
         if dot_products[i] > 0.99:
             distances_dir[i + 1] = distances[i]
         if distances[i] < 1:
-            raise ValueError('Distance of two monomers is less than 1 angstrom, indicating invalid chain structure')
+            raise ValueError(
+                "Distance of two monomers is less than 1 angstrom, indicating invalid chain structure"
+            )
 
-    for k in distances_dir:
-        if (k * 2 in distances_dir) and (k * 3 in distances_dir) and (k * 5 in distances_dir):
+    for k in sorted(distances_dir):
+        if (
+            (k * 2 in distances_dir)
+            and (k * 3 in distances_dir)
+            and (k * 5 in distances_dir)
+        ):
             if -0.01 < (distances_dir[k * 2] - distances_dir[k] * 2) < 0.01:
                 if -0.01 < (distances_dir[k * 3] - distances_dir[k] * 3) < 0.01:
                     if -0.01 < (distances_dir[k * 5] - distances_dir[k] * 5) < 0.01:
                         break
 
-    unit = k
-    max_unit = int(len(indices) / unit) * unit
-    vk = h.pos[indices[max_unit - 1]] - h.pos[1]
+    if distances_dir:
+        unit = k
+        distance = distances_dir[unit]
+        max_unit = int(len(indices) / unit) * unit
+        vk = h.pos[indices[max_unit - 1]] - h.pos[1]
+    else:
+        unit = num_monomers
+        vk = h.pos[(unit - 1) * num_atoms + 3] - h.pos[1]
+        distance = np.linalg.norm(vk)
     vk /= np.linalg.norm(vk)
 
-    return unit, distances_dir[unit], vk
+    return unit, distance, vk

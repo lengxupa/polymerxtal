@@ -78,75 +78,75 @@ TOK_SELF_AVOID_CUTOFF = 61
 TOK_SPHERE = 62
 
 switcher = {
-    '=': TOK_EQUAL,
-    'data_dir': TOK_DATA_DIR,
-    'element_data ': TOK_ELEMENT_DATA,
-    'bond_scale': TOK_BOND_SCALE,
-    'temperature': TOK_TEMPERATURE,
-    'monomer': TOK_MONOMER,
-    'torsion': TOK_TORSION,
-    'fixed': TOK_FIXED,
-    'free': TOK_FREE,
-    'energy': TOK_ENERGY,
-    'stereo': TOK_STEREO,
-    'pattern': TOK_PATTERN,
-    'weight': TOK_WEIGHT,
-    'polymer': TOK_POLYMER,
-    'backbone_bond_length': TOK_BACKBONE_BOND_LENGTH,
-    'density': TOK_DENSITY,
-    'chains': TOK_CHAINS,
-    'monomers': TOK_MONOMERS,
-    'monomers_stddev': TOK_MONOMERS_STDDEV,
-    'system_min': TOK_SYSTEM_MIN,
-    'system_max': TOK_SYSTEM_MAX,
-    'exclude': TOK_EXCLUDE,
-    'cylinder': TOK_CYLINDER,
-    'slab': TOK_SLAB,
-    'sphere': TOK_SPHERE,
-    'chain_stereo': TOK_CHAIN_STEREO,
-    'domains': TOK_DOMAINS,
-    'grid_size': TOK_GRID_SIZE,
-    'sample': TOK_SAMPLE,
-    'monte_carlo': TOK_MONTE_CARLO,
-    'none': TOK_NONE,
-    'configs': TOK_CONFIGS,
-    'LJ': TOK_LJ,
-    'energy_cutoff': TOK_ENERGY_CUTOFF,
-    'bond_cutoff': TOK_BOND_CUTOFF,
-    'rng_seed': TOK_RNG_SEED,
-    'write': TOK_WRITE,
-    'wrapped_pdb': TOK_WRAPPED_PDB,
-    'unwrapped_pdb': TOK_UNWRAPPED_PDB,
-    'wrapped_xyz': TOK_WRAPPED_XYZ,
-    'unwrapped_xyz': TOK_UNWRAPPED_XYZ,
-    'chain_length_histo_bin': TOK_CHAIN_LENGTH_HISTO_BIN,
-    'torsion_rotation': TOK_TORSION_ROTATION,
-    'chain_length': TOK_CHAIN_LENGTH,
-    'chain_length_histo': TOK_CHAIN_LENGTH_HISTO,
-    'torsion_histo': TOK_TORSION_HISTO,
-    'intermediate': TOK_INTERMEDIATE,
-    'log_file': TOK_LOG_FILE,
-    'status_file': TOK_STATUS_FILE,
-    'recalculate_positions': TOK_RECALCULATE_POSITIONS,
-    'recalculate_neighbors': TOK_RECALCULATE_NEIGHBORS,
-    'invert': TOK_INVERT,
-    'term': TOK_TERM,
-    'isolate_chains': TOK_ISOLATE_CHAINS,
-    'calculate': TOK_CALCULATE,
-    'all': TOK_ALL,
-    'torsion_step': TOK_TORSION_STEP,
-    'self_avoid': TOK_SELF_AVOID,
-    'self_avoid_cutoff': TOK_SELF_AVOID_CUTOFF,
-    '[-+]?[0-9]+': TOK_INT,
+    "=": TOK_EQUAL,
+    "data_dir": TOK_DATA_DIR,
+    "element_data ": TOK_ELEMENT_DATA,
+    "bond_scale": TOK_BOND_SCALE,
+    "temperature": TOK_TEMPERATURE,
+    "monomer": TOK_MONOMER,
+    "torsion": TOK_TORSION,
+    "fixed": TOK_FIXED,
+    "free": TOK_FREE,
+    "energy": TOK_ENERGY,
+    "stereo": TOK_STEREO,
+    "pattern": TOK_PATTERN,
+    "weight": TOK_WEIGHT,
+    "polymer": TOK_POLYMER,
+    "backbone_bond_length": TOK_BACKBONE_BOND_LENGTH,
+    "density": TOK_DENSITY,
+    "chains": TOK_CHAINS,
+    "monomers": TOK_MONOMERS,
+    "monomers_stddev": TOK_MONOMERS_STDDEV,
+    "system_min": TOK_SYSTEM_MIN,
+    "system_max": TOK_SYSTEM_MAX,
+    "exclude": TOK_EXCLUDE,
+    "cylinder": TOK_CYLINDER,
+    "slab": TOK_SLAB,
+    "sphere": TOK_SPHERE,
+    "chain_stereo": TOK_CHAIN_STEREO,
+    "domains": TOK_DOMAINS,
+    "grid_size": TOK_GRID_SIZE,
+    "sample": TOK_SAMPLE,
+    "monte_carlo": TOK_MONTE_CARLO,
+    "none": TOK_NONE,
+    "configs": TOK_CONFIGS,
+    "LJ": TOK_LJ,
+    "energy_cutoff": TOK_ENERGY_CUTOFF,
+    "bond_cutoff": TOK_BOND_CUTOFF,
+    "rng_seed": TOK_RNG_SEED,
+    "write": TOK_WRITE,
+    "wrapped_pdb": TOK_WRAPPED_PDB,
+    "unwrapped_pdb": TOK_UNWRAPPED_PDB,
+    "wrapped_xyz": TOK_WRAPPED_XYZ,
+    "unwrapped_xyz": TOK_UNWRAPPED_XYZ,
+    "chain_length_histo_bin": TOK_CHAIN_LENGTH_HISTO_BIN,
+    "torsion_rotation": TOK_TORSION_ROTATION,
+    "chain_length": TOK_CHAIN_LENGTH,
+    "chain_length_histo": TOK_CHAIN_LENGTH_HISTO,
+    "torsion_histo": TOK_TORSION_HISTO,
+    "intermediate": TOK_INTERMEDIATE,
+    "log_file": TOK_LOG_FILE,
+    "status_file": TOK_STATUS_FILE,
+    "recalculate_positions": TOK_RECALCULATE_POSITIONS,
+    "recalculate_neighbors": TOK_RECALCULATE_NEIGHBORS,
+    "invert": TOK_INVERT,
+    "term": TOK_TERM,
+    "isolate_chains": TOK_ISOLATE_CHAINS,
+    "calculate": TOK_CALCULATE,
+    "all": TOK_ALL,
+    "torsion_step": TOK_TORSION_STEP,
+    "self_avoid": TOK_SELF_AVOID,
+    "self_avoid_cutoff": TOK_SELF_AVOID_CUTOFF,
+    "[-+]?[0-9]+": TOK_INT,
     "[-+]?\d*\.\d+|\d+": TOK_REAL,
-    '[a-zA-Z0-9_/\\.-]+': TOK_STRING
+    "[a-zA-Z0-9_/\\.-]+": TOK_STRING,
 }
 
 
 def yylex(item):
     scan_flag = 1
     for key in switcher:
-        if re.match('^' + key + '$', item):
+        if re.match("^" + key + "$", item):
             tokval = switcher[key]
             tokstr = item
             scan_flag = 0
@@ -158,9 +158,9 @@ def yylex(item):
 
 class Scanner:
     def __init__(self):
-        self.path = ''
-        self.tokstr = ''
-        self.scanner = ''
+        self.path = ""
+        self.tokstr = ""
+        self.scanner = ""
         self.tokval = 0
         self.lineno = 0
         self.reuse = 0
@@ -187,8 +187,8 @@ class Scanner:
     def resetScanner(self):
         if self:
             self.f.fclose()
-            self.scanner = ''
-            self.tokstr = ''
+            self.scanner = ""
+            self.tokstr = ""
             self.initScanner()
 
     # ============================================================================
@@ -214,17 +214,17 @@ class Scanner:
             self.colno += 1
             if self.colno >= self.toklen:
                 self.line = self.f.readline()
-                if self.line == '':
+                if self.line == "":
                     return TOK_EOF
                 self.lineno += 1
-                self.tok_list = self.line.split('#')[0].split()
+                self.tok_list = self.line.split("#")[0].split()
                 self.toklen = len(self.tok_list)
                 while not self.toklen:
                     self.line = self.f.readline()
-                    if self.line == '':
+                    if self.line == "":
                         return TOK_EOF
                     self.lineno += 1
-                    self.tok_list = self.line.split('#')[0].split()
+                    self.tok_list = self.line.split("#")[0].split()
                     self.toklen = len(self.tok_list)
                 self.colno = 0
             self.scanner = self.tok_list[self.colno]
@@ -242,8 +242,10 @@ class Scanner:
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
             r = int(float(self.tokstr))
         else:
-            raise TypeError("Expected an integer on line %d of file %s, but found \"%s\"" %
-                            (self.lineno, self.path, self.tokstr))
+            raise TypeError(
+                'Expected an integer on line %d of file %s, but found "%s"'
+                % (self.lineno, self.path, self.tokstr)
+            )
         return r
 
     # ============================================================================
@@ -257,8 +259,10 @@ class Scanner:
         if self.tokval == TOK_INT or self.tokval == TOK_REAL:
             r = float(self.tokstr)
         else:
-            raise TypeError("Expected a Real on line %d of file %s, but found \"%s\"" %
-                            (self.lineno, self.path, self.tokstr))
+            raise TypeError(
+                'Expected a Real on line %d of file %s, but found "%s"'
+                % (self.lineno, self.path, self.tokstr)
+            )
         return r
 
 
@@ -272,7 +276,7 @@ def createScanner(path):
     s = Scanner()
 
     s.path = path
-    s.tokstr = ''
-    s.scanner = ''
+    s.tokstr = ""
+    s.scanner = ""
     s.initScanner()
     return s

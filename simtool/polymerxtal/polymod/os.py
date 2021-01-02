@@ -13,7 +13,7 @@ import errno, os, sys
 from .unistd import fchdir
 
 # File scope
-prevdir = ''
+prevdir = ""
 
 
 # ============================================================================
@@ -38,7 +38,9 @@ def changeDir(directory):
     if not os.path.exists(fd):
         raise IOError("Unable to open %s: %s" % (directory, os.strerror(errno.ENOENT)))
     if -1 == fchdir(fd):
-        raise IOError("Unable to change directory to %s: %s" % (directory, os.strerror(errno.EIO)))
+        raise IOError(
+            "Unable to change directory to %s: %s" % (directory, os.strerror(errno.EIO))
+        )
 
 
 # ============================================================================
@@ -50,4 +52,4 @@ def changeDir(directory):
 def restoreDir():
     if (not prevdir) or -1 == fchdir(prevdir):
         raise IOError("Unable to return to previous directory")
-    prevdir = ''
+    prevdir = ""

@@ -4,11 +4,13 @@ In this work, we present PolymerXtal, a software designed to build and analyze m
 """
 
 # Add imports here
+from .data import sample_chain
 from .crystal import Helice, Chain
 
 # Handle versioneer
 from ._version import get_versions
+
 versions = get_versions()
-__version__ = versions['version']
-__git_revision__ = versions['full-revisionid']
+__version__ = versions["version"]
+__git_revision__ = versions["full-revisionid"]
 del get_versions, versions

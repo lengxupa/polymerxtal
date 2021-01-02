@@ -13,8 +13,8 @@ import time
 
 class Timer:
     def __init__(self):
-        self.t0 = 0.
-        self.tv = 0.
+        self.t0 = 0.0
+        self.tv = 0.0
 
     # ============================================================================
     # startTimer()

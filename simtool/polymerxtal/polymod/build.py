@@ -35,7 +35,7 @@ update_count = 0
 # ============================================================================
 def updateStatus():
     curr_monomers = 0
-    #pragma omp critical (status)
+    # pragma omp critical (status)
 
     # printf("thread %d: status update %d of %d\n", omp_get_thread_num(),
     #        update_count+1, params.total_domains);
@@ -47,20 +47,20 @@ def updateStatus():
         for i in range(params.num_chains):
             curr_monomers += polysys.chains[i].curr_monomer
             pct = int(100.0 * float(curr_monomers) / float(total_monomers))
-            #ifdef RAPPTURE_STATUS
-            #fprintf(status_file, "=RAPPTURE-PROGRESS=>%d\n", pct);
-            #else
+            # ifdef RAPPTURE_STATUS
+            # fprintf(status_file, "=RAPPTURE-PROGRESS=>%d\n", pct);
+            # else
             BARLEN = 30
-            fputc('|', status_file)
+            fputc("|", status_file)
             maxi = int(float(pct * BARLEN) * 0.01)
             for i in range(BARLEN):
-                fputc('=' if i < maxi else ' ', status_file)
+                fputc("=" if i < maxi else " ", status_file)
             status_file.printf("| %3d%% (%f s)   " % (pct, timer.getElapsedTime()))
             if stdout == status_file:
-                fputc('\r' if pct < 100 else '\n', status_file)
+                fputc("\r" if pct < 100 else "\n", status_file)
             else:
                 status_file.rewind()
-            #endif
+            # endif
             update_count = 0
 
 
@@ -106,7 +106,9 @@ def interpolateTorsion(angle, m, ti, E, p):
 # m->torsion_{probs,angles,energies}[torsion_offset+i]; updates the sum
 # of bonded interactions, Eb, and the weight of bonded interactions, wb.
 # ============================================================================
-def setTorsions(c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, torsion_step):
+def setTorsions(
+    c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, torsion_step
+):
 
     for i in range(num_torsions):
         if torsion_step > 0.0:  # modify existing choice
@@ -134,7 +136,13 @@ def setTorsions(c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, tors
                     c.zm.entries[zm_offset + i].torsion_angle -= 360.0
                 if c.zm.entries[zm_offset + i].torsion_angle < 0.0:
                     c.zm.entries[zm_offset + i].torsion_angle += 360.0
-                interpolateTorsion(c.zm.entries[zm_offset + i].torsion_angle, m, i + torsion_offset, E, p)
+                interpolateTorsion(
+                    c.zm.entries[zm_offset + i].torsion_angle,
+                    m,
+                    i + torsion_offset,
+                    E,
+                    p,
+                )
                 if Eb:
                     Eb += E
                 if wb:
@@ -143,16 +151,27 @@ def setTorsions(c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, tors
         else:  # initial choice
             if m.torsions[i + torsion_offset] == Torsion.TORSION_FIXED:
                 if m.torsion_angles[i + torsion_offset][0] > -REAL_MAX:
-                    c.zm.entries[zm_offset + i].torsion_angle = m.torsion_angles[i + torsion_offset][0]
+                    c.zm.entries[zm_offset + i].torsion_angle = m.torsion_angles[
+                        i + torsion_offset
+                    ][0]
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_FREE:
                 c.zm.entries[zm_offset + i].torsion_angle = random.random() * 360.0
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_ENERGY:
-                n = selectWeight(m.torsion_probs[i + torsion_offset], m.num_torsions[i + torsion_offset], rng)
-                c.zm.entries[zm_offset + i].torsion_angle = m.torsion_angles[i + torsion_offset][n]
+                n = selectWeight(
+                    m.torsion_probs[i + torsion_offset],
+                    m.num_torsions[i + torsion_offset],
+                    rng,
+                )
+                c.zm.entries[zm_offset + i].torsion_angle = m.torsion_angles[
+                    i + torsion_offset
+                ][n]
                 if Eb:
                     Eb += m.torsion_energies[i + torsion_offset][n]
                 if wb:
-                    wb *= m.torsion_prob_min[i + torsion_offset] / m.torsion_probs[i + torsion_offset][n]
+                    wb *= (
+                        m.torsion_prob_min[i + torsion_offset]
+                        / m.torsion_probs[i + torsion_offset][n]
+                    )
 
 
 # ============================================================================
@@ -164,7 +183,11 @@ def setTorsions(c, m, num_torsions, zm_offset, torsion_offset, rng, Eb, wb, tors
 def rejectConfig(c, indices, num_indices, store_positions, start_unset, p):
     pos = np.zeros(3)
 
-    if (not p.excluded_cylinders) and (not p.excluded_slabs) and (not p.excluded_spheres):
+    if (
+        (not p.excluded_cylinders)
+        and (not p.excluded_slabs)
+        and (not p.excluded_spheres)
+    ):
         return 0
     for i in range(num_indices):
         pos = c.zm.getPosition(indices[i], pos)
@@ -174,17 +197,17 @@ def rejectConfig(c, indices, num_indices, store_positions, start_unset, p):
             c.zm.setPosition(indices[i], pos)
         foldPosition(pos, p.system_min, p.system_max, p.system_size)
         ec = p.excluded_cylinders
-        while ec and hasattr(ec, 'next'):
+        while ec and hasattr(ec, "next"):
             if ec.invert != ec.insideExclCylinder(pos):
                 return 1
             ec = ec.next
         es = p.excluded_slabs
-        while es and hasattr(es, 'next'):
+        while es and hasattr(es, "next"):
             if es.invert != es.insideExclSlab(pos):
                 return 1
             es = es.next
         esph = p.excluded_spheres
-        while esph and hasattr(esph, 'next'):
+        while esph and hasattr(esph, "next"):
             if esph.invert != esph.insideExclSphere(pos):
                 return 1
             esph = esph.next
@@ -203,7 +226,35 @@ def rejectConfig(c, indices, num_indices, store_positions, start_unset, p):
 # duplicate of a bin already in oa_nbrs[]
 # ============================================================================
 def fillNeighbors(s, d, nbrs, domain_edge, oa_nbrs):
-    nd = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    nd = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ]
 
     # nd[] represents the neighbor domain indices, the indices of
     # d->nbr_domains[], representing the Domains that hold the neighboring
@@ -273,7 +324,17 @@ def fillNeighbors(s, d, nbrs, domain_edge, oa_nbrs):
 # Result: return the sum of non-bonded interactions of all the atoms in the
 # tail monomer of s->chains[chain_index] with all surrounding atoms
 # ============================================================================
-def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_positions, p, energy_func):
+def sumInteractions(
+    s,
+    d,
+    chain_index,
+    indices,
+    num_indices,
+    start_unset,
+    store_positions,
+    p,
+    energy_func,
+):
     E = 0.0
     ecut2 = p.energy_cutoff * p.energy_cutoff
     c = s.chains[chain_index]
@@ -302,28 +363,54 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
         if store_positions:
             c.zm.setPosition(indices[i], ipos)
         foldPosition(ipos, p.system_min, p.system_max, p.system_size)
-        if ipos[0] > d.max[0] or ipos[0] < d.min[0] or ipos[1] > d.max[1] or ipos[1] < d.min[1] or ipos[2] > d.max[
-                2] or ipos[2] < d.min[2]:
+        if (
+            ipos[0] > d.max[0]
+            or ipos[0] < d.min[0]
+            or ipos[1] > d.max[1]
+            or ipos[1] < d.min[1]
+            or ipos[2] > d.max[2]
+            or ipos[2] < d.min[2]
+        ):
             # ipos is in another Domain ...
-            domain = hashBin(ipos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y)
+            domain = hashBin(
+                ipos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y
+            )
             if domain != prev_domain:
                 nd = s.domains[domain]
                 bin = hashBin(ipos, nd.min, nd.bin_size, nd.num_bins_x, nd.num_bins_y)
                 if p.recalculate_neighbors:
-                    getNeighborIndices(bin, d.nbr_bins, d.domain_edge, nd.num_bins_x, nd.num_bins_y, nd.num_bins_z)
+                    getNeighborIndices(
+                        bin,
+                        d.nbr_bins,
+                        d.domain_edge,
+                        nd.num_bins_x,
+                        nd.num_bins_y,
+                        nd.num_bins_z,
+                    )
                     fillNeighbors(s, nd, d.nbr_bins, d.domain_edge, oa_nbrs)
                 else:
-                    fillNeighbors(s, nd, nd.bins[bin].nbr_bins, nd.bins[bin].domain_edge, oa_nbrs)
+                    fillNeighbors(
+                        s, nd, nd.bins[bin].nbr_bins, nd.bins[bin].domain_edge, oa_nbrs
+                    )
                 prev_domain = domain
         else:
             # ipos is in d
             bin = hashBin(ipos, d.min, d.bin_size, d.num_bins_x, d.num_bins_y)
             if bin != prev_bin:
                 if p.recalculate_neighbors:
-                    getNeighborIndices(bin, d.nbr_bins, d.domain_edge, d.num_bins_x, d.num_bins_y, d.num_bins_z)
+                    getNeighborIndices(
+                        bin,
+                        d.nbr_bins,
+                        d.domain_edge,
+                        d.num_bins_x,
+                        d.num_bins_y,
+                        d.num_bins_z,
+                    )
                     fillNeighbors(s, d, d.nbr_bins, d.domain_edge, oa_nbrs)
                 else:
-                    fillNeighbors(s, d, d.bins[bin].nbr_bins, d.bins[bin].domain_edge, oa_nbrs)
+                    fillNeighbors(
+                        s, d, d.bins[bin].nbr_bins, d.bins[bin].domain_edge, oa_nbrs
+                    )
                 prev_bin = bin
 
         # Interactions with other atoms in this monomer, separated by more than
@@ -342,11 +429,13 @@ def sumInteractions(s, d, chain_index, indices, num_indices, start_unset, store_
         # previous monomers in the same chain
         for j in range(27):
             oa = oa_nbrs[j]
-            while oa and hasattr(oa, 'next'):
+            while oa and hasattr(oa, "next"):
                 contrib = 1
                 if p.isolate_chains and oa.chain != chain_index:
                     contrib = 0
-                if oa.chain == chain_index and c.zm.isBonded(indices[i], oa.atom, p.bond_cutoff):
+                if oa.chain == chain_index and c.zm.isBonded(
+                    indices[i], oa.atom, p.bond_cutoff
+                ):
                     contrib = 0
                 if contrib:
                     cn = s.chains[oa.chain]
@@ -380,26 +469,29 @@ def buildChains(s, p, domain_index):
     prev_angles = {}
     for i in range(p.max_monomer_atoms):
         atom_indices[i] = 0
-        prev_angles[i] = 0.
+        prev_angles[i] = 0.0
     kT_inv = 1.0 / (kB * p.temperature)
     m = Monomer()
     m.create()
     rng = s.rngs[domain_index]
     d = s.domains[domain_index]
     pos = np.zeros(3)
-    #Vector p1, p3;
+    # Vector p1, p3;
 
     while not system_done:
         for i in range(p.num_chains):
             # Add any pending atoms to d
-            #pragma omp critical (pending_atom)
+            # pragma omp critical (pending_atom)
             s.getPendingAtoms(d, p)
 
             # Choose a Chain randomly
             chain_index = int(random.random() * p.num_chains)
             if domain_index != s.chains[chain_index].domain:
                 continue  # on to the next Chain
-            if s.chains[chain_index].curr_monomer == s.chains[chain_index].num_monomers or s.chains[chain_index].dead:
+            if (
+                s.chains[chain_index].curr_monomer == s.chains[chain_index].num_monomers
+                or s.chains[chain_index].dead
+            ):
                 break  # test system_done and restart dead Chains
 
             # The tail atom of s->chains[chain_index] is in
@@ -411,11 +503,15 @@ def buildChains(s, p, domain_index):
             # Add a Monomer to the Chain ZMatrix
             m_prev = m
             nm = c.curr_monomer
-            if nm == c.num_monomers - 1 and c.stereo.term and hasattr(c.stereo.term, 'next'):
+            if (
+                nm == c.num_monomers - 1
+                and c.stereo.term
+                and hasattr(c.stereo.term, "next")
+            ):
                 m = c.stereo.term
             else:
                 m = c.stereo.getNextMonomer(rng)
-            #pragma omp atomic
+            # pragma omp atomic
             m.selection_count += 1
             c.addMonomer(m, p.backbone_bond_length, 1)
 
@@ -452,11 +548,29 @@ def buildChains(s, p, domain_index):
                 pos[1] += g * np.sin(th)
                 pos[2] += r * np.cos(ph)
                 c.zm.setPosition(1, pos)
-                Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset, store_positions,
-                                     p, Energy.energySelfAvoid)
+                Ei = sumInteractions(
+                    s,
+                    d,
+                    chain_index,
+                    atom_indices,
+                    num_test_indices,
+                    start_unset,
+                    store_positions,
+                    p,
+                    Energy.energySelfAvoid,
+                )
                 k += 1
-                while k < p.num_configs and (Ei > 0.0 or rejectConfig(c, atom_indices, num_test_indices,
-                                                                      store_positions, start_unset, p)):
+                while k < p.num_configs and (
+                    Ei > 0.0
+                    or rejectConfig(
+                        c,
+                        atom_indices,
+                        num_test_indices,
+                        store_positions,
+                        start_unset,
+                        p,
+                    )
+                ):
                     pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
                     pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
                     pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
@@ -472,8 +586,17 @@ def buildChains(s, p, domain_index):
                     pos[1] += g * np.sin(th)
                     pos[2] += r * np.cos(ph)
                     c.zm.setPosition(1, pos)
-                    Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                         store_positions, p, Energy.energySelfAvoid)
+                    Ei = sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        Energy.energySelfAvoid,
+                    )
                     k += 1
                 if k == p.num_configs:
                     # Unable to find a good configuration
@@ -509,8 +632,17 @@ def buildChains(s, p, domain_index):
 
             # Sample configurations
             if p.sample_monte_carlo:
-                Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                          store_positions, p, p.energy_func)
+                Ei = Eb + sumInteractions(
+                    s,
+                    d,
+                    chain_index,
+                    atom_indices,
+                    num_test_indices,
+                    start_unset,
+                    store_positions,
+                    p,
+                    p.energy_func,
+                )
                 Emax = Echosen = Ei
                 for j in range(p.num_configs):
                     # Loop over configurations; Ei holds energy of the inital
@@ -526,9 +658,20 @@ def buildChains(s, p, domain_index):
                     # setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng,
                     #             &Eb, NULL, p->torsion_step);
 
-                    setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, 0, 0.0)
-                    Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                              store_positions, p, p.energy_func)
+                    setTorsions(
+                        c, m, num_torsions, i_mon, torsion_offset, rng, Eb, 0, 0.0
+                    )
+                    Ef = Eb + sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        p.energy_func,
+                    )
                     if Ef > Emax:
                         Emax = Ef
                     dE = Ef - Ei
@@ -541,7 +684,9 @@ def buildChains(s, p, domain_index):
                         Ei = Ef
                         Echosen = Ef
                 wt = np.exp((Echosen - Emax) * kT_inv)
-            bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+            bad_chain = rejectConfig(
+                c, atom_indices, num_test_indices, store_positions, start_unset, p
+            )
             n1 += 1
             while n1 < p.num_configs and bad_chain:
                 if 1 == c.curr_monomer:
@@ -572,10 +717,28 @@ def buildChains(s, p, domain_index):
                     pos[1] += g * np.sin(th)
                     pos[2] += r * np.cos(ph)
                     c.zm.setPosition(1, pos)
-                    Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                         store_positions, p, Energy.energySelfAvoid)
-                    while k < p.num_configs and (Ei > 0.0 or rejectConfig(c, atom_indices, num_test_indices,
-                                                                          store_positions, start_unset, p)):
+                    Ei = sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        Energy.energySelfAvoid,
+                    )
+                    while k < p.num_configs and (
+                        Ei > 0.0
+                        or rejectConfig(
+                            c,
+                            atom_indices,
+                            num_test_indices,
+                            store_positions,
+                            start_unset,
+                            p,
+                        )
+                    ):
                         k += 1
                         pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
                         pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
@@ -592,8 +755,17 @@ def buildChains(s, p, domain_index):
                         pos[1] += g * np.sin(th)
                         pos[2] += r * np.cos(ph)
                         c.zm.setPosition(1, pos)
-                        Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                             store_positions, p, Energy.energySelfAvoid)
+                        Ei = sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            Energy.energySelfAvoid,
+                        )
                     k += 1
                     if k == p.num_configs:
                         # Unable to find a good configuration
@@ -629,8 +801,17 @@ def buildChains(s, p, domain_index):
 
                 # Sample configurations
                 if p.sample_monte_carlo:
-                    Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                              store_positions, p, p.energy_func)
+                    Ei = Eb + sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        p.energy_func,
+                    )
                     Emax = Echosen = Ei
                     for j in range(p.num_configs):
                         # Loop over configurations; Ei holds energy of the inital
@@ -645,9 +826,28 @@ def buildChains(s, p, domain_index):
                         # setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng,
                         #             &Eb, NULL, p->torsion_step);
 
-                        setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, NULL, 0.0)
-                        Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        setTorsions(
+                            c,
+                            m,
+                            num_torsions,
+                            i_mon,
+                            torsion_offset,
+                            rng,
+                            Eb,
+                            NULL,
+                            0.0,
+                        )
+                        Ef = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
@@ -660,7 +860,9 @@ def buildChains(s, p, domain_index):
                             Ei = Ef
                             Echosen = Ef
                     wt = np.exp((Echosen - Emax) * kT_inv)
-                bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                bad_chain = rejectConfig(
+                    c, atom_indices, num_test_indices, store_positions, start_unset, p
+                )
                 n1 += 1
             if n1 == p.num_configs and bad_chain and c.curr_monomer > 2:
                 # Adjust previous monomer
@@ -683,11 +885,22 @@ def buildChains(s, p, domain_index):
                 # Set initial torsions for previous monomer
                 Eb = 0.0
                 wt = 1.0
-                setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0)
+                setTorsions(
+                    c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0
+                )
                 # Sample configurations
                 if p.sample_monte_carlo:
-                    Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                              store_positions, p, p.energy_func)
+                    Ei = Eb + sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        p.energy_func,
+                    )
                     Emax = Echosen = Ei
                     for j in range(p.num_configs):
                         # Loop over configurations; Ei holds energy of the
@@ -699,13 +912,32 @@ def buildChains(s, p, domain_index):
                         # choice; now we choose from the available distribution
                         # of angles each time...
 
-                        #setTorsions(c, m_prev, num_torsions, i_mon,
+                        # setTorsions(c, m_prev, num_torsions, i_mon,
                         #            torsion_offset, rng, &Eb, NULL,
                         #            p->torsion_step);
 
-                        setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, 0., 0.0)
-                        Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        setTorsions(
+                            c,
+                            m_prev,
+                            num_torsions,
+                            i_mon,
+                            torsion_offset,
+                            rng,
+                            Eb,
+                            0.0,
+                            0.0,
+                        )
+                        Ef = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
@@ -718,17 +950,30 @@ def buildChains(s, p, domain_index):
                             Ei = Ef
                             Echosen = Ef
                     wt = np.exp((Echosen - Emax) * kT_inv)
-                bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                bad_chain = rejectConfig(
+                    c, atom_indices, num_test_indices, store_positions, start_unset, p
+                )
                 n1 += 1
                 while n1 < p.num_configs and bad_chain:
                     # Set initial torsions for previous monomer
                     Eb = 0.0
                     wt = 1.0
-                    setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0)
+                    setTorsions(
+                        c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0
+                    )
                     # Sample configurations
                     if p.sample_monte_carlo:
-                        Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        Ei = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         Emax = Echosen = Ei
                         for j in range(p.num_configs):
                             # Loop over configurations; Ei holds energy of the
@@ -740,26 +985,54 @@ def buildChains(s, p, domain_index):
                             # choice; now we choose from the available distribution
                             # of angles each time...
 
-                            #setTorsions(c, m_prev, num_torsions, i_mon,
+                            # setTorsions(c, m_prev, num_torsions, i_mon,
                             #            torsion_offset, rng, &Eb, NULL,
                             #            p->torsion_step);
 
-                            setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, 0., 0.0)
-                            Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                      store_positions, p, p.energy_func)
+                            setTorsions(
+                                c,
+                                m_prev,
+                                num_torsions,
+                                i_mon,
+                                torsion_offset,
+                                rng,
+                                Eb,
+                                0.0,
+                                0.0,
+                            )
+                            Ef = Eb + sumInteractions(
+                                s,
+                                d,
+                                chain_index,
+                                atom_indices,
+                                num_test_indices,
+                                start_unset,
+                                store_positions,
+                                p,
+                                p.energy_func,
+                            )
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
                             if dE > 0 and np.exp(-dE * kT_inv) < random.random():
                                 # Reject configuration
                                 for k in range(num_torsions):
-                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
+                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[
+                                        k
+                                    ]
                             else:
                                 # Keep new configuration
                                 Ei = Ef
                                 Echosen = Ef
                         wt = np.exp((Echosen - Emax) * kT_inv)
-                    bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                    bad_chain = rejectConfig(
+                        c,
+                        atom_indices,
+                        num_test_indices,
+                        store_positions,
+                        start_unset,
+                        p,
+                    )
                     n1 += 1
                 if bad_chain:
                     # Not able to reconfigure the previous monomer; set n0 to
@@ -772,21 +1045,30 @@ def buildChains(s, p, domain_index):
                     bad_chain += 1
                     # Found good, new configuration for previous monomer
                     if (not p.recalculate_positions) and c.zm.num_positions > 2:
-                        for j in range(c.i_monomer[c.curr_monomer - 2], c.i_monomer[c.curr_monomer - 1]):
+                        for j in range(
+                            c.i_monomer[c.curr_monomer - 2],
+                            c.i_monomer[c.curr_monomer - 1],
+                        ):
                             # Cache final unwrapped positions
                             pos = c.zm.getPosition(j, pos)
                             c.zm.setPosition(j, pos)
                             # Add folded positions to grid
                             foldPosition(pos, p.system_min, p.system_max, p.system_size)
-                            if pos[0] > d.max[0] or pos[0] < d.min[0] or pos[1] > d.max[1] or pos[1] < d.min[1] or pos[
-                                    2] > d.max[2] or pos[2] < d.min[2]:
+                            if (
+                                pos[0] > d.max[0]
+                                or pos[0] < d.min[0]
+                                or pos[1] > d.max[1]
+                                or pos[1] < d.min[1]
+                                or pos[2] > d.max[2]
+                                or pos[2] < d.min[2]
+                            ):
                                 # pos is in another Domain
-                                #pragma omp critical (pending_atom)
+                                # pragma omp critical (pending_atom)
                                 s.addPendingAtom(chain_index, j)
                             else:  # pos is in d
                                 d.addAtom(pos, chain_index, j)
             # end adjust previous monomer
-            #else:
+            # else:
             # TODO torsion delta ...
             n0 += 1
             while n0 < p.num_configs and bad_chain:
@@ -819,11 +1101,29 @@ def buildChains(s, p, domain_index):
                     pos[1] += g * np.sin(th)
                     pos[2] += r * np.cos(ph)
                     c.zm.setPosition(1, pos)
-                    Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                         store_positions, p, Energy.energySelfAvoid)
+                    Ei = sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        Energy.energySelfAvoid,
+                    )
                     k += 1
-                    while k < p.num_configs and (Ei > 0.0 or rejectConfig(c, atom_indices, num_test_indices,
-                                                                          store_positions, start_unset, p)):
+                    while k < p.num_configs and (
+                        Ei > 0.0
+                        or rejectConfig(
+                            c,
+                            atom_indices,
+                            num_test_indices,
+                            store_positions,
+                            start_unset,
+                            p,
+                        )
+                    ):
                         pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
                         pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
                         pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
@@ -839,8 +1139,17 @@ def buildChains(s, p, domain_index):
                         pos[1] += g * np.sin(th)
                         pos[2] += r * np.cos(ph)
                         c.zm.setPosition(1, pos)
-                        Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                             store_positions, p, Energy.energySelfAvoid)
+                        Ei = sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            Energy.energySelfAvoid,
+                        )
                         k += 1
                     if k == p.num_configs:
                         # Unable to find a good configuration
@@ -876,8 +1185,17 @@ def buildChains(s, p, domain_index):
 
                 # Sample configurations
                 if p.sample_monte_carlo:
-                    Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                              store_positions, p, p.energy_func)
+                    Ei = Eb + sumInteractions(
+                        s,
+                        d,
+                        chain_index,
+                        atom_indices,
+                        num_test_indices,
+                        start_unset,
+                        store_positions,
+                        p,
+                        p.energy_func,
+                    )
                     Emax = Echosen = Ei
                     for j in range(p.num_configs):
                         # Loop over configurations; Ei holds energy of the inital
@@ -892,9 +1210,28 @@ def buildChains(s, p, domain_index):
                         # setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng,
                         #             &Eb, NULL, p->torsion_step);
 
-                        setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, NULL, 0.0)
-                        Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        setTorsions(
+                            c,
+                            m,
+                            num_torsions,
+                            i_mon,
+                            torsion_offset,
+                            rng,
+                            Eb,
+                            NULL,
+                            0.0,
+                        )
+                        Ef = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
@@ -907,7 +1244,9 @@ def buildChains(s, p, domain_index):
                             Ei = Ef
                             Echosen = Ef
                     wt = np.exp((Echosen - Emax) * kT_inv)
-                bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                bad_chain = rejectConfig(
+                    c, atom_indices, num_test_indices, store_positions, start_unset, p
+                )
                 n1 += 1
                 while n1 < p.num_configs and bad_chain:
                     if 1 == c.curr_monomer:
@@ -938,10 +1277,28 @@ def buildChains(s, p, domain_index):
                         pos[1] += g * np.sin(th)
                         pos[2] += r * np.cos(ph)
                         c.zm.setPosition(1, pos)
-                        Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                             store_positions, p, energySelfAvoid)
-                        while k < p.num_configs and (Ei > 0.0 or rejectConfig(c, atom_indices, num_test_indices,
-                                                                              store_positions, start_unset, p)):
+                        Ei = sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            energySelfAvoid,
+                        )
+                        while k < p.num_configs and (
+                            Ei > 0.0
+                            or rejectConfig(
+                                c,
+                                atom_indices,
+                                num_test_indices,
+                                store_positions,
+                                start_unset,
+                                p,
+                            )
+                        ):
                             k += 1
                             pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
                             pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
@@ -958,8 +1315,17 @@ def buildChains(s, p, domain_index):
                             pos[1] += g * np.sin(th)
                             pos[2] += r * np.cos(ph)
                             c.zm.setPosition(1, pos)
-                            Ei = sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                 store_positions, p, Energy.energySelfAvoid)
+                            Ei = sumInteractions(
+                                s,
+                                d,
+                                chain_index,
+                                atom_indices,
+                                num_test_indices,
+                                start_unset,
+                                store_positions,
+                                p,
+                                Energy.energySelfAvoid,
+                            )
                         k += 1
                         if k == p.num_configs:
                             # Unable to find a good configuration
@@ -991,12 +1357,23 @@ def buildChains(s, p, domain_index):
                     # Set initial torsions for new monomer
                     Eb = 0.0
                     wt = 1.0
-                    setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0)
+                    setTorsions(
+                        c, m, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0
+                    )
 
                     # Sample configurations
                     if p.sample_monte_carlo:
-                        Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        Ei = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         Emax = Echosen = Ei
                         for j in range(p.num_configs):
                             # Loop over configurations; Ei holds energy of the inital
@@ -1011,22 +1388,50 @@ def buildChains(s, p, domain_index):
                             # setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng,
                             #             &Eb, NULL, p->torsion_step);
 
-                            setTorsions(c, m, num_torsions, i_mon, torsion_offset, rng, Eb, NULL, 0.0)
-                            Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                      store_positions, p, p.energy_func)
+                            setTorsions(
+                                c,
+                                m,
+                                num_torsions,
+                                i_mon,
+                                torsion_offset,
+                                rng,
+                                Eb,
+                                NULL,
+                                0.0,
+                            )
+                            Ef = Eb + sumInteractions(
+                                s,
+                                d,
+                                chain_index,
+                                atom_indices,
+                                num_test_indices,
+                                start_unset,
+                                store_positions,
+                                p,
+                                p.energy_func,
+                            )
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
                             if dE > 0 and np.exp(-dE * kT_inv) < random.random():
                                 # Reject configuration
                                 for k in range(num_torsions):
-                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
+                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[
+                                        k
+                                    ]
                             else:
                                 # Keep new configuration
                                 Ei = Ef
                                 Echosen = Ef
                         wt = np.exp((Echosen - Emax) * kT_inv)
-                    bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                    bad_chain = rejectConfig(
+                        c,
+                        atom_indices,
+                        num_test_indices,
+                        store_positions,
+                        start_unset,
+                        p,
+                    )
                     n1 += 1
                 if n1 == p.num_configs and bad_chain and c.curr_monomer > 2:
                     # Adjust previous monomer
@@ -1049,11 +1454,22 @@ def buildChains(s, p, domain_index):
                     # Set initial torsions for previous monomer
                     Eb = 0.0
                     wt = 1.0
-                    setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0)
+                    setTorsions(
+                        c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0
+                    )
                     # Sample configurations
                     if p.sample_monte_carlo:
-                        Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                  store_positions, p, p.energy_func)
+                        Ei = Eb + sumInteractions(
+                            s,
+                            d,
+                            chain_index,
+                            atom_indices,
+                            num_test_indices,
+                            start_unset,
+                            store_positions,
+                            p,
+                            p.energy_func,
+                        )
                         Emax = Echosen = Ei
                         for j in range(p.num_configs):
                             # Loop over configurations; Ei holds energy of the
@@ -1065,67 +1481,144 @@ def buildChains(s, p, domain_index):
                             # choice; now we choose from the available distribution
                             # of angles each time...
 
-                            #setTorsions(c, m_prev, num_torsions, i_mon,
+                            # setTorsions(c, m_prev, num_torsions, i_mon,
                             #            torsion_offset, rng, &Eb, NULL,
                             #            p->torsion_step);
 
-                            setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, 0., 0.0)
-                            Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                      store_positions, p, p.energy_func)
+                            setTorsions(
+                                c,
+                                m_prev,
+                                num_torsions,
+                                i_mon,
+                                torsion_offset,
+                                rng,
+                                Eb,
+                                0.0,
+                                0.0,
+                            )
+                            Ef = Eb + sumInteractions(
+                                s,
+                                d,
+                                chain_index,
+                                atom_indices,
+                                num_test_indices,
+                                start_unset,
+                                store_positions,
+                                p,
+                                p.energy_func,
+                            )
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
                             if dE > 0 and np.exp(-dE * kT_inv) < random.random():
                                 # Reject configuration
                                 for k in range(num_torsions):
-                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
+                                    c.zm.entries[i_mon + k].torsion_angle = prev_angles[
+                                        k
+                                    ]
                             else:
                                 # Keep new configuration
                                 Ei = Ef
                                 Echosen = Ef
                         wt = np.exp((Echosen - Emax) * kT_inv)
-                    bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                    bad_chain = rejectConfig(
+                        c,
+                        atom_indices,
+                        num_test_indices,
+                        store_positions,
+                        start_unset,
+                        p,
+                    )
                     n1 += 1
                     while n1 < p.num_configs and bad_chain:
                         # Set initial torsions for previous monomer
                         Eb = 0.0
                         wt = 1.0
-                        setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, wt, 0.0)
+                        setTorsions(
+                            c,
+                            m_prev,
+                            num_torsions,
+                            i_mon,
+                            torsion_offset,
+                            rng,
+                            Eb,
+                            wt,
+                            0.0,
+                        )
                         # Sample configurations
                         if p.sample_monte_carlo:
-                            Ei = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices, start_unset,
-                                                      store_positions, p, p.energy_func)
+                            Ei = Eb + sumInteractions(
+                                s,
+                                d,
+                                chain_index,
+                                atom_indices,
+                                num_test_indices,
+                                start_unset,
+                                store_positions,
+                                p,
+                                p.energy_func,
+                            )
                             Emax = Echosen = Ei
                             for j in range(p.num_configs):
                                 # Loop over configurations; Ei holds energy of the
                                 # inital configuration
                                 for k in range(num_torsions):
-                                    prev_angles[k] = c.zm.entries[i_mon + k].torsion_angle
+                                    prev_angles[k] = c.zm.entries[
+                                        i_mon + k
+                                    ].torsion_angle
                                 Eb = 0.0
                                 # Previously this added +/- torsion_step to the initial
                                 # choice; now we choose from the available distribution
                                 # of angles each time...
 
-                                #setTorsions(c, m_prev, num_torsions, i_mon,
+                                # setTorsions(c, m_prev, num_torsions, i_mon,
                                 #            torsion_offset, rng, &Eb, NULL,
                                 #            p->torsion_step);
 
-                                setTorsions(c, m_prev, num_torsions, i_mon, torsion_offset, rng, Eb, 0., 0.0)
-                                Ef = Eb + sumInteractions(s, d, chain_index, atom_indices, num_test_indices,
-                                                          start_unset, store_positions, p, p.energy_func)
+                                setTorsions(
+                                    c,
+                                    m_prev,
+                                    num_torsions,
+                                    i_mon,
+                                    torsion_offset,
+                                    rng,
+                                    Eb,
+                                    0.0,
+                                    0.0,
+                                )
+                                Ef = Eb + sumInteractions(
+                                    s,
+                                    d,
+                                    chain_index,
+                                    atom_indices,
+                                    num_test_indices,
+                                    start_unset,
+                                    store_positions,
+                                    p,
+                                    p.energy_func,
+                                )
                                 if Ef > Emax:
                                     Emax = Ef
                                 dE = Ef - Ei
                                 if dE > 0 and np.exp(-dE * kT_inv) < random.random():
                                     # Reject configuration
                                     for k in range(num_torsions):
-                                        c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
+                                        c.zm.entries[
+                                            i_mon + k
+                                        ].torsion_angle = prev_angles[k]
                                 else:
                                     # Keep new configuration
                                     Ei = Ef
                                     Echosen = Ef
                             wt = np.exp((Echosen - Emax) * kT_inv)
-                        bad_chain = rejectConfig(c, atom_indices, num_test_indices, store_positions, start_unset, p)
+                        bad_chain = rejectConfig(
+                            c,
+                            atom_indices,
+                            num_test_indices,
+                            store_positions,
+                            start_unset,
+                            p,
+                        )
                         n1 += 1
                     if bad_chain:
                         # Not able to reconfigure the previous monomer; set n0 to
@@ -1138,20 +1631,31 @@ def buildChains(s, p, domain_index):
                         bad_chain += 1
                         # Found good, new configuration for previous monomer
                         if (not p.recalculate_positions) and c.zm.num_positions > 2:
-                            for j in range(c.i_monomer[c.curr_monomer - 2], c.i_monomer[c.curr_monomer - 1]):
+                            for j in range(
+                                c.i_monomer[c.curr_monomer - 2],
+                                c.i_monomer[c.curr_monomer - 1],
+                            ):
                                 # Cache final unwrapped positions
                                 pos = c.zm.getPosition(j, pos)
                                 c.zm.setPosition(j, pos)
                                 # Add folded positions to grid
-                                foldPosition(pos, p.system_min, p.system_max, p.system_size)
-                                if pos[0] > d.max[0] or pos[0] < d.min[0] or pos[1] > d.max[1] or pos[1] < d.min[
-                                        1] or pos[2] > d.max[2] or pos[2] < d.min[2]:
+                                foldPosition(
+                                    pos, p.system_min, p.system_max, p.system_size
+                                )
+                                if (
+                                    pos[0] > d.max[0]
+                                    or pos[0] < d.min[0]
+                                    or pos[1] > d.max[1]
+                                    or pos[1] < d.min[1]
+                                    or pos[2] > d.max[2]
+                                    or pos[2] < d.min[2]
+                                ):
                                     # pos is in another Domain
                                     s.addPendingAtom(chain_index, j)
                                 else:  # pos is in d
                                     d.addAtom(pos, chain_index, j)
                 # end adjust previous monomer
-                #else:
+                # else:
                 # TODO torsion delta ...
                 n0 += 1
             if n0 == p.num_configs and bad_chain:
@@ -1188,15 +1692,21 @@ def buildChains(s, p, domain_index):
 
                 pos = c.zm.getPosition(j, pos)
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
-                if pos[0] > d.max[0] or pos[0] < d.min[0] or pos[1] > d.max[1] or pos[1] < d.min[1] or pos[2] > d.max[
-                        2] or pos[2] < d.min[2]:
+                if (
+                    pos[0] > d.max[0]
+                    or pos[0] < d.min[0]
+                    or pos[1] > d.max[1]
+                    or pos[1] < d.min[1]
+                    or pos[2] > d.max[2]
+                    or pos[2] < d.min[2]
+                ):
                     # pos is in another Domain */
 
                     # printf("Domain %d: atom %d of chain %d changed Domain\n",
                     #        d->index, j+1, chain_index+1);
                     # fflush(stdout);
 
-                    #pragma omp critical (pending_atom)
+                    # pragma omp critical (pending_atom)
                     s.addPendingAtom(chain_index, j)
                 else:  # pos is in d
                     d.addAtom(pos, chain_index, j)
@@ -1213,7 +1723,9 @@ def buildChains(s, p, domain_index):
 
             pos = c.zm.getPosition(c.tail_index, pos)
             foldPosition(pos, p.system_min, p.system_max, p.system_size)
-            c.domain = hashBin(pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y)
+            c.domain = hashBin(
+                pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y
+            )
         # End loop over Chains
 
         # Remove dead Chains

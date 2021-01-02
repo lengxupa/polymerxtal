@@ -1,8 +1,8 @@
 class FILE:
     def __init__(self):
-        self.path=''
+        self.path = ""
 
-    def printf(self,format):
+    def printf(self, format):
         if self.path:
             self.file.write(format)
         else:
@@ -18,11 +18,14 @@ class FILE:
     def readline(self):
         return self.file.readline()
 
-stderr=FILE()
-stdout=FILE()
+
+stderr = FILE()
+stdout = FILE()
+
 
 def fputc(character, stream):
     stream.printf(character)
+
 
 def fgets(length, stream):
     return stream.file.readline()

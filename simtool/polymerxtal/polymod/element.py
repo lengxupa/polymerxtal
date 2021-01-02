@@ -12,16 +12,16 @@ from .scan import Scanner, createScanner, TOK_EOF
 
 # File scope
 elements = {}
-num_elements  = 0
+num_elements = 0
 
 
 class Element:
     def __init__(self):
-        self.name = ''
-        self.mass = 0.  # amu
-        self.R0 = 0.  # equilibrium bond length; A
-        self.LJ_R0 = 0.  # Lennard-Jones length parameter; A
-        self.LJ_D0 = 0.  # Lennard-Jones energy parameter; kcal/mol
+        self.name = ""
+        self.mass = 0.0  # amu
+        self.R0 = 0.0  # equilibrium bond length; A
+        self.LJ_R0 = 0.0  # Lennard-Jones length parameter; A
+        self.LJ_D0 = 0.0  # Lennard-Jones energy parameter; kcal/mol
 
 
 # ============================================================================
@@ -62,7 +62,7 @@ def getElementIndex(name):
             break
         n += 1
     if n == num_elements:
-        raise NameError("Unknown element: \"%s\"" % name)
+        raise NameError('Unknown element: "%s"' % name)
     return n
 
 

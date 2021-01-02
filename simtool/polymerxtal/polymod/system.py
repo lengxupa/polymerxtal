@@ -72,13 +72,15 @@ class PolymerSystem:
         oa = self.pending_atoms
         prev = OccAtom()
 
-        while oa and hasattr(oa, 'next'):
+        while oa and hasattr(oa, "next"):
             next = oa.next
             pos = self.chains[oa.chain].zm.getPosition(oa.atom, pos)
             foldPosition(pos, p.system_min, p.system_max, p.system_size)
-            domain = hashBin(pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y)
+            domain = hashBin(
+                pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y
+            )
             if domain == d.index:
-                if prev and hasattr(prev, 'next'):
+                if prev and hasattr(prev, "next"):
                     prev.next = next
                 else:
                     self.pending_atoms = next

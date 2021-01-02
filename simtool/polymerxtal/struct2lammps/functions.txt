@@ -1,0 +1,160 @@
+createBondCommands.py
+	- atom_type_groups_commands()
+	- atom_type_combinations()
+	- cutoff_radii()
+	- create_bonds_commands()
+
+createBonds.py
+	- simulation_box()
+	- create_lmpdat()
+	- write_mass()
+	- write_coeff()
+	- create_atom_combinations()
+	- create_lammps_in()
+	- find_key()
+	- create_ID_dictionary()
+	- create_connectivity()
+	- translate_write_connectivity()
+	- create_bonds()
+
+createDreidingTypes.py
+	Dreiding
+		- __init__()
+	Typer
+		- __init__()
+	AtomType
+		- __init__()
+	- read_structure()
+	- connectivity_pdb()
+	- create_bonds_obabel()
+	- match_atom_type()
+	- find_atom_types()
+	- match_bond_type()
+	- find_bond_types()
+	- write_atoms_dat()
+	- write_atom_type_dat()
+	- write_bonds_dat()
+	- write_bond_type_dat()
+	- create_dreiding_types()
+
+data4lammps
+	data4Lammps.py
+		- getForcefield()
+		- getFileName()
+		- checkAtomtype()
+		- createReaxDatafile()
+		- readPairCoeffs()
+		- outputDreidingCoeffs()
+		- printCoeffs()
+		- outputPCFFCoeffs()
+		- createDatafile()
+
+	doAtomTyping.py
+		- getAtomtypes()
+		- getAtoms()
+		- getBonds()
+		- getRingatoms()
+		- getBondorders()
+		- AtomLink()
+		- elems()
+		- linkelems()
+		- remove_underscore()
+		- getPCFFatomtypes()
+		- getDREIDINGatomtypes()
+		- collectAtomtypes()
+		- assignAtomtypeID()
+		- atomTyping()
+		- updateAtoms()
+		- collectBondtypes()
+		- assignBondtypeID()
+		- bondTyping()
+		- outputTyping()
+		- doAtomTyping()
+
+	Gasteiger.py
+		- getGasteigerParamFile()
+		- getGasteiger_parameters()
+		- Goutput()
+		- getGasteigerCharge()
+
+	getForcefield.py
+		- getDreidingParamFile()
+		- getAtommass()
+		- getPairCoeffs()
+		- getBondCoeffs()
+		- getAngleCoeffs()
+		- getDihsCoeffs()
+		- getImpsCoeffs()
+
+	handleAtoms.py
+		- Atomtypes()
+		- AtomsInfo()
+		- AtomLink()
+
+	handleBonds.py
+		- getBondtypes()
+		- getBonds()
+		- createAngles()
+		- outputtypes()
+		- getAngletypes()
+		- createDihedrals()
+		- getDihstypes()
+		- createImpropers()
+		- getImpstypes()
+
+	main.py
+		- main()
+
+	PCFF.py
+		- outputtypes()
+		- PCFF_getAngletypes()
+		- PCFF_getDihstypes()
+		- PCFF_getImpstypes()
+		- getPCFFParamFile()
+		- PCFF_getAtommass()
+		- PCFF_getPairCoeffs()
+		- PCFF_readPairCoeffs()
+		- PCFF_getBondCoeffs()
+		- PCFF_getAngleCoeffs()
+		- getBBCoeffs()
+		- getBACoeffs()
+		- PCFF_getDihsCoeffs()
+		- getMBTCoeffs()
+		- getEBTCoeffs()
+		- getATCoeffs()
+		- getAATCoeffs()
+		- getBB13Coeffs()
+		- PCFF_getImpsCoeffs()
+		- getAACoeffs()
+
+	qeq.py
+		- get_parameters()
+		- get_elements()
+		- read_total_charge()
+		- calculate_coulomb_integral()
+		- fill_J()
+		- compute_QEq_charges()
+		- Qeq_charge_equilibration()
+
+getnd.py
+	- getnd()
+
+readFiles.py
+	- convert_structure()
+	- read_n_types()
+	- read_atom_pdb()
+	- get_mass()
+	- fix_decimal_places()
+	- read_atoms_pdb()
+	- read_atoms_lmpdat()
+	- read_bonds_lmpdat()	
+	- read_image_info()
+
+runData4Lammps.py
+	- read_cell_sizes()
+	- run_data4lammps()		
+
+struct2lammps.py
+	- save_structure()
+	- conect_in_pdb()
+	- Create_Data_File()

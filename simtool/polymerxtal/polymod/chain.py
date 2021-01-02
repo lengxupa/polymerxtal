@@ -36,7 +36,7 @@ class Chain:
         self.torsion_count = {}
         self.length = {}  # end to end, as each monomer is added
         self.weight = {}  # as each monomer is added
-        self.mass = 0.
+        self.mass = 0.0
         self.extra_bonds = Bond()
 
     # ============================================================================
@@ -52,7 +52,7 @@ class Chain:
         self.tail_index = -1
         self.curr_atom = 0
         self.mass = 0.0
-        if self.extra_bonds and hasattr(self.extra_bonds, 'next'):
+        if self.extra_bonds and hasattr(self.extra_bonds, "next"):
             del self.extra_bonds
             self.extra_bonds = Bond()
         for i in range(360):
@@ -107,15 +107,19 @@ class Chain:
                 czm.setPosition(old_tail_index, pos)
             # Add remaining atoms in monomer
             for i in range(2, mzm.num_entries):
-                #cze = czm.entries[self.curr_atom] #origin
-                #self.curr_atom += 1 #origin
+                # cze = czm.entries[self.curr_atom] #origin
+                # self.curr_atom += 1 #origin
                 mze = mzm.entries[i]
                 cze = copy.copy(mze)  # struct copy
                 cze.bond_index = shiftIndex(czm, mze.bond_index, old_tail_index, offset)
-                cze.angle_index = shiftIndex(czm, mze.angle_index, old_tail_index, offset)
-                cze.dihedral_index = shiftIndex(czm, mze.dihedral_index, old_tail_index, offset)
-                czm.entries[self.curr_atom] = cze  #try
-                self.curr_atom += 1  #try
+                cze.angle_index = shiftIndex(
+                    czm, mze.angle_index, old_tail_index, offset
+                )
+                cze.dihedral_index = shiftIndex(
+                    czm, mze.dihedral_index, old_tail_index, offset
+                )
+                czm.entries[self.curr_atom] = cze  # try
+                self.curr_atom += 1  # try
         self.tail_index = offset + m.num_bb - 1
         self.mass += m.central_mass
         if self.curr_monomer == self.num_monomers:  # last monomer
@@ -123,7 +127,7 @@ class Chain:
         if update_bonds:
             blist = m.extra_bonds
 
-            while blist and hasattr(blist, 'next'):
+            while blist and hasattr(blist, "next"):
                 b = createBond(blist.index1 + offset, blist.index2 + offset)
                 b.next = self.extra_bonds
                 self.extra_bonds = b
@@ -149,9 +153,22 @@ class Chain:
             if fold_pos:
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
             #         1     7   13  18     23     31   39   47
-            f.printf("ATOM  %5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f\n" %
-                     (i_atom, getElementName(self.zm.entries[i].type.element_index), RESIDUE_NAME, CHAIN_ID,
-                      RESIDUE_SEQ, pos[0], pos[1], pos[2]))
+            el_name = getElementName(self.zm.entries[i].type.element_index)
+            f.printf(
+                "ATOM  %5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f"
+                % (
+                    i_atom,
+                    el_name,
+                    RESIDUE_NAME,
+                    CHAIN_ID,
+                    RESIDUE_SEQ,
+                    pos[0],
+                    pos[1],
+                    pos[2],
+                )
+                + " " * 22
+                + "%2s\n" % el_name
+            )
             i_atom += 1
             if i_atom > 99999:
                 i_atom = 1
@@ -173,8 +190,15 @@ class Chain:
             pos = self.zm.getPosition(i, pos)
             if fold_pos:
                 foldPosition(pos, p.system_min, p.system_max, p.system_size)
-            f.printf("%4s%15.3f%15.3f%15.3f\n" %
-                     (getElementName(self.zm.entries[i].type.element_index), pos[0], pos[1], pos[2]))
+            f.printf(
+                "%4s%15.3f%15.3f%15.3f\n"
+                % (
+                    getElementName(self.zm.entries[i].type.element_index),
+                    pos[0],
+                    pos[1],
+                    pos[2],
+                )
+            )
 
 
 # ============================================================================
@@ -190,11 +214,11 @@ def createChain(stereo, num_monomers, num_atoms, store_positions):
     c.stereo = stereo
     for i in range(num_monomers):
         c.i_monomer[i] = 0
-        c.length[i] = 0.
-        c.weight[i] = 0.
+        c.length[i] = 0.0
+        c.weight[i] = 0.0
     c.num_monomers = num_monomers
     for i in range(360):
-        c.torsion_count[i] = 0.
+        c.torsion_count[i] = 0.0
     c.extra_bonds = Bond()
     c.init_domain = -1
     return c
@@ -263,7 +287,7 @@ def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
                     if indices[k] and c.zm.isBonded(j, k, num_bonds):
                         pk = c.zm.getPosition(k, pk)
                         tk = c.zm.entries[k].type.element_index
-                        r2 = np.linalg.norm(pj - pk)**2
+                        r2 = np.linalg.norm(pj - pk) ** 2
                         E += energyLJ(tj, tk, r2)
         f.printf("%3d  %.2f\n" % (i, E))
 
@@ -291,4 +315,4 @@ def writeInternalRotationPDB(m, index, step, basename):
         c.writeChainPDB(n, 0, f, Params())
         f.fclose()
     del c
-    path = ''
+    path = ""
