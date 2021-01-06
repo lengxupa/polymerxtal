@@ -1,4 +1,4 @@
-import math, os, string, sys
+import math, os
 
 current_location = os.path.dirname(__file__)
 #####################################################################################
@@ -21,12 +21,12 @@ def PCFF_getAtommass(atomtypes):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "ATOMTYPES":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype = str(words[0]).upper()
                 amass = eval(words[2])
@@ -38,7 +38,7 @@ def PCFF_getAtommass(atomtypes):
                             masslist.append(atomtypeID)
                             atommass.append([atomtypeID, amass, atomtype])
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return atommass
@@ -50,16 +50,17 @@ def PCFF_getBondCoeffs(bondtypes):
     bondcoeffs = []
     flag = 0
     cmark = "  #"
+    bond_ids = []
 
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "BOND_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -87,11 +88,39 @@ def PCFF_getBondCoeffs(bondtypes):
                     if (atype1 == atom1type and atype2 == atom2type) or (
                         atype2 == atom1type and atype1 == atom2type
                     ):
+                        if bondtypeID in bond_ids:
+                            for bond_list in bondcoeffs:
+                                if bond_list[0] == bondtypeID:
+                                    break
+                            bondcoeffs.remove(bond_list)
+                        else:
+                            bond_ids.append(bondtypeID)
                         bondcoeffs.append(
                             [bondtypeID, b0, k2, k3, k4, cmark, atom1type, atom2type]
                         )
+                    elif (
+                        (atype1 == atom1type or atype1 == atom1type + "_")
+                        and (atype2 == atom2type or atype2 == atom2type + "_")
+                    ) or (
+                        (atype2 == atom1type or atype2 == atom1type + "_")
+                        and (atype1 == atom2type or atype1 == atom2type + "_")
+                    ):
+                        if bondtypeID not in bond_ids:
+                            bondcoeffs.append(
+                                [
+                                    bondtypeID,
+                                    b0,
+                                    k2,
+                                    k3,
+                                    k4,
+                                    cmark,
+                                    atom1type,
+                                    atom2type,
+                                ]
+                            )
+                            bond_ids.append(bondtypeID)
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
 
@@ -187,16 +216,17 @@ def PCFF_getAngleCoeffs(angletypes):
     anglecoeffs = []
     flag = 0
     cmark = "  #"
+    angle_ids = []
 
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "ANGLE_BEND":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -233,6 +263,13 @@ def PCFF_getAngleCoeffs(angletypes):
                         and atomtype2 == atype[1]
                         and atomtype1 == atype[2]
                     ):
+                        if angletypeID in angle_ids:
+                            for angle_list in anglecoeffs:
+                                if angle_list[0] == angletypeID:
+                                    break
+                            anglecoeffs.remove(angle_list)
+                        else:
+                            angle_ids.append(angletypeID)
                         anglecoeffs.append(
                             [
                                 angletypeID,
@@ -246,8 +283,32 @@ def PCFF_getAngleCoeffs(angletypes):
                                 atomtype3,
                             ]
                         )
+                    elif (
+                        (atomtype1 == atype[0] or atomtype1 + "_" == atype[0])
+                        and (atomtype2 == atype[1] or atomtype2 + "_" == atype[1])
+                        and (atomtype3 == atype[2] or atomtype3 + "_" == atype[2])
+                    ) or (
+                        (atomtype3 == atype[0] or atomtype3 + "_" == atype[0])
+                        and (atomtype2 == atype[1] or atomtype2 + "_" == atype[1])
+                        and (atomtype1 == atype[2] or atomtype1 + "_" == atype[2])
+                    ):
+                        if angletypeID not in angle_ids:
+                            anglecoeffs.append(
+                                [
+                                    angletypeID,
+                                    s0,
+                                    k2,
+                                    k3,
+                                    k4,
+                                    cmark,
+                                    atomtype1,
+                                    atomtype2,
+                                    atomtype3,
+                                ]
+                            )
+                            angle_ids.append(angletypeID)
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
 
@@ -292,12 +353,12 @@ def getBBCoeffs(angletypes, bondtypes, bondcoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "STRETCH_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -323,7 +384,7 @@ def getBBCoeffs(angletypes, bondtypes, bondcoeffs):
                     ):
                         BBcoeffs[angletypeID][1] = kv
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return BBcoeffs
@@ -355,12 +416,12 @@ def getBACoeffs(angletypes, bondtypes, bondcoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "STRETCH_BEND_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -392,7 +453,7 @@ def getBACoeffs(angletypes, bondtypes, bondcoeffs):
                         BAcoeffs[angletypeID][1] = kv2
                         BAcoeffs[angletypeID][2] = kv1
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return BAcoeffs
@@ -484,6 +545,7 @@ def PCFF_getDihsCoeffs(dihstypes):
     type_done = []
     flag = 0
     cmark = "  #"
+    dihs_ids = []
 
     dihscoeffs = [0]
     for i in range(len(dihstypes)):
@@ -512,12 +574,12 @@ def PCFF_getDihsCoeffs(dihstypes):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "TORSIONS":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[1])
                 atype2 = str(words[2])
@@ -567,8 +629,44 @@ def PCFF_getDihsCoeffs(dihstypes):
                         (atype0 == atom1type and atype3 == atom4type)
                         or (atype0 == atom4type and atype3 == atom1type)
                     ):
-                        if dihstypeID not in type_done:
-                            type_done.append(dihstypeID)
+                        if dihstypeID not in dihs_ids:
+                            if dihstypeID not in type_done:
+                                type_done.append(dihstypeID)
+                            k1 = tp[0][0]
+                            f1 = tp[0][1]
+                            k2 = tp[1][0]
+                            f2 = tp[1][1]
+                            k3 = tp[2][0]
+                            f3 = tp[2][1]
+                            dihscoeffs[dihstypeID][1] = k1
+                            dihscoeffs[dihstypeID][2] = f1
+                            dihscoeffs[dihstypeID][3] = k2
+                            dihscoeffs[dihstypeID][4] = f2
+                            dihscoeffs[dihstypeID][5] = k3
+                            dihscoeffs[dihstypeID][6] = f3
+                            dihs_ids.append(dihstypeID)
+                    elif (
+                        (
+                            (atype1 == atom2type or atype1 == atom2type + "_")
+                            and (atype2 == atom3type or atype2 == atom3type + "_")
+                        )
+                        or (
+                            (atype1 == atom3type or atype1 == atom3type + "_")
+                            and (atype2 == atom2type or atype2 == atom2type + "_")
+                        )
+                    ) and (
+                        (
+                            (atype0 == atom1type or atype0 == atom1type + "_")
+                            and (atype3 == atom4type or atype3 == atom4type + "_")
+                        )
+                        or (
+                            (atype0 == atom4type or atype0 == atom4type + "_")
+                            and (atype3 == atom1type or atype3 == atom1type + "_")
+                        )
+                    ):
+                        if dihstypeID not in dihs_ids:
+                            if dihstypeID not in type_done:
+                                type_done.append(dihstypeID)
                             k1 = tp[0][0]
                             f1 = tp[0][1]
                             k2 = tp[1][0]
@@ -582,7 +680,7 @@ def PCFF_getDihsCoeffs(dihstypes):
                             dihscoeffs[dihstypeID][5] = k3
                             dihscoeffs[dihstypeID][6] = f3
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return dihscoeffs
@@ -611,12 +709,12 @@ def getMBTCoeffs(dihstypes, bondtypes, bondcoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "TORSION_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -650,7 +748,7 @@ def getMBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                             MBTcoeffs[dihstypeID][2] = A2
                             MBTcoeffs[dihstypeID][3] = A3
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return MBTcoeffs
@@ -699,12 +797,12 @@ def getEBTCoeffs(dihstypes, bondtypes, bondcoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "STRETCH_TORSION_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -753,7 +851,7 @@ def getEBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                             EBTcoeffs[dihstypeID][5] = B2
                             EBTcoeffs[dihstypeID][6] = B3
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return EBTcoeffs
@@ -807,12 +905,12 @@ def getATCoeffs(dihstypes, angletypes, anglecoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "BEND_TORSION_BEND":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -861,7 +959,7 @@ def getATCoeffs(dihstypes, angletypes, anglecoeffs):
                             ATcoeffs[dihstypeID][5] = D2
                             ATcoeffs[dihstypeID][6] = D3
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return ATcoeffs
@@ -898,12 +996,12 @@ def getAATCoeffs(dihstypes, angletypes, anglecoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "TORSION_BEND_BEND":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -930,7 +1028,7 @@ def getAATCoeffs(dihstypes, angletypes, anglecoeffs):
                             type_done.append(dihstypeID)
                             AATcoeffs[dihstypeID][1] = M
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return AATcoeffs
@@ -962,12 +1060,12 @@ def getBB13Coeffs(dihstypes, bondtypes, bondcoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "SEPARATED_STRETCH_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -994,7 +1092,7 @@ def getBB13Coeffs(dihstypes, bondtypes, bondcoeffs):
                             type_done.append(dihstypeID)
                             BB13coeffs[dihstypeID][1] = M
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return BB13coeffs
@@ -1059,6 +1157,7 @@ def PCFF_getImpstypes(imps, atoms, atomtypes):
 def PCFF_getImpsCoeffs(impstypes):
     impscoeffs = [0]
     flag = 0
+    imps_ids = []
 
     for i in range(len(impstypes)):
         impID = impstypes[i][0]
@@ -1071,12 +1170,12 @@ def PCFF_getImpsCoeffs(impstypes):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "INVERSIONS":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -1099,8 +1198,27 @@ def PCFF_getImpsCoeffs(impstypes):
                         and (atomtype4 in (atype2, atype3, atype4))
                     ):
                         impscoeffs[impstypeID][1] = ki
+                        if impstypeID not in imps_ids:
+                            imps_ids.append(impstypeID)
+                    elif (
+                        (atype1 == atomtype2 or atype1 == atomtype2 + "_")
+                        and (
+                            atomtype1 in (atype2, atype3, atype4)
+                            or atomtype1 + "_" in (atype2, atype3, atype4)
+                        )
+                        and (
+                            atomtype3 in (atype2, atype3, atype4)
+                            or atomtype3 + "_" in (atype2, atype3, atype4)
+                        )
+                        and (
+                            atomtype4 in (atype2, atype3, atype4)
+                            or atomtype4 + "_" in (atype2, atype3, atype4)
+                        )
+                    ):
+                        if impstypeID not in imps_ids:
+                            impscoeffs[impstypeID][1] = ki
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return impscoeffs
@@ -1147,12 +1265,12 @@ def getAACoeffs(impstypes, angletypes, anglecoeffs):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "BEND_BEND":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -1189,7 +1307,7 @@ def getAACoeffs(impstypes, angletypes, anglecoeffs):
                         type_done.append(impstypeID)
                         AAcoeffs[impstypeID][3] = M
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     return AAcoeffs
@@ -1205,12 +1323,12 @@ def PCFF_getPairCoeffs(atomtypes):
     Forcefieldfile = getPCFFParamFile()
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
-    while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 2]
+    while dataline != "" and flag == 0:  # and dataline != "\n"
+        words = dataline[0 : len(dataline) - 1]
         if str(words).upper() == "DIAGONAL_VDW":
             flag = 1
             dataline = fin.readline()
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = dataline[0 : len(dataline) - 1].split()
             while str(words[0]).upper() != "END":
                 atype = str(words[0])
                 R0 = eval(words[2])
@@ -1223,7 +1341,7 @@ def PCFF_getPairCoeffs(atomtypes):
                     if atype == atomtype:
                         vdws.append([atomtypeID, R0, D0, atomtype])
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = dataline[0 : len(dataline) - 1].split()
         dataline = fin.readline()
     fin.close()
     ##Generate pair coeffs for input scripts
@@ -1256,7 +1374,7 @@ def PCFF_getPairCoeffs(atomtypes):
             + str(epsilon)
             + " "
             + str(sigma)
-            + "\t  #"
+            + "\t  # "
             + comment
             + "\n"
         )
@@ -1271,7 +1389,7 @@ def PCFF_readPairCoeffs():
     fin = open("PCFF_LJpaircoeffs.txt", "r")
     dataline = fin.readline()
     while dataline != "":
-        words = string.split(dataline[0 : len(dataline) - 1])
+        words = dataline[0 : len(dataline) - 1].split()
         atomtype = eval(words[1])
         D0 = eval(words[2])
         R0 = eval(words[3])

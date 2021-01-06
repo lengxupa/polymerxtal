@@ -138,18 +138,27 @@ PXTAL_UI["create_lmpdata_file"] = ui.Checkbox(
 )
 
 ffieldB = ui.Dropdown(
-    options=["Dreiding"], value="Dreiding", name="Force field"  # , 'PCFF'
+    options=inputs.ffield.options, value=inputs.ffield.value, name="Force field"  # , 'PCFF'
+)
+ffieldB.dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.ffield, obj.new), names="value"
 )
 
 bondB = ui.Number(
-    value=1.1,
+    value=inputs.bondscale.value,
     name="Bondscale",
     description="Applied to equilibrium bond lengths",
-    min=1,
-    max=2,
+    min=inputs.bondscale.min,
+    max=inputs.bondscale.max,
+)
+bondB.dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.bondscale, obj.new), names="value"
 )
 
-chargeB = ui.Dropdown(options=["Gasteiger"], value="Gasteiger", name="Charge")
+chargeB = ui.Dropdown(options=inputs.charge.options, value=inputs.charge.value, name="Charge")
+chargeB.dd.observe(
+    lambda obj: UI_SET_VALUE(inputs.charge, obj.new), names="value"
+)
 PXTAL_UI["create_lmpinput_file"] = ui.Checkbox(
     name="LAMMPS Input File",
     value=True,
