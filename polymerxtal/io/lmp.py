@@ -87,8 +87,9 @@ def read_data(data_file):
 
 def write_lmp_ifile(
     lmp_file_location="LAMMPSinputfile.txt",
-    datafile="",
+    ffield="Dreiding",
     potential_headfile="",
+    datafile="",
     potentialfile="",
 ):
     """Write a LAMMPS input file given a file location and datafile.
@@ -97,10 +98,12 @@ def write_lmp_ifile(
     ----------
     lmp_file_location : str (optional)
         The path of LAMMPS input file to output.
-    datafile : str (optional)
-        The path of the LAMMPS data file to read.
+    ffield : str (optional)
+        Force field style to generate potential style definitions for LAMMPS input file.
     potential_headfile : str (optional)
         The path of part of the LAMMPS input file including potential style definitions.
+    datafile : str (optional)
+        The path of the LAMMPS data file to read.
     potentialfile : str (optional)
         The path of part of the LAMMPS input file including potential coefficients.
 
@@ -115,15 +118,30 @@ def write_lmp_ifile(
     des.write("units           real\n")
     des.write("\n")
     des.write("atom_style        full\n")
-    des.write("special_bonds     lj/coul 0.0 0.0 1.0 dihedral yes\n")
     des.write("dielectric        1.0\n")
-    des.write("pair_style        lj/cut  12.0\n")
-    des.write("bond_style        harmonic\n")
-    des.write("angle_style       harmonic\n")
-    des.write("dihedral_style    harmonic\n")
-    des.write("improper_style    harmonic\n")
     if potential_headfile:
         des.write("include      %s\n" % potential_headfile)
+    else:
+        if ffield == "Dreiding":
+            des.write("special_bonds     lj/coul 0.0 0.0 1.0 dihedral yes\n")
+            des.write("pair_style        lj/cut  12.0\n")
+            des.write("bond_style        harmonic\n")
+            des.write("angle_style       harmonic\n")
+            des.write("dihedral_style    harmonic\n")
+            des.write("improper_style    harmonic\n")
+        elif ffield == "PCFF":
+            des.write("pair_style lj/class2/coul/long 9.5 9.5\n")
+            des.write("pair_modify     tail yes \n")
+            des.write("bond_style      class2\n")
+            des.write("angle_style     class2\n")
+            des.write("dihedral_style  class2\n")
+            des.write("improper_style  class2\n")
+            des.write("kspace_style ewald 0.0001\n")
+            des.write("\n")
+        else:
+            raise Exception(
+                "Unknown force field style to generate potential style definitions for LAMMPS input file.\nPlease include a file for LAMMPS potential style definitions and set the path to potential_headfile parameter"
+            )
     if datafile:
         des.write("read_data       %s\n" % datafile)
     des.write("neighbor          0.3 bin\n")
@@ -133,11 +151,12 @@ def write_lmp_ifile(
     des.write("thermo            10\n")
     des.write("thermo_modify     flush yes\n")
     des.write("\n")
-    des.write("pair_style        buck/coul/long  12.0 12.0\n")
-    des.write("kspace_style      pppm 1e-4\n")
-    if potentialfile:
-        des.write("include      %s\n" % potentialfile)
-    des.write("\n")
+    if ffield == "Dreiding":
+        des.write("pair_style        buck/coul/long  12.0 12.0\n")
+        des.write("kspace_style      pppm 1e-4\n")
+        if potentialfile:
+            des.write("include      %s\n" % potentialfile)
+        des.write("\n")
     des.write("fix 1 all nve\n")
     des.write("run               0\n")
     des.write("\n")

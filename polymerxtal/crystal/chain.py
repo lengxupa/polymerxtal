@@ -442,9 +442,7 @@ class Chain:
                 % (self.helice, self.polymer_type.name)
             )
 
-    def build_chain(
-        self, use_visualize=False, create_lmpdata_file=False, create_lmpinput_file=False
-    ):
+    def build_chain(self, **kwargs):
         # Build the path to the sample files.
         # in_path = os.path.join(current_location, '..', 'data', 'polymod_input', 'sample_chain.txt')
         # monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
@@ -479,12 +477,41 @@ class Chain:
         )
         write_pdb(helix_name + ".pdb", h.el_names, h.pos)
 
+        use_visualize = False
+        create_lmpdata_file = False
+        bondscale = 1.1
+        ffield = "Dreiding"
+        charge = "Gasteiger"
+        create_lmpinput_file = False
+
+        for key in kwargs:
+            if key == "use_visualize":
+                use_visualize = kwargs["use_visualize"]
+            elif key == "create_lmpdata_file":
+                create_lmpdata_file = kwargs["create_lmpdata_file"]
+            elif key == "bondscale":
+                bondscale = eval(kwargs["bondscale"])
+            elif key == "ffield":
+                ffield = kwargs["ffield"]
+            elif key == "charge":
+                charge = kwargs["charge"]
+            elif key == "create_lmpinput_file":
+                create_lmpinput_file = kwargs["create_lmpinput_file"]
+            else:
+                raise KeyError(
+                    "Unknown input %s for build_chain function\n Please inputs the following:\nuse_visualize - View chain structure\ncreate_lmpdata_file - Create LAMMPS data file\nbondscale - Bond scale applied to equilibrium bond lengths\nffield - Force field\ncharge - Charge\ncreate_lmpinput_file - Create LAMMPS input file\n"
+                    % key
+                )
+
         # Create LAMMPS data file
         if create_lmpdata_file:
             maxi_array = get_maximum_position(h.pos)
             if self.infinite:
                 Create_Data_File(
                     helix_name + ".pdb",
+                    bondscale=bondscale,
+                    ffield=ffield,
+                    charge=charge,
                     xhi=maxi_array[0],
                     yhi=maxi_array[1],
                     zhi=unit_distance * (self.num_monomers - 2) / self.helice.motifs,
@@ -493,14 +520,20 @@ class Chain:
             else:
                 Create_Data_File(
                     helix_name + ".pdb",
+                    bondscale=bondscale,
+                    ffield=ffield,
+                    charge=charge,
                     xhi=maxi_array[0],
                     yhi=maxi_array[1],
                     zhi=maxi_array[2],
                     outputName=helix_name,
                 )
+            # Create LAMMPS input file
             if create_lmpinput_file:
                 write_lmp_ifile(
-                    datafile=helix_name + ".data", potentialfile="X6paircoeffs.txt"
+                    ffield=ffield,
+                    datafile=helix_name + ".data",
+                    potentialfile="X6paircoeffs.txt",
                 )
 
         # View chain structure

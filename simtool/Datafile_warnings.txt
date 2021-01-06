@@ -1,6 +1,0 @@
-##
-##
-##
-## Dihstype 9 might be not assigned correctly. Dihstype 10 might be not assigned correctly.
-##
-##==============Warning: Force field parameters============================

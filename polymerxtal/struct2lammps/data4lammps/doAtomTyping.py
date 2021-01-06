@@ -402,7 +402,8 @@ def getPCFFatomtypes(atomlinks, atomelems, atomlinkelems, atominring, bondorder)
                 if atomlinkelems[i].count("H_") == 2:
                     atomPCFFtype[i] = "o*"
                 if atomlinkelems[i].count("C_") == 2:
-                    atomPCFFtype[i] = "op"
+                    if atominring[i]:
+                        atomPCFFtype[i] = "op"
                 elif atomlinkelems[i].count("SI") == 2:
                     atomPCFFtype[i] = "oss"
                 elif (
@@ -430,12 +431,7 @@ def getPCFFatomtypes(atomlinks, atomelems, atomlinkelems, atominring, bondorder)
                         and atomlinkelems[CatomID - 1].count("O_") == 2
                     ):
                         atomPCFFtype[i] = "o_2"
-                elif atomlinkelems[i].count("C_") == 1:
-                    if atomlinkelems[i][0] == "C_":
-                        CatomID = atomlinks[i][0]
-                    elif atomlinkelems[i][1] == "C_":
-                        CatomID = atomlinks[i][1]
-                    if (
+                    elif (
                         len(atomlinks[CatomID - 1]) == 3
                         and atomlinkelems[CatomID - 1].count("O_") == 3
                     ):
