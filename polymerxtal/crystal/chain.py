@@ -490,7 +490,7 @@ class Chain:
             elif key == "create_lmpdata_file":
                 create_lmpdata_file = kwargs["create_lmpdata_file"]
             elif key == "bondscale":
-                bondscale = eval(kwargs["bondscale"])
+                bondscale = kwargs["bondscale"]
             elif key == "ffield":
                 ffield = kwargs["ffield"]
             elif key == "charge":
