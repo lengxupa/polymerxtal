@@ -171,6 +171,7 @@ class Chain:
         self.pattern = 0
         self.monomers = []
         self.weights = {}
+        self.built = 0
 
     def find_configurations(self, find_inverse_path=False):
 
@@ -475,7 +476,21 @@ class Chain:
             "_custom" if self.head_tail_defect_ratio else "",
             "_inf" if self.infinite else "",
         )
+        self.helix_name = helix_name
         write_pdb(helix_name + ".pdb", h.el_names, h.pos)
+
+        self.built = 1
+
+        maxi_array = get_maximum_position(h.pos)
+        self.x = maxi_array[0]
+        self.y = maxi_array[1]
+        if self.infinite:
+            self.z = unit_distance * (self.num_monomers - 2) / self.helice.motifs
+        else:
+            self.z = maxi_array[2]
+        self.alpha = 90
+        self.beta = 90
+        self.gamma = 90
 
         use_visualize = False
         create_lmpdata_file = False
@@ -505,29 +520,20 @@ class Chain:
 
         # Create LAMMPS data file
         if create_lmpdata_file:
-            maxi_array = get_maximum_position(h.pos)
-            if self.infinite:
-                Create_Data_File(
-                    helix_name + ".pdb",
-                    bondscale=bondscale,
-                    ffield=ffield,
-                    charge=charge,
-                    xhi=maxi_array[0],
-                    yhi=maxi_array[1],
-                    zhi=unit_distance * (self.num_monomers - 2) / self.helice.motifs,
-                    outputName=helix_name,
-                )
-            else:
-                Create_Data_File(
-                    helix_name + ".pdb",
-                    bondscale=bondscale,
-                    ffield=ffield,
-                    charge=charge,
-                    xhi=maxi_array[0],
-                    yhi=maxi_array[1],
-                    zhi=maxi_array[2],
-                    outputName=helix_name,
-                )
+            Create_Data_File(
+                helix_name + ".pdb",
+                bondscale=bondscale,
+                ffield=ffield,
+                charge=charge,
+                xhi=self.x,
+                yhi=self.y,
+                zhi=self.z,
+                alpha=self.alpha,
+                beta=self.beta,
+                gamma=self.gamma,
+                outputName=helix_name,
+            )
+
             # Create LAMMPS input file
             if create_lmpinput_file:
                 write_lmp_ifile(

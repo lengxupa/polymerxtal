@@ -153,3 +153,33 @@ def calculate_center_of_mass(symbols, coordinates):
     center_of_mass = sum(coordinates * mass_array) / total_mass
 
     return center_of_mass
+
+
+# Conversion from amu to grams
+def AMU2GRAM(mass):
+    return mass * 1.6605e-24
+
+
+# Conversions between cubic Angstroms and cubic centimeters
+def CA2CC(length):
+    return length * 1.0e-24
+
+
+def calculate_density(symbols, volume):
+    """Calculate the density of a molecule.
+
+    Parameters
+    ----------
+    symbols : list
+        A list of elements for the molecule
+    volume : float
+        The volume of the molecule
+
+    Returns
+    -------
+    density : float
+        The density of the molecule
+    """
+
+    mass = calculate_molecular_mass(symbols)
+    return AMU2GRAM(mass) / CA2CC(volume)
