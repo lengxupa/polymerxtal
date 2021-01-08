@@ -1,4 +1,5 @@
 #!/bin/sh
 
 /usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool bin/start.ipynb" \
+                         -t polymerxtal \
                          -u anaconda-6
