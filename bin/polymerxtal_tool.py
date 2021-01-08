@@ -318,7 +318,7 @@ def on_button_clicked(b):
         clear_output()
         r = Run(nb, inputs, cache=True)
 
-        if not hasattr(r, savedOutputs):
+        if not hasattr(r, "savedOutputs"):
             r.savedOutputs = r.db.getSavedOutputs()
 
         buttons = []
