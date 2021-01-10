@@ -84,17 +84,78 @@ def get_maximum_position(positions):
 
 
 class Chain:
-    def __init__(
-        self,
-        polymer_type="PE",
-        helice=Helice(),
-        num_monomers=30,
-        tacticity="",
-        chiriality="",
-        head_tail_defect_ratio=0,
-        configs=30,
-        infinite=False,
-    ):
+    def __init__(self, **kwargs):
+        """polymerxtal.crystal.chain.Chain class contains all the information about the polymer chain
+
+        Parameters
+        ----------
+        polymer_type : str (optional)
+            Current support polymer types include:
+                PAN - Polyacrylonitrile
+                PE - Polyethylene
+                PP - Polypropylene
+                PS - Polystyrene
+                POM - Polyoxymethylene
+                PTFE - Polytetrafluoroethylene
+                PVC - Polyvinyl chloride
+        helice : Helice class (optional)
+            Current support helicities include:
+                Helice(2,3,1)
+                Helice(2,2,1)
+                Helice(2,1,1) - Planar zig-zag
+        num_monomers : int (optional)
+            Number of monomers
+        tacticity : str (optional)
+            Tacticity of the polymer chain. Current support tacticities include: isotactic, atactic, syndiotactic
+        chiriality : str (optional)
+            Chiriality of the polymer chain. Current support chirialities include: left, right
+        head_tail_defect_ratio : float (optional)
+            Ratio of head-to-head and tail-to-tail connections
+        configs : int (optional)
+            Number of attempts to find a defect configuration
+        infinite : bool (optional)
+            Whether to create periodic infinite chain
+
+        """
+
+        polymer_type = "PE"
+        helice = Helice()
+        num_monomers = 30
+        tacticity = ""
+        chiriality = ""
+        head_tail_defect_ratio = 0
+        configs = 30
+        infinite = False
+
+        for key in kwargs:
+            if key == "polymer_type":
+                polymer_type = kwargs["polymer_type"]
+            elif key == "helice":
+                helice = kwargs["helice"]
+            elif key == "num_monomers":
+                num_monomers = kwargs["num_monomers"]
+            elif key == "tacticity":
+                tacticity = kwargs["tacticity"]
+            elif key == "chiriality":
+                chiriality = kwargs["chiriality"]
+            elif key == "head_tail_defect_ratio":
+                head_tail_defect_ratio = kwargs["head_tail_defect_ratio"]
+            elif key == "configs":
+                configs = kwargs["configs"]
+            elif key == "infinite":
+                infinite = kwargs["infinite"]
+            else:
+                raise KeyError(
+                    "Unknown input %s for Chain class\n Please see help for more information"
+                    % key
+                )
+
+        if "num_monomers" not in kwargs:
+            if infinite:
+                if helice.atoms * helice.motifs > 2:
+                    num_monomers = helice.motifs
+                else:
+                    num_monomers = 2
 
         if polymer_type not in polymer_types:
             raise ValueError(
@@ -444,6 +505,24 @@ class Chain:
             )
 
     def build_chain(self, **kwargs):
+        """polymerxtal.crystal.chain.Chain.build_chain function builds a polymer chain with specified information
+
+        Parameters
+        ----------
+        use_visualize : bool (optional)
+            Whether to view chain structure
+        create_lmpdata_file : bool (optional)
+            Whether to create corresponding LAMMPS data file or not
+        bondscale : float (optional)
+            Bond scale applied to equilibrium bond lengths
+        ffield : str (optional)
+            Force field. Current support force field include: Dreiding, PCFF
+        charge : str (optional)
+            Charge equilibration method. Current support charge method include: Gasteiger
+        create_lmpinput_file : bool (optional)
+            Whether to create corresponding LAMMPS input File or not
+
+        """
         # Build the path to the sample files.
         # in_path = os.path.join(current_location, '..', 'data', 'polymod_input', 'sample_chain.txt')
         # monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
@@ -514,7 +593,7 @@ class Chain:
                 create_lmpinput_file = kwargs["create_lmpinput_file"]
             else:
                 raise KeyError(
-                    "Unknown input %s for build_chain function\n Please inputs the following:\nuse_visualize - View chain structure\ncreate_lmpdata_file - Create LAMMPS data file\nbondscale - Bond scale applied to equilibrium bond lengths\nffield - Force field\ncharge - Charge\ncreate_lmpinput_file - Create LAMMPS input file\n"
+                    "Unknown input %s for build_chain function\n Please see help for more information"
                     % key
                 )
 
