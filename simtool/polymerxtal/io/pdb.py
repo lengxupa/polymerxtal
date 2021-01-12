@@ -20,6 +20,7 @@ def open_pdb(file_location):
 
     coordinates = []
     symbols = []
+    bonds = []
     for line in data:
         if "ATOM" in line[0:6] or "HETATM" in line[0:6]:
             if line[76:79].strip():
@@ -29,13 +30,34 @@ def open_pdb(file_location):
             atom_coords = [float(x) for x in line[30:55].split()]
             coordinates.append(atom_coords)
 
+        elif "CONECT" in line[0:6]:
+            atom1 = eval(line[6:10])
+            for str_id in range(15, len(line), 5):
+                if line[str_id].isnumeric():
+                    atom2 = eval(line[str_id - 4 : str_id])
+                    if ([atom1, atom2] not in bonds) and ([atom2, atom1] not in bonds):
+                        bonds.append([atom1, atom2])
+
     coords = np.array(coordinates)
     symbols = np.array(symbols)
+
+    bonds_file = open(".tmp/bonds.dat", "w")
+    bonds_file.write("BONDS\n")
+    bonds_file.write("\n")
+    bond_id = 1
+    for bond in bonds:
+        atom1 = bond[0]
+        atom2 = bond[1]
+        bonds_file.write("%d 1 %d %d\n" % (bond_id, atom1, atom2))
+        bond_id += 1
+    bonds_file.close()
 
     return symbols, coords
 
 
-def write_pdb(file_location, symbols, coordinates, connect=True):
+def write_pdb(
+    file_location, symbols, coordinates, connect=True, connect_file=".tmp/bonds.dat"
+):
     i_atom = 1
 
     RESIDUE_NAME = "UNK"
@@ -74,7 +96,7 @@ def write_pdb(file_location, symbols, coordinates, connect=True):
                 i_atom = 1
 
         if connect:
-            connectivity = get_connectivity(".tmp/bonds.dat")
+            connectivity = get_connectivity(connect_file)
             for main_atom in sorted(connectivity):
                 f.write(
                     "CONECT%5d%s\n"

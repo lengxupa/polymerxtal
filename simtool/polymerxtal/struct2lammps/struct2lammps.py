@@ -14,8 +14,6 @@ from .runData4Lammps import run_data4lammps
 def save_structure(file, outfilePDB=""):
 
     if not outfilePDB:
-        if not os.path.exists(".tmp/bonds"):
-            os.mkdir(".tmp/bonds")
         outfilePDB = ".tmp/bonds/pdbfile.pdb"
     structure_name = file
     os.rename(structure_name, structure_name.replace(" ", ""))
