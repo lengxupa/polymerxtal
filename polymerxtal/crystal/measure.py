@@ -49,3 +49,46 @@ def calculate_angle(rA, rB, rC, degrees=False):
         return np.degrees(theta)
     else:
         return theta
+
+
+# Conversions between radians and degrees
+def RAD2DEG(rad):
+    return rad * 57.295779513082325
+
+
+def DEG2RAD(deg):
+    return deg * 0.017453292519943
+
+
+def calculate_volume(a, b, c, alpha, beta, gamma):
+    """Calculate the volume of a unit cell.
+
+    Parameters
+    ----------
+    a : float
+        Unit cell length in Angstroms
+    b : float
+        Unit cell length in Angstroms
+    c : float
+        Unit cell length in Angstroms
+    alpha : float
+        Unit cell angle in degrees
+    beta : float
+        Unit cell angle in degrees
+    gamma : float
+        Unit cell angle in degrees
+
+    Returns
+    -------
+    volume : float
+        the volume of the unit cell in cubic Angstrom
+    """
+
+    c_x = c * np.cos(DEG2RAD(beta))
+    c_y = (
+        c
+        * (np.cos(DEG2RAD(alpha)) - np.cos(DEG2RAD(beta)) * np.cos(DEG2RAD(gamma)))
+        / np.sin(DEG2RAD(gamma))
+    )
+    c_z = np.sqrt(c * c - c_x * c_x - c_y * c_y)
+    return a * b * c_z * np.sin(DEG2RAD(gamma))

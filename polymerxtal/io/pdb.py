@@ -41,8 +41,6 @@ def open_pdb(file_location):
     coords = np.array(coordinates)
     symbols = np.array(symbols)
 
-    if not os.path.exists(".tmp"):
-        os.mkdir(".tmp")
     bonds_file = open(".tmp/bonds.dat", "w")
     bonds_file.write("BONDS\n")
     bonds_file.write("\n")
@@ -57,7 +55,9 @@ def open_pdb(file_location):
     return symbols, coords
 
 
-def write_pdb(file_location, symbols, coordinates, connect=True):
+def write_pdb(
+    file_location, symbols, coordinates, connect=True, connect_file=".tmp/bonds.dat"
+):
     i_atom = 1
 
     RESIDUE_NAME = "UNK"
@@ -96,7 +96,7 @@ def write_pdb(file_location, symbols, coordinates, connect=True):
                 i_atom = 1
 
         if connect:
-            connectivity = get_connectivity(".tmp/bonds.dat")
+            connectivity = get_connectivity(connect_file)
             for main_atom in sorted(connectivity):
                 f.write(
                     "CONECT%5d%s\n"

@@ -1,5 +1,6 @@
 from .measure import calculate_distance, calculate_angle
 from .helice import Helice
+from .cell import Cell
 from .chain import Chain
 from .molecule import (
     Molecule,

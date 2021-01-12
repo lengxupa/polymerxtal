@@ -1,2 +1,2 @@
 from .main import main
-from .monomer import readPDB, createHolder
+from .monomer import readPDB, createHolder, Holder
