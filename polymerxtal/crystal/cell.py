@@ -1,6 +1,7 @@
 """
 Functions to generate polymer crystals.
 """
+import copy
 import numpy as np
 
 from polymerxtal.io import write_pdb, write_lmp_ifile
@@ -36,9 +37,9 @@ class Cell:
                 PVC - Polyvinyl chloride
         helice : Helice class (optional)
             Current support helicities include:
-                Helice(2,3,1)
-                Helice(2,2,1)
                 Helice(2,1,1) - Planar zig-zag
+                Helice(2,2,1)
+                Helice(2,3,1)
         num_monomers : int (optional)
             Number of monomers
         tacticity : str (optional)
@@ -79,7 +80,7 @@ class Cell:
         configs = 30
         infinite = True
         packing = "Hexagonal"
-        density = 0.857
+        density = 1
         r_ab = np.sqrt(3)
 
         monomers_flag = 0
@@ -356,7 +357,8 @@ class Cell:
         chain_cluster = Cluster()
 
         for atom in self.holder.pos:
-            chain_cluster.add_particle(Sphere(self.holder.pos[atom]))
+            pos = copy.copy(self.holder.pos[atom])
+            chain_cluster.add_particle(Sphere(pos))
             holder.el_names[atom] = self.holder.el_names[atom]
 
         translator = Translator()
@@ -455,28 +457,28 @@ class Cell:
                 self.holder.pos,
                 connect=False,
             )
-            if create_lmpdata_file:
-                ovito_view(
-                    self.crystal_name + ".data",
-                    self.crystal_name + "_Front.png",
-                    view="Front",
-                )
-                ovito_view(
-                    self.crystal_name + ".data",
-                    self.crystal_name + "_Top.png",
-                    view="Top",
-                )
-            else:
-                # write_pdb(f"{helix_name}_ovito.pdb", h.el_names, h.pos, connect=False)
-                ovito_view(
-                    self.crystal_name + "_view.pdb",
-                    self.crystal_name + "_Front.png",
-                    view="Front",
-                )
-                ovito_view(
-                    self.crystal_name + "_view.pdb",
-                    self.crystal_name + "_Top.png",
-                    view="Top",
-                )
+            # if create_lmpdata_file:
+            #    ovito_view(
+            #        self.crystal_name + ".data",
+            #        self.crystal_name + "_Front.png",
+            #        view="Front",
+            #    )
+            #    ovito_view(
+            #        self.crystal_name + ".data",
+            #        self.crystal_name + "_Top.png",
+            #        view="Top",
+            #    )
+            # else:
+            # write_pdb(f"{helix_name}_ovito.pdb", h.el_names, h.pos, connect=False)
+            ovito_view(
+                self.crystal_name + "_view.pdb",
+                self.crystal_name + "_Front.png",
+                view="Front",
+            )
+            ovito_view(
+                self.crystal_name + "_view.pdb",
+                self.crystal_name + "_Top.png",
+                view="Top",
+            )
 
         return self.crystal_name

@@ -12,7 +12,7 @@ def normalized_dot_product(va, vb):
     return np.dot(va, vb) / np.linalg.norm(va) / np.linalg.norm(vb)
 
 
-def chain_periodicity(h, num_monomers):
+def chain_periodicity(h, num_monomers, unit_num_monomers):
     v0 = h.pos[3] - h.pos[1]
 
     num_atoms = int((h.num_atoms - 2) / num_monomers)
@@ -38,6 +38,7 @@ def chain_periodicity(h, num_monomers):
                 "Distance of two monomers is less than 1 angstrom, indicating invalid chain structure"
             )
 
+    k_flag = 0
     for k in sorted(distances_dir):
         if (
             (k * 2 in distances_dir)
@@ -47,15 +48,20 @@ def chain_periodicity(h, num_monomers):
             if -0.01 < (distances_dir[k * 2] - distances_dir[k] * 2) < 0.01:
                 if -0.01 < (distances_dir[k * 3] - distances_dir[k] * 3) < 0.01:
                     if -0.01 < (distances_dir[k * 5] - distances_dir[k] * 5) < 0.01:
+                        k_flag = 1
                         break
 
-    if distances_dir:
+    if k_flag:
         unit = k
         distance = distances_dir[unit]
         max_unit = int(len(indices) / unit) * unit
         vk = h.pos[indices[max_unit - 1]] - h.pos[1]
     else:
-        unit = num_monomers
+        unit = unit_num_monomers
+        # if distances_dir:
+        #    unit = sorted(distances_dir)[0]
+        # else:
+        #    unit = num_monomers
         vk = h.pos[(unit - 1) * num_atoms + 3] - h.pos[1]
         distance = np.linalg.norm(vk)
     vk /= np.linalg.norm(vk)

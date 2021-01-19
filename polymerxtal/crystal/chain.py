@@ -27,8 +27,8 @@ def calculate_rotation(vk):
     return axis, theta
 
 
-def correct_chain_orientation(holder, num_monomers):
-    unit, unit_distance, vk = chain_periodicity(holder, num_monomers)
+def correct_chain_orientation(holder, num_monomers, unit_num_monomers):
+    unit, unit_distance, vk = chain_periodicity(holder, num_monomers, unit_num_monomers)
     chain_cluster = Cluster()
 
     for atom in holder.pos:
@@ -83,6 +83,15 @@ def get_maximum_position(positions):
     return np.array([max(x), max(y), max(z)])
 
 
+def find_torsion_sets(torsion_seq):
+    torsion_sets = []
+    for i in range(len(torsion_seq)):
+        tor_set = {torsion_seq[i - 1], torsion_seq[i]}
+        if tor_set not in torsion_sets:
+            torsion_sets.append(tor_set)
+    return torsion_sets
+
+
 class Chain:
     def __init__(self, **kwargs):
         """polymerxtal.crystal.chain.Chain class contains all the information about the polymer chain
@@ -100,9 +109,9 @@ class Chain:
                 PVC - Polyvinyl chloride
         helice : Helice class (optional)
             Current support helicities include:
-                Helice(2,3,1)
-                Helice(2,2,1)
                 Helice(2,1,1) - Planar zig-zag
+                Helice(2,2,1)
+                Helice(2,3,1)
         num_monomers : int (optional)
             Number of monomers
         tacticity : str (optional)
@@ -150,18 +159,45 @@ class Chain:
                     % key
                 )
 
-        if "num_monomers" not in kwargs:
-            if infinite:
-                if helice.atoms * helice.motifs > 2:
-                    num_monomers = helice.motifs
-                else:
-                    num_monomers = 2
-
         if polymer_type not in polymer_types:
             raise ValueError(
                 polymer_type
                 + " do not exist in our library, please consider using custom feature"
             )
+        self.polymer_type = polymer_types[polymer_type]
+        monomer_backbone_atoms = len(self.polymer_type.backbone_atoms)
+
+        if helice.atoms % monomer_backbone_atoms:
+            raise Exception(
+                "Number of backbone atoms in a motif must be multiple of number of monomer backbone atoms %d\n"
+                % monomer_backbone_atoms
+            )
+        if tacticity == "syndiotactic":
+            multiple = int(monomer_backbone_atoms * 2 / helice.atoms)
+            if multiple * helice.atoms % monomer_backbone_atoms * 2:
+                raise Exception(
+                    "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of the number of monomer backbone atoms %d\n"
+                    % monomer_backbone_atoms
+                    * 2
+                )
+            else:
+                print(
+                    "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice of the number of monomer backbone atoms %d\n"
+                    % monomer_backbone_atoms
+                    * 2
+                )
+                print(
+                    "Trying Helice_%d_%d_%d..."
+                    % (helice.atoms * multiple, helice.motifs, helice.turns * multiple)
+                )
+                helice = Helice(
+                    helice.atoms * multiple, helice.motifs, helice.turns * multiple
+                )
+        # else:
+        #    if monomer_backbone_atoms != helice.atoms:
+        #        raise ValueError("Number of backbone atoms in a motif must be %d" % helice.atoms)
+        helice_backbone_atoms = helice.atoms * helice.motifs
+        self.helice = helice
 
         if not 0 <= (head_tail_defect_ratio) <= 1:
             raise ValueError(
@@ -169,31 +205,37 @@ class Chain:
                 head_tail_defect_ratio,
                 "and should be in the range of [0,1]",
             )
+        self.head_tail_defect_ratio = head_tail_defect_ratio
 
-        if num_monomers < helice.motifs:
+        self.unit_num_monomers = int(helice_backbone_atoms / monomer_backbone_atoms)
+        if "num_monomers" not in kwargs:
+            if infinite:
+                if tacticity == "atactic" or head_tail_defect_ratio:
+                    num_monomers = 10 * self.unit_num_monomers
+                elif helice_backbone_atoms > 2:
+                    num_monomers = self.unit_num_monomers
+                else:
+                    num_monomers = 2
+
+        if num_monomers < self.unit_num_monomers:
             raise ValueError(
                 "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent number of monomers is %d"
-                % (helice.motifs, helice, num_monomers)
+                % (self.unit_num_monomers, helice, num_monomers)
             )
 
         if infinite:
-            if num_monomers % helice.motifs:
+            if num_monomers % self.unit_num_monomers:
                 raise ValueError(
                     "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s chain.\nCurrent number of monomers is %d"
-                    % (helice.motifs, helice, num_monomers)
+                    % (self.unit_num_monomers, helice, num_monomers)
                 )
-            elif num_monomers * helice.atoms < 3:
+            elif num_monomers * monomer_backbone_atoms < 3:
                 raise ValueError(
                     "Number of backbone atoms should be more than 2 in order to create infinite periodic chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate number of monomers."
-                    % (num_monomers * helice.atoms)
+                    % (num_monomers * monomer_backbone_atoms)
                 )
-
-        self.polymer_type = polymer_types[polymer_type]
-        self.helice = helice
-        if len(self.polymer_type.backbone_atoms) != self.helice.atoms:
-            raise ValueError("Number of backbone_atoms must be %d" % self.helice.atoms)
-
         self.num_monomers = num_monomers + 2 if infinite else num_monomers
+
         self.tacticity = tacticity
         if self.tacticity:
             if self.tacticity == "N/A":
@@ -202,34 +244,60 @@ class Chain:
                 raise TypeError(
                     "Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic"
                 )
-            elif not self.polymer_type.backbone_atoms:
+            elif not self.polymer_type.side_atom:
                 raise ValueError("Please specify side_atom")
 
         self.chiriality = chiriality
-        if str(self.helice) == str(Helice(2, 3, 1)):
-            if self.chiriality == "left":
-                self.torsions = {180, 300}
-            elif self.chiriality == "right":
-                self.torsions = {60, 180}
-            else:
-                raise ValueError("Please specify chiriality: left or right")
-        elif str(self.helice) == str(Helice(2, 2, 1)):
-            if self.chiriality == "left":
-                self.torsions = {300}
-            elif self.chiriality == "right":
-                self.torsions = {60}
-            else:
-                raise ValueError("Please specify chiriality: left or right")
-        elif str(self.helice) == str(Helice(2, 1, 1)):
-            self.torsions = {180}
+        if str(self.helice) in ["2_1_1", "4_1_2"]:
+            self.torsion_seq = [180, 180, 180, 180]
             if self.chiriality:
                 self.chiriality = ""
                 print("Zig-zag conformation does not have chiriality")
+        elif str(self.helice) in ["2_2_1", "4_2_2"]:
+            if self.chiriality == "left":
+                self.torsion_seq = [300, 300, 300, 300]
+            elif self.chiriality == "right":
+                self.torsion_seq = [60, 60, 60, 60]
+            else:
+                raise ValueError("Please specify chiriality: left or right")
+        elif str(self.helice) in ["2_3_1", "4_3_2"]:
+            if self.chiriality == "left":
+                self.torsion_seq = [180, 300, 180, 300]
+            elif self.chiriality == "right":
+                self.torsion_seq = [60, 180, 60, 180]
+            else:
+                raise ValueError("Please specify chiriality: left or right")
+        elif str(self.helice) == "4_1_1":
+            self.torsion_seq = [60, 180, 300, 180]
+            if self.chiriality:
+                self.chiriality = ""
+                print("Helice_4_1_1 conformation does not have chiriality")
+        elif str(self.helice) == "4_2_1":
+            if self.chiriality == "left":
+                self.torsion_seq = [180, 180, 300, 300]
+            elif self.chiriality == "right":
+                self.torsion_seq = [60, 60, 180, 180]
+            else:
+                raise ValueError("Please specify chiriality: left or right")
+        elif str(self.helice) == "4_3_1":
+            if self.chiriality == "left":
+                if self.helice.sub_type:
+                    self.torsion_seq = [180, 300, 300, 300]
+                else:
+                    self.torsion_seq = [180, 180, 180, 300]
+            elif self.chiriality == "right":
+                if self.helice.sub_type:
+                    self.torsion_seq = [60, 60, 60, 180]
+                else:
+                    self.torsion_seq = [60, 180, 180, 180]
+            else:
+                raise ValueError("Please specify chiriality: left or right")
+        else:
+            raise Exception("Helice_%s is currently not supported" % self.helice)
 
-        self.head_tail_defect_ratio = head_tail_defect_ratio
         self.configs = configs
         self.infinite = infinite
-        self.pattern = 0
+        # self.pattern = 0
         self.monomers = []
         self.weights = {}
 
@@ -345,6 +413,19 @@ class Chain:
             self._infinite = infinite
             self.built = 0
 
+    @property
+    def torsion_seq(self):
+        return self._torsion_seq
+
+    @torsion_seq.setter
+    def torsion_seq(self, torsion_seq):
+        self._torsion_seq = torsion_seq
+        self.torsion_sets = find_torsion_sets(torsion_seq)
+        self.torsion_label1 = "".join(["T" + str(i) for i in torsion_seq])
+        self.torsion_label2 = "".join(["T" + str(i) for i in torsion_seq * 2])
+        self.torsion_labelr1 = "".join(["T" + str(i) for i in torsion_seq[::-1]])
+        self.torsion_labelr2 = "".join(["T" + str(i) for i in torsion_seq[::-1] * 2])
+
     def find_configurations(self, find_inverse_path=False):
 
         if self.head_tail_defect_ratio:
@@ -364,105 +445,183 @@ class Chain:
             for T in [60, 180, 300]:
                 m_name = self.backbones[key].name + "T" + str(T)
                 key_torsions = {eval(m[1]), T}
-                if self.torsions == key_torsions:
+                if key_torsions in self.torsion_sets:
                     monomers[m[0]].append(m_name)
 
         self.configurations = {}
         config_index = 1
 
-        if find_inverse_path:
-            self.pattern = 0
+        if self.tacticity == "atactic" or find_inverse_path:
+            # self.pattern = 0
             while config_index <= self.configs:
-                sequence = random.choices(
+                ht_sequence = random.choices(
                     [0, 1],
                     [1 - self.head_tail_defect_ratio, self.head_tail_defect_ratio],
                     k=self.num_monomers - 1,
                 )
-                if self.tacticity == "isotactic" or (not self.tacticity):
-                    m = random.choice(monomer_index)
-                    m_name = random.choice(monomers[m])
-                    h_t_label = m_name[0]
-                    tor_label = m_name[m_name.index("T") :]
-                    self.configurations[config_index] = [m_name]
-                    for seq in sequence:
-                        if seq:
-                            m = random.choice(monomer_index)
-                            m_name = random.choice(monomers[m])
-                            while not (
-                                h_t_label != m_name[0]
-                                and tor_label == m_name[m_name.index("T") :]
-                            ):
-                                m = random.choice(monomer_index)
-                                m_name = random.choice(monomers[m])
-                            h_t_label = m_name[0]
-                        self.configurations[config_index].append(m_name)
-                elif self.tacticity == "atactic" or self.tacticity == "syndiotactic":
-                    m1 = random.choice(monomer_index)
-                    m1_name = random.choice(monomers[m1])
-                    h_t_label = m1_name[0]
-                    tor_label = m1_name[m1_name.index("T") :]
+                m1 = random.choice(monomer_index)
+                m1_name = random.choice(monomers[m1])
+                ht_label = m1_name[0]
+                tor1_label = m1_name[m1_name.index("T") :]
+                if tor1_label in self.torsion_label1:
+                    tor2_label = (
+                        self.torsion_label1[
+                            self.torsion_label1.index(tor1_label) + len(tor1_label) :
+                        ]
+                        + self.torsion_label1[: self.torsion_label1.index(tor1_label)]
+                    )
+                elif tor1_label in self.torsion_label2:
+                    tor2_label = self.torsion_label1[
+                        self.torsion_label2.index(tor1_label)
+                        + len(tor1_label)
+                        - len(self.torsion_label1) : self.torsion_label2.index(
+                            tor1_label
+                        )
+                    ]
+                elif tor1_label in self.torsion_labelr1:
+                    tor2_label = (
+                        self.torsion_labelr1[
+                            self.torsion_labelr1.index(tor1_label) + len(tor1_label) :
+                        ]
+                        + self.torsion_labelr1[: self.torsion_labelr1.index(tor1_label)]
+                    )
+                elif tor1_label in self.torsion_labelr2:
+                    tor2_label = self.torsion_labelr1[
+                        self.torsion_labelr2.index(tor1_label)
+                        + len(tor1_label)
+                        - len(self.torsion_labelr1) : self.torsion_labelr2.index(
+                            tor1_label
+                        )
+                    ]
+                if (not self.tacticity) or self.tacticity == "isotactic":
+                    m2_name = m1 + tor2_label
+                else:
                     m2 = random.choice(monomer_index)
                     m2_name = random.choice(monomers[m2])
-                    while not (
-                        h_t_label == m2_name[0]
-                        and m1 != m2
-                        and tor_label == m2_name[m2_name.index("T") :]
-                    ):
-                        m2 = random.choice(monomer_index)
-                        m2_name = random.choice(monomers[m2])
                     if self.tacticity == "atactic":
-                        self.configurations[config_index] = [
-                            random.choice([m1_name, m2_name])
-                        ]
-                    elif self.tacticity == "syndiotactic":
-                        self.configurations[config_index] = [m1_name]
-                    for i, seq in enumerate(sequence):
-                        if seq:
-                            m1 = random.choice(monomer_index)
-                            m1_name = random.choice(monomers[m1])
-                            while not (
-                                h_t_label != m1_name[0]
-                                and tor_label == m1_name[m1_name.index("T") :]
-                            ):
-                                m1 = random.choice(monomer_index)
-                                m1_name = random.choice(monomers[m1])
-                            h_t_label = m1_name[0]
+                        ata_sequence = random.choices(
+                            [0, 1], [0.5, 0.5], k=self.num_monomers - 1
+                        )
+                        while not (
+                            ht_label == m2_name[0]
+                            and m1 != m2
+                            and tor1_label == m2_name[m2_name.index("T") :]
+                        ):
                             m2 = random.choice(monomer_index)
                             m2_name = random.choice(monomers[m2])
-                            while not (
-                                h_t_label == m2_name[0]
-                                and m1 != m2
-                                and tor_label == m2_name[m2_name.index("T") :]
-                            ):
-                                m2 = random.choice(monomer_index)
-                                m2_name = random.choice(monomers[m2])
-                        if self.tacticity == "atactic":
+                        m3_name = m1 + tor2_label
+                        m4_name = m2 + tor2_label
+                    elif self.tacticity == "syndiotactic":
+                        while not (
+                            ht_label == m2_name[0]
+                            and m1 != m2
+                            and tor2_label == m2_name[m2_name.index("T") :]
+                        ):
+                            m2 = random.choice(monomer_index)
+                            m2_name = random.choice(monomers[m2])
+                if self.tacticity == "atactic":
+                    self.configurations[config_index] = [
+                        random.choice([m1_name, m2_name])
+                    ]
+                else:
+                    self.configurations[config_index] = [m1_name]
+                for i, ht_seq in enumerate(ht_sequence):
+                    if ht_seq:
+                        m1 = random.choice(monomer_index)
+                        m1_name = random.choice(monomers[m1])
+                        while not (
+                            ht_label != m1_name[0]
+                            and tor1_label == m1_name[m1_name.index("T") :]
+                        ):
+                            m1 = random.choice(monomer_index)
+                            m1_name = random.choice(monomers[m1])
+                        ht_label = m1_name[0]
+                        if self.tacticity == "isotactic" or (not self.tacticity):
+                            m2_name = m1 + tor2_label
+                        else:
+                            m2 = random.choice(monomer_index)
+                            m2_name = random.choice(monomers[m2])
+                            if self.tacticity == "atactic":
+                                while not (
+                                    ht_label == m2_name[0]
+                                    and m1 != m2
+                                    and tor1_label == m2_name[m2_name.index("T") :]
+                                ):
+                                    m2 = random.choice(monomer_index)
+                                    m2_name = random.choice(monomers[m2])
+                                m3_name = m1 + tor2_label
+                                m4_name = m2 + tor2_label
+                            elif self.tacticity == "syndiotactic":
+                                while not (
+                                    ht_label == m2_name[0]
+                                    and m1 != m2
+                                    and tor2_label == m2_name[m2_name.index("T") :]
+                                ):
+                                    m2 = random.choice(monomer_index)
+                                    m2_name = random.choice(monomers[m2])
+                    if self.tacticity == "atactic":
+                        if i % 2:
                             self.configurations[config_index].append(
                                 random.choice([m1_name, m2_name])
                             )
-                        elif self.tacticity == "syndiotactic":
-                            if i % 2:
-                                self.configurations[config_index].append(m1_name)
-                            else:
-                                self.configurations[config_index].append(m2_name)
+                        else:
+                            self.configurations[config_index].append(
+                                random.choice([m3_name, m4_name])
+                            )
+                    else:
+                        if i % 2:
+                            self.configurations[config_index].append(m1_name)
+                        else:
+                            self.configurations[config_index].append(m2_name)
                 config_index += 1
         else:
-            if self.tacticity == "isotactic" or (not self.tacticity):
-                self.pattern = 0
-                for m in monomer_index:
-                    for m_name in monomers[m]:
-                        self.configurations[config_index] = [m_name, m_name]
+            for m1 in monomer_index:
+                for m1_name in monomers[m1]:
+                    tor1_label = m1_name[m1_name.index("T") :]
+                    if tor1_label in self.torsion_label1:
+                        tor2_label = (
+                            self.torsion_label1[
+                                self.torsion_label1.index(tor1_label)
+                                + len(tor1_label) :
+                            ]
+                            + self.torsion_label1[
+                                : self.torsion_label1.index(tor1_label)
+                            ]
+                        )
+                    elif tor1_label in self.torsion_label2:
+                        tor2_label = self.torsion_label1[
+                            self.torsion_label2.index(tor1_label)
+                            + len(tor1_label)
+                            - len(self.torsion_label1) : self.torsion_label2.index(
+                                tor1_label
+                            )
+                        ]
+                    elif tor1_label in self.torsion_labelr1:
+                        tor2_label = (
+                            self.torsion_labelr1[
+                                self.torsion_labelr1.index(tor1_label)
+                                + len(tor1_label) :
+                            ]
+                            + self.torsion_labelr1[
+                                : self.torsion_labelr1.index(tor1_label)
+                            ]
+                        )
+                    elif tor1_label in self.torsion_labelr2:
+                        tor2_label = self.torsion_labelr1[
+                            self.torsion_labelr2.index(tor1_label)
+                            + len(tor1_label)
+                            - len(self.torsion_labelr1) : self.torsion_labelr2.index(
+                                tor1_label
+                            )
+                        ]
+                    if self.tacticity == "isotactic" or (not self.tacticity):
+                        m2_name = m1 + tor2_label
+                        self.configurations[config_index] = [m1_name, m2_name]
                         config_index += 1
-            elif self.tacticity == "atactic" or self.tacticity == "syndiotactic":
-                self.pattern = 1 if self.tacticity == "atactic" else 0
-                for m1 in monomer_index:
-                    for m1_name in monomers[m1]:
+                    else:
                         for m2 in monomer_index[monomer_index.index(m1) + 1 :]:
                             for m2_name in monomers[m2]:
-                                if (
-                                    m1_name[m1_name.index("T") :]
-                                    == m2_name[m2_name.index("T") :]
-                                ):
+                                if tor2_label == m2_name[m2_name.index("T") :]:
                                     self.configurations[config_index] = [
                                         m1_name,
                                         m2_name,
@@ -529,18 +688,18 @@ class Chain:
         # filedata = filedata.replace('irad', str(2 * radius - 5))
         # filedata = filedata.replace('mctemp', str(mctemp))
 
-        if self.pattern:
-            weight = 1 / len(self.monomers)
-            for m in self.monomers:
-                self.weights[m] = weight
-            stereo_type = "weight " + str(len(self.monomers))
-        else:
-            stereo_type = "pattern " + str(len(self.configurations[config_index]))
+        # if self.pattern:
+        #    weight = 1 / len(self.monomers)
+        #    for m in self.monomers:
+        #        self.weights[m] = weight
+        #    stereo_type = "weight " + str(len(self.monomers))
+        # else:
+        stereo_type = "pattern " + str(len(self.configurations[config_index]))
 
         for m in self.configurations[config_index]:
             stereo_type += " " + m
-            if self.pattern:
-                stereo_type += " " + str(self.weights[m])
+            # if self.pattern:
+            #    stereo_type += " " + str(self.weights[m])
         # filedata = filedata.replace('stereo_type', stereo_type)
         des.write("stereo s1 %s\n" % stereo_type)
         des.write("\n")
@@ -640,7 +799,9 @@ class Chain:
         holder = self.build_helix()
 
         # Correct chain orientation
-        holder, unit_distance = correct_chain_orientation(holder, self.num_monomers)
+        holder, unit_distance = correct_chain_orientation(
+            holder, self.num_monomers, self.unit_num_monomers
+        )
 
         # Create infinite periodic polymer helix chain
         if self.infinite:
