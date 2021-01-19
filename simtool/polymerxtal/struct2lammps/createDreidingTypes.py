@@ -115,8 +115,6 @@ def write_atoms_dat(s, atom_types, infile_is_pdb, infile_pdb, infile_lmpdat):
     # ID_dict1 = create_ID_dictionary1(infile_pdb, infile_lmpdat)
     atoms = read_atoms_pdb(".tmp/bonds/connected_pdb.pdb")
 
-    if not os.path.exists(".tmp/types"):
-        os.mkdir(".tmp/types")
     with open(".tmp/types/atoms.dat", "w") as f, open(
         ".tmp/types/atominring.dat", "w"
     ) as f1:

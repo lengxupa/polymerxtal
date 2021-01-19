@@ -31,6 +31,24 @@ class Molecule:
             self.symbols,
         )
 
+    def my_algorithm(self, parameters_list):
+        # Performs our algorithm.
+        _first_stage(params)
+        _second_stage(params)
+        _third_stage(params)
+
+    def _first_stage(self, parameters_list):
+        # Performs the first stage of the algorithm.
+        pass
+
+    def _second_stage(self, parameters_list):
+        # Performs the second stage of the algorithm.
+        pass
+
+    def _third_stage(self, parameters_list):
+        # Performs the third stage of the algorithm.
+        pass
+
 
 def build_bond_list(
     coordinates, max_bond=1.55, min_bond=0, elements=[], bond_scale=1.2
@@ -102,8 +120,8 @@ def calculate_molecular_mass(symbols):
 
     Parameters
     ----------
-    symbols : list
-        A list of elements.
+    symbols : dict or list
+        A dict or list of elements.
 
     Returns
     -------
@@ -112,8 +130,9 @@ def calculate_molecular_mass(symbols):
     """
 
     mass = 0
-    for atom in symbols:
-        mass += atomic_weights[atom]
+    # for atom in symbols:
+    for i in range(len(symbols)):
+        mass += atomic_weights[symbols[i]]
 
     return mass
 
@@ -125,8 +144,8 @@ def calculate_center_of_mass(symbols, coordinates):
 
     Parameters
     ----------
-    symbols : list
-        A list of elements for the molecule
+    symbols : dict or list
+        A dict or list of elements for the molecule
     coordinates : np.ndarray
         The coordinates of the molecule.
 
@@ -153,3 +172,33 @@ def calculate_center_of_mass(symbols, coordinates):
     center_of_mass = sum(coordinates * mass_array) / total_mass
 
     return center_of_mass
+
+
+# Conversion from amu to grams
+def AMU2GRAM(mass):
+    return mass * 1.6605e-24
+
+
+# Conversions between cubic Angstroms and cubic centimeters
+def CA2CC(length):
+    return length * 1.0e-24
+
+
+def calculate_density(symbols, volume):
+    """Calculate the density of a molecule.
+
+    Parameters
+    ----------
+    symbols : dict or list
+        A dict or list of elements for the molecule
+    volume : float
+        The volume of the molecule in cubic Angstroms
+
+    Returns
+    -------
+    density : float
+        The density of the molecule in grams per cubic centimeter
+    """
+
+    mass = calculate_molecular_mass(symbols)
+    return AMU2GRAM(mass) / CA2CC(volume)

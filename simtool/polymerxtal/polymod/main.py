@@ -300,9 +300,6 @@ def main(args):
     buildChains(polysys, params, 0)
     # endif
 
-    if not os.path.exists(".tmp"):
-        os.mkdir(".tmp")
-
     # Final log outputs
     total_mass = 0.0
     total_atoms = 0

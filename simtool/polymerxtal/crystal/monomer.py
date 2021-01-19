@@ -22,8 +22,6 @@ class Backbone:
 
 
 def get_tail_torsion(mpath, head, tail):
-    if not os.path.exists(".tmp"):
-        os.mkdir(".tmp")
     logfile = ".tmp/latch.log"
     infile = ".tmp/latch.in"
     des = open(infile, "w")
@@ -54,6 +52,9 @@ class PolymerType:
         self.path = path
         self.backbone_atoms = backbone_atoms
         self.side_atom = side_atom
+
+    def __str__(self):
+        return self.name
 
     def identify_backbone_path(self, find_inverse_path=False):
         h = readPDB(self.path)
