@@ -29,6 +29,7 @@ class ObliqueUnitCell:
             print("The Helix Chain is not configured. Start building chain ...")
             self.chain.build_chain()
         self.holder = self.chain.holder
+        self.c = self.chain.z
         
         if helice is None:
             # Create default helice object
