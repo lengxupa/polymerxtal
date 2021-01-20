@@ -40,6 +40,12 @@ class Cell:
                 Helice(2,1,1) - Planar zig-zag
                 Helice(2,2,1)
                 Helice(2,3,1)
+                Helice(4,1,1)
+                Helice(4,1,2) - Planar zig-zag (Syndiotactic)
+                Helice(4,2,1)
+                Helice(4,2,2)
+                Helice(4,3,1)
+                Helice(4,3,2)
         num_monomers : int (optional)
             Number of monomers
         tacticity : str (optional)

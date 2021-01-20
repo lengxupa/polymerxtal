@@ -112,6 +112,12 @@ class Chain:
                 Helice(2,1,1) - Planar zig-zag
                 Helice(2,2,1)
                 Helice(2,3,1)
+                Helice(4,1,1)
+                Helice(4,1,2) - Planar zig-zag (Syndiotactic)
+                Helice(4,2,1)
+                Helice(4,2,2)
+                Helice(4,3,1)
+                Helice(4,3,2)
         num_monomers : int (optional)
             Number of monomers
         tacticity : str (optional)
@@ -174,17 +180,16 @@ class Chain:
             )
         if tacticity == "syndiotactic":
             multiple = int(monomer_backbone_atoms * 2 / helice.atoms)
-            if multiple * helice.atoms % monomer_backbone_atoms * 2:
+            if (multiple * helice.atoms) % (monomer_backbone_atoms * 2):
                 raise Exception(
                     "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of the number of monomer backbone atoms %d\n"
                     % monomer_backbone_atoms
                     * 2
                 )
-            else:
+            elif multiple != 1:
                 print(
                     "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice of the number of monomer backbone atoms %d\n"
-                    % monomer_backbone_atoms
-                    * 2
+                    % (monomer_backbone_atoms * 2)
                 )
                 print(
                     "Trying Helice_%d_%d_%d..."
@@ -835,7 +840,7 @@ class Chain:
         self.x = maxi_array[0]
         self.y = maxi_array[1]
         if self.infinite:
-            self.z = unit_distance * (self.num_monomers - 2) / self.helice.motifs
+            self.z = unit_distance * (self.num_monomers - 2) / self.unit_num_monomers
         else:
             self.z = maxi_array[2]
         self.alpha = 90
