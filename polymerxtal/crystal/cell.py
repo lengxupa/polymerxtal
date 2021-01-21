@@ -26,38 +26,6 @@ class Cell:
 
         Parameters
         ----------
-        polymer_type : str (optional)
-            Current support polymer types include:
-                PAN - Polyacrylonitrile
-                PE - Polyethylene
-                PP - Polypropylene
-                PS - Polystyrene
-                POM - Polyoxymethylene
-                PTFE - Polytetrafluoroethylene
-                PVC - Polyvinyl chloride
-        helice : Helice class (optional)
-            Current support helicities include:
-                Helice(2,1,1) - Planar zig-zag
-                Helice(2,2,1)
-                Helice(2,3,1)
-                Helice(4,1,1)
-                Helice(4,1,2) - Planar zig-zag (Syndiotactic)
-                Helice(4,2,1)
-                Helice(4,2,2)
-                Helice(4,3,1)
-                Helice(4,3,2)
-        num_monomers : int (optional)
-            Number of monomers
-        tacticity : str (optional)
-            Tacticity of the polymer chain. Current support tacticities include: isotactic, atactic, syndiotactic
-        chiriality : str (optional)
-            Chiriality of the polymer chain. Current support chirialities include: left, right
-        head_tail_defect_ratio : float (optional)
-            Ratio of head-to-head and tail-to-tail connections
-        configs : int (optional)
-            Number of attempts to find a defect configuration
-        infinite : bool (optional)
-            Whether to create periodic infinite chain
         chain : Chain class (optional)
             Information about the polymer chain
         packing : str (optional)
@@ -77,19 +45,21 @@ class Cell:
         gamma : float (optional)
             Unit cell angle in degrees
         """
-        polymer_type = "PE"
-        helice = Helice()
-        num_monomers = 30
-        tacticity = ""
-        chiriality = ""
-        head_tail_defect_ratio = 0
-        configs = 30
-        infinite = True
+        # Changing this part to Chain class.
+        chain = Chain(infinite=True)
+        # polymer_type = "PE"
+        # helice = Helice()
+        # num_monomers = 30
+        # tacticity = ""
+        # chiriality = ""
+        # head_tail_defect_ratio = 0
+        # configs = 30
+        # infinite = True
         packing = "Hexagonal"
         density = 1
         r_ab = np.sqrt(3)
 
-        monomers_flag = 0
+        # monomers_flag = 0
         packing_flag = 0
         density_flag = 0
         a_flag = 0
@@ -99,24 +69,24 @@ class Cell:
         beta_flag = 0
         gamma_flag = 0
         for key in kwargs:
-            if key == "polymer_type":
-                polymer_type = kwargs["polymer_type"]
-            elif key == "helice":
-                helice = kwargs["helice"]
-            elif key == "num_monomers":
-                num_monomers = kwargs["num_monomers"]
-                monomers_flag = 1
-            elif key == "tacticity":
-                tacticity = kwargs["tacticity"]
-            elif key == "chiriality":
-                chiriality = kwargs["chiriality"]
-            elif key == "head_tail_defect_ratio":
-                head_tail_defect_ratio = kwargs["head_tail_defect_ratio"]
-            elif key == "configs":
-                configs = kwargs["configs"]
-            elif key == "infinite":
-                infinite = kwargs["infinite"]
-            elif key == "chain":
+            # if key == "polymer_type":
+            #    polymer_type = kwargs["polymer_type"]
+            # elif key == "helice":
+            #    helice = kwargs["helice"]
+            # elif key == "num_monomers":
+            #    num_monomers = kwargs["num_monomers"]
+            #    monomers_flag = 1
+            # elif key == "tacticity":
+            #    tacticity = kwargs["tacticity"]
+            # elif key == "chiriality":
+            #    chiriality = kwargs["chiriality"]
+            # elif key == "head_tail_defect_ratio":
+            #    head_tail_defect_ratio = kwargs["head_tail_defect_ratio"]
+            # elif key == "configs":
+            #    configs = kwargs["configs"]
+            # elif key == "infinite":
+            #    infinite = kwargs["infinite"]
+            if key == "chain":
                 chain = kwargs["chain"]
             elif key == "packing":
                 packing = kwargs["packing"]
@@ -159,30 +129,30 @@ class Cell:
                     % key
                 )
 
-        if "chain" in kwargs:
-            self.chain = chain
-        else:
-            if monomers_flag:
-                self.chain = Chain(
-                    polymer_type=polymer_type,
-                    helice=helice,
-                    num_monomers=num_monomers,
-                    tacticity=tacticity,
-                    chiriality=chiriality,
-                    head_tail_defect_ratio=head_tail_defect_ratio,
-                    configs=configs,
-                    infinite=infinite,
-                )
-            else:
-                self.chain = Chain(
-                    polymer_type=polymer_type,
-                    helice=helice,
-                    tacticity=tacticity,
-                    chiriality=chiriality,
-                    head_tail_defect_ratio=head_tail_defect_ratio,
-                    configs=configs,
-                    infinite=infinite,
-                )
+        # if "chain" in kwargs:
+        self.chain = chain
+        # else:
+        #    if monomers_flag:
+        #        self.chain = Chain(
+        #            polymer_type=polymer_type,
+        #            helice=helice,
+        #            num_monomers=num_monomers,
+        #            tacticity=tacticity,
+        #            chiriality=chiriality,
+        #            head_tail_defect_ratio=head_tail_defect_ratio,
+        #            configs=configs,
+        #            infinite=infinite,
+        #        )
+        #    else:
+        #        self.chain = Chain(
+        #            polymer_type=polymer_type,
+        #            helice=helice,
+        #            tacticity=tacticity,
+        #            chiriality=chiriality,
+        #            head_tail_defect_ratio=head_tail_defect_ratio,
+        #            configs=configs,
+        #            infinite=infinite,
+        #        )
 
         self.packing = packing
         self.density = density
