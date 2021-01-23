@@ -144,9 +144,6 @@ class PolymerType:
 monomer_path = os.path.join(current_location, "..", "data", "pdb", "monomer")
 
 polymer_types = {
-    "PAN": PolymerType(
-        "PAN", os.path.join(monomer_path, "PAN.pdb"), backbone_atoms=[3, 2], side_atom=5
-    ),
     "PE": PolymerType(
         "PE", os.path.join(monomer_path, "PE.pdb"), backbone_atoms=[2, 3]
     ),
@@ -164,5 +161,8 @@ polymer_types = {
     ),
     "PVC": PolymerType(
         "PVC", os.path.join(monomer_path, "PVC.pdb"), backbone_atoms=[2, 3], side_atom=8
+    ),
+    "PAN": PolymerType(
+        "PAN", os.path.join(monomer_path, "PAN.pdb"), backbone_atoms=[3, 2], side_atom=5
     ),
 }
