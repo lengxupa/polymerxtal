@@ -777,7 +777,15 @@ class Chain:
                 % (self.helice, self.polymer_type.name)
             )
 
-    def build_chain(self, **kwargs):
+    def build_chain(
+        self,
+        use_visualize=False,
+        create_lmpdata_file=False,
+        create_lmpinput_file=False,
+        bondscale=1.1,
+        ffield="Dreiding",
+        charge="Gasteiger",
+    ):  # **kwargs):
         """polymerxtal.crystal.chain.Chain.build_chain function builds a polymer chain with specified information
 
         Parameters
@@ -847,31 +855,31 @@ class Chain:
         self.beta = 90
         self.gamma = 90
 
-        use_visualize = False
-        create_lmpdata_file = False
-        bondscale = 1.1
-        ffield = "Dreiding"
-        charge = "Gasteiger"
-        create_lmpinput_file = False
+        # use_visualize = False
+        # create_lmpdata_file = False
+        # bondscale = 1.1
+        # ffield = "Dreiding"
+        # charge = "Gasteiger"
+        # create_lmpinput_file = False
 
-        for key in kwargs:
-            if key == "use_visualize":
-                use_visualize = kwargs["use_visualize"]
-            elif key == "create_lmpdata_file":
-                create_lmpdata_file = kwargs["create_lmpdata_file"]
-            elif key == "bondscale":
-                bondscale = kwargs["bondscale"]
-            elif key == "ffield":
-                ffield = kwargs["ffield"]
-            elif key == "charge":
-                charge = kwargs["charge"]
-            elif key == "create_lmpinput_file":
-                create_lmpinput_file = kwargs["create_lmpinput_file"]
-            else:
-                raise KeyError(
-                    "Unknown input %s for build_chain function\n Please see help for more information"
-                    % key
-                )
+        # for key in kwargs:
+        #    if key == "use_visualize":
+        #        use_visualize = kwargs["use_visualize"]
+        #    elif key == "create_lmpdata_file":
+        #        create_lmpdata_file = kwargs["create_lmpdata_file"]
+        #    elif key == "bondscale":
+        #        bondscale = kwargs["bondscale"]
+        #    elif key == "ffield":
+        #        ffield = kwargs["ffield"]
+        #    elif key == "charge":
+        #        charge = kwargs["charge"]
+        #    elif key == "create_lmpinput_file":
+        #        create_lmpinput_file = kwargs["create_lmpinput_file"]
+        #    else:
+        #        raise KeyError(
+        #            "Unknown input %s for build_chain function\n Please see help for more information"
+        #            % key
+        #        )
 
         # Create LAMMPS data file
         if create_lmpdata_file:

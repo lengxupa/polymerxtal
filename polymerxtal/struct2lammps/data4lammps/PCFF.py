@@ -254,6 +254,13 @@ def PCFF_getAngleCoeffs(angletypes):
                         atomtype2 = "c"
                     if atomtype3 == "c3" or atomtype3 == "c2":
                         atomtype3 = "c"
+                    if atomtype2 == "ct":
+                        atomtype1 = "X"
+                        atomtype3 = "X"
+                    if atomtype1 == "ct":
+                        atomtype1 = "X"
+                    if atomtype3 == "ct":
+                        atomtype3 = "X"
                     if (
                         atomtype1 == atype[0]
                         and atomtype2 == atype[1]
@@ -622,6 +629,17 @@ def PCFF_getDihsCoeffs(dihstypes):
                     atom2type = dihstypes[i][2]
                     atom3type = dihstypes[i][3]
                     atom4type = dihstypes[i][4]
+                    if atom2type == "ct" or atom3type == "ct":
+                        atom1type = "X"
+                        atom4type = "X"
+                    if atom1type == "ct":
+                        atom1type = "X"
+                        if atom2type == "c" and atom3type == "c":
+                            atom4type = "X"
+                    if atom4type == "ct":
+                        atom4type = "X"
+                        if atom2type == "c" and atom3type == "c":
+                            atom1type = "X"
                     if (
                         (atype1 == atom2type and atype2 == atom3type)
                         or (atype1 == atom3type and atype2 == atom2type)
