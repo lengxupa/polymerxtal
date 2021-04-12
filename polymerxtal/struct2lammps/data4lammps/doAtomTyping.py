@@ -191,10 +191,10 @@ def getDREIDINGatomtypes(atoms, atomlinks, atomelems, atomlinkelems, atominring)
             if len(atomlinks[i]) <= 2:
                 atomtype[i] = "N_1"
             elif len(atomlinks[i]) == 3:
-                atomID0 = i + 1
-                atomID1 = atomlinks[i][0]
-                atomID2 = atomlinks[i][1]
-                atomID3 = atomlinks[i][2]
+                atomID0 = i
+                atomID1 = atomlinks[i][0] - 1
+                atomID2 = atomlinks[i][1] - 1
+                atomID3 = atomlinks[i][2] - 1
                 v1 = [
                     (atoms[atomID1][4] - atoms[atomID0][4]),
                     (atoms[atomID1][5] - atoms[atomID0][5]),

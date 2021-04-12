@@ -94,6 +94,7 @@ def read_atom_pdb(pdbfile, nAtomTypes):
 def get_mass(types):
 
     m = []
+    print('debug readFiles.py: get_mess - types -',types)
     etab = ob.OBElementTable()
     for value in types:
         a = etab.GetAtomicNum(value)
