@@ -78,7 +78,7 @@ def AtomsInfo(inpfile):
             dataline = fin.readline()
             dataline = fin.readline()
             while dataline != "\n" and dataline != "":
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split("#")[0].split()
                 natom = eval(str(words[0]))
                 nmolecule = eval(str.strip(str(words[1])))
                 atomtype = eval(str(words[2]))
@@ -103,7 +103,18 @@ def AtomsInfo(inpfile):
                         nz,
                     ]
                 else:
-                    atoms[natom - 1] = [natom, nmolecule, atomtype, charge, x, y, z]
+                    atoms[natom - 1] = [
+                        natom,
+                        nmolecule,
+                        atomtype,
+                        charge,
+                        x,
+                        y,
+                        z,
+                        0,
+                        0,
+                        0,
+                    ]
                 dataline = fin.readline()
         dataline = fin.readline()
         words = dataline.split("\n")
