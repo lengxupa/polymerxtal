@@ -27,6 +27,8 @@ def save_structure(file, outfilePDB=""):
                 structure_path, outfilePDB
             )
         )
+    elif extension == ".pdb" and conect_in_pdb(file):
+        os.system("cp {0} {1}".format(structure_path, outfilePDB))
     else:
         os.system(
             "obabel {0} -O {1} --title convert ---errorlevel 1".format(
