@@ -72,7 +72,6 @@ def create_bonds_commands(infile, pdbfile, bondscale):
 
 def atom_type_groups_commands(infile, nTypes, types):
     group_commands = ""
-    print("debug createBondCommands.py: atom_type_groups_commands - nTypes - ", nTypes)
     for i in range(nTypes):
         group_commands += "group    {0} type {1} \n".format(types[i], i + 1)
     return group_commands
