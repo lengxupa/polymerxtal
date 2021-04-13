@@ -5,21 +5,28 @@ This module handles functions related to files read.
 import os
 
 try:
-    import openbabel as ob
+    from openbabel import openbabel as ob
+
+    OB_version = 3
 except:
     try:
-        import ovito
-
-        use_ovito = True
-    except:
-        use_ovito = False
-
-    from polymerxtal.io import check_nanohub
-
-    use_nanohub = check_nanohub()
-
-    if not (use_ovito and use_nanohub):
         import openbabel as ob
+
+        OB_version = 2
+    except:
+        try:
+            import ovito
+
+            use_ovito = True
+        except:
+            use_ovito = False
+
+        from polymerxtal.io import check_nanohub
+
+        use_nanohub = check_nanohub()
+
+        if not (use_ovito and use_nanohub):
+            import openbabel as ob
 
 # from hublib.cmd import runCommand
 
@@ -28,7 +35,8 @@ from .getnd import getnd
 
 def convert_structure(infile):
 
-    outfilelmpdat = ".tmp/bonds/old.lmpdat"
+    # outfilelmpdat = ".tmp/bonds/old.lmpdat"
+    outfilelmpdat = ".tmp/bonds/test.lmpdat"
     outfilepdb = ".tmp/bonds/pdbfile.pdb"
     os.system("obabel {0} -O {1}".format(outfilepdb, ".tmp/bonds/test.lmpdat"))
     getnd()
@@ -94,12 +102,19 @@ def read_atom_pdb(pdbfile, nAtomTypes):
 def get_mass(types):
 
     m = []
-    print('debug readFiles.py: get_mess - types -',types)
-    etab = ob.OBElementTable()
-    for value in types:
-        a = etab.GetAtomicNum(value)
-        c = etab.GetMass(a)
-        m.append(c)
+    if OB_version == 3:
+        for value in types:
+            a = ob.GetAtomicNum(value)
+            c = ob.GetMass(a)
+            m.append(c)
+    elif OB_version == 2:
+        etab = ob.OBElementTable()
+        for value in types:
+            a = etab.GetAtomicNum(value)
+            c = etab.GetMass(a)
+            m.append(c)
+    else:
+        raise Exception("Unknown openbabel version")
 
     return m
 

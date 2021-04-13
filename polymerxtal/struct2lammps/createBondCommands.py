@@ -3,21 +3,28 @@ This module handles commands related to create bonds
 """
 
 try:
-    import openbabel as ob
+    from openbabel import openbabel as ob
+
+    OB_version = 3
 except:
     try:
-        import ovito
-
-        use_ovito = True
-    except:
-        use_ovito = False
-
-    from polymerxtal.io import check_nanohub
-
-    use_nanohub = check_nanohub()
-
-    if not (use_ovito and use_nanohub):
         import openbabel as ob
+
+        OB_version = 2
+    except:
+        try:
+            import ovito
+
+            use_ovito = True
+        except:
+            use_ovito = False
+
+        from polymerxtal.io import check_nanohub
+
+        use_nanohub = check_nanohub()
+
+        if not (use_ovito and use_nanohub):
+            import openbabel as ob
 
 from .readFiles import read_n_types, read_atom_pdb
 
@@ -65,6 +72,7 @@ def create_bonds_commands(infile, pdbfile, bondscale):
 
 def atom_type_groups_commands(infile, nTypes, types):
     group_commands = ""
+    print("debug createBondCommands.py: atom_type_groups_commands - nTypes - ", nTypes)
     for i in range(nTypes):
         group_commands += "group    {0} type {1} \n".format(types[i], i + 1)
     return group_commands
@@ -203,8 +211,14 @@ def cutoff_radii(type_combinations, types, bondscale):
         a1Number = atomic_numbers[a1Name]
         a2Number = atomic_numbers[a2Name]
 
-        a1Rad = ob.etab.GetCovalentRad(a1Number)
-        a2Rad = ob.etab.GetCovalentRad(a2Number)
+        if OB_version == 3:
+            a1Rad = ob.GetCovalentRad(a1Number)
+            a2Rad = ob.GetCovalentRad(a2Number)
+        elif OB_version == 2:
+            a1Rad = ob.etab.GetCovalentRad(a1Number)
+            a2Rad = ob.etab.GetCovalentRad(a2Number)
+        else:
+            raise Exception("Unknown openbabel version")
 
         assert type(a1Rad) == float
         assert type(a2Rad) == float

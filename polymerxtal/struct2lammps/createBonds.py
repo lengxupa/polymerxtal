@@ -41,17 +41,17 @@ def create_bonds(
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
-    create_lmpdat("./bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
-    write_mass("./bonds/new.lmpdat", ntypes, mass)
-    write_coeff("./bonds/new.lmpdat", ntypes)
+    create_lmpdat(".tmp/bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
+    write_mass(".tmp/bonds/new.lmpdat", ntypes, mass)
+    write_coeff(".tmp/bonds/new.lmpdat", ntypes)
 
     create_lammps_in(outfilelmpdat, ntypes, outfilepdb, bondscale)
-    return_code = run_lammps("./bonds/bondcreate.in")
+    return_code = run_lammps(".tmp/bonds/bondcreate.in")
     if return_code != 0:
         print("LAMMPS did not finish succesfully, can not continue")
         raise Exception("LAMMPS did not finish succesfully, can not continue")
     translate_write_connectivity(
-        "./bonds/new.lmpdat", "./bonds/bonded.lmpdat", ".tmp/bonds/pdbfile.pdb"
+        ".tmp/bonds/new.lmpdat", ".tmp/bonds/bonded.lmpdat", ".tmp/bonds/pdbfile.pdb"
     )
     print("Bonds have been identified")
 
@@ -121,7 +121,7 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
 
 """
     with open(".tmp/bonds/old.lmpdat") as oldFile, open(
-        "./bonds/new.lmpdat", "w"
+        ".tmp/bonds/new.lmpdat", "w"
     ) as newFile:
 
         newFile.write("LAMMPS data file \n")
@@ -232,11 +232,11 @@ thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz
 """
 
     atomCombinations = create_atom_combinations(ntypes)
-    outInfile = "./bonds/bondcreate.in"
+    outInfile = ".tmp/bonds/bondcreate.in"
     with open(outInfile, "w") as f:
         f.write(constant_string1)
         f.write(create_bonds_commands(lmpdatFile, outfilepdb, bondscale))
-        f.write("write_data ./bonds/bonded.lmpdat \n")
+        f.write("write_data .tmp/bonds/bonded.lmpdat \n")
 
 
 def create_atom_combinations(nAtoms):
