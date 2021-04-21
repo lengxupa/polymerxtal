@@ -105,6 +105,7 @@ def get_mass(types):
     if OB_version == 3:
         for value in types:
             a = ob.GetAtomicNum(value)
+            print('debug readFiles.py: get_mass - a -',a)
             c = ob.GetMass(a)
             m.append(c)
     elif OB_version == 2:

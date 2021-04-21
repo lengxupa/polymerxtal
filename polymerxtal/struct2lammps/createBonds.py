@@ -39,6 +39,7 @@ def create_bonds(
 
     ntypes = read_n_types(".tmp/bonds/test.lmpdat")
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
+    print('debug createBonds.py: create_bonds - types -',types)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
     create_lmpdat(".tmp/bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
@@ -120,7 +121,7 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
 25 extra improper per atom
 
 """
-    with open(".tmp/bonds/old.lmpdat") as oldFile, open(
+    with open(".tmp/bonds/test.lmpdat") as oldFile, open(
         ".tmp/bonds/new.lmpdat", "w"
     ) as newFile:
 
@@ -176,6 +177,16 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
             else:
                 newFile.write(line)
 
+        #for line in oldFile:
+        #    newFile.write("\n")
+        #    if line.startswith("Masses"):
+        #        newFile.write(line)
+        #        newFile.write("\n")
+        #        next(oldFile)
+        #        break
+        #    else:
+        #        newFile.write(line)
+
         for line in oldFile:
             newFile.write("\n")
             if line.startswith("Atoms"):
@@ -217,14 +228,14 @@ units          real
 atom_style     full
 boundary       p p p
 pair_style     lj/smooth 10.0 12.0 #dummy pair style
-special_bonds  lj 0.0 1.0 1.0 extra 10000
+special_bonds  lj 0.0 1.0 1.0 #extra 10000
 bond_style     harmonic
 angle_style    harmonic
 dihedral_style harmonic
 improper_style harmonic
 
 box            tilt large
-read_data      ./bonds/new.lmpdat
+read_data      .tmp/bonds/new.lmpdat extra/special/per/atom 10000
 timestep       1
 thermo         1
 thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz

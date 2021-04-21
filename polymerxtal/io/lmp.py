@@ -13,6 +13,8 @@ if LAMMPS_EXEC is None:
     LOADEDMODULES = os.environ.get("LOADEDMODULES")
     if LOADEDMODULES and ("lammps/31Mar17" in LOADEDMODULES):
         LAMMPS_EXEC = "lmp"
+    elif os.environ['HOME']=='/Users/shentongtong':
+        LAMMPS_EXEC='/Users/shentongtong/Dropbox/softwares/lammps-3Mar20/src/lmp_mpi'
 verbose = False
 
 
