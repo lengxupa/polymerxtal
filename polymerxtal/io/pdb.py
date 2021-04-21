@@ -24,9 +24,17 @@ def open_pdb(file_location):
     for line in data:
         if "ATOM" in line[0:6] or "HETATM" in line[0:6]:
             if line[76:79].strip():
-                symbols.append(line[76:79].strip())
+                raw_symbol = "".join(
+                    [i for i in line[76:79].strip() if not i.isdigit()]
+                )
+                symbol = raw_symbol[0].upper() + raw_symbol[1:].lower()
+                symbols.append(symbol)
             elif line[12:17].strip():
-                symbols.append(line[12:17].strip())
+                raw_symbol = "".join(
+                    [i for i in line[12:17].strip() if not i.isdigit()]
+                )
+                symbol = raw_symbol[0].upper() + raw_symbol[1:].lower()
+                symbols.append(symbol)
             atom_coords = [float(x) for x in line[30:55].split()]
             coordinates.append(atom_coords)
 

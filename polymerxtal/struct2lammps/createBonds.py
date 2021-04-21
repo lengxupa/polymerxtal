@@ -39,7 +39,7 @@ def create_bonds(
 
     ntypes = read_n_types(".tmp/bonds/test.lmpdat")
     types, dictt = read_atom_pdb(outfilepdb, ntypes)
-    print('debug createBonds.py: create_bonds - types -',types)
+    print("debug createBonds.py: create_bonds - types -", types)
     mass = get_mass(types)
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
     create_lmpdat(".tmp/bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
@@ -177,7 +177,7 @@ def create_lmpdat(lmpdatFile, file_with_lattice, uboundaries, outfilepdb):
             else:
                 newFile.write(line)
 
-        #for line in oldFile:
+        # for line in oldFile:
         #    newFile.write("\n")
         #    if line.startswith("Masses"):
         #        newFile.write(line)
