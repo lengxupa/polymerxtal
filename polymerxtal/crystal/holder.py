@@ -69,13 +69,13 @@ def build_bonds_data(
     return holder
 
 
-def delete_atoms(holder, atom_list):
-    for atom in atom_list:
-        del holder.pos[atom - 1]
-        del holder.el_names[atom - 1]
-        del holder.atom_types[atom - 1]
-        holder.num_atoms -= 1
-    return holder
+# def delete_atoms(holder, atom_list):
+#    for atom in atom_list:
+#        del holder.pos[atom - 1]
+#        del holder.el_names[atom - 1]
+#        del holder.atom_types[atom - 1]
+#        holder.num_atoms -= 1
+#    return holder
 
 
 def combine_holders(

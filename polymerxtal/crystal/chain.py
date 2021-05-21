@@ -3,9 +3,9 @@ This module is for functions Chain class.
 """
 
 import numpy as np
-import os, random
+import random  # os,
 
-from polymerxtal.io import *
+from polymerxtal.io import *  # noqa: F403
 from polymerxtal.polymod import readPDB
 from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
@@ -15,7 +15,7 @@ from polymerxtal.crystal.infinite import (
     create_infinite_chain,
     correct_infinite_chain_position,
 )
-from polymerxtal.crystal.monomer import PolymerType, polymer_types
+from polymerxtal.crystal.monomer import polymer_types  # PolymerType,
 from polymerxtal.crystal.move import Sphere, Cluster, Translator, Rotator
 from polymerxtal.crystal.unit import chain_periodicity
 
@@ -182,13 +182,15 @@ class Chain:
             multiple = int(monomer_backbone_atoms * 2 / helice.atoms)
             if (multiple * helice.atoms) % (monomer_backbone_atoms * 2):
                 raise Exception(
-                    "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of the number of monomer backbone atoms %d\n"
+                    "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of \
+                        the number of monomer backbone atoms %d\n"
                     % monomer_backbone_atoms
                     * 2
                 )
             elif multiple != 1:
                 print(
-                    "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice of the number of monomer backbone atoms %d\n"
+                    "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice \
+                        of the number of monomer backbone atoms %d\n"
                     % (monomer_backbone_atoms * 2)
                 )
                 print(
@@ -224,19 +226,23 @@ class Chain:
 
         if num_monomers < self.unit_num_monomers:
             raise ValueError(
-                "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent number of monomers is %d"
+                "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent \
+                    number of monomers is %d"
                 % (self.unit_num_monomers, helice, num_monomers)
             )
 
         if infinite:
             if num_monomers % self.unit_num_monomers:
                 raise ValueError(
-                    "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s chain.\nCurrent number of monomers is %d"
+                    "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s \
+                        chain.\nCurrent number of monomers is %d"
                     % (self.unit_num_monomers, helice, num_monomers)
                 )
             elif num_monomers * monomer_backbone_atoms < 3:
                 raise ValueError(
-                    "Number of backbone atoms should be more than 2 in order to create infinite periodic chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate number of monomers."
+                    "Number of backbone atoms should be more than 2 in order to create infinite periodic \
+                        chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate \
+                        number of monomers."
                     % (num_monomers * monomer_backbone_atoms)
                 )
         self.num_monomers = num_monomers + 2 if infinite else num_monomers
@@ -467,11 +473,12 @@ class Chain:
                 m1 = random.choice(monomer_index)
                 m1_name = random.choice(monomers[m1])
                 ht_label = m1_name[0]
-                tor1_label = m1_name[m1_name.index("T") :]
+                tor1_label = m1_name[m1_name.index("T") :]  # noqa: E203
                 if tor1_label in self.torsion_label1:
                     tor2_label = (
                         self.torsion_label1[
-                            self.torsion_label1.index(tor1_label) + len(tor1_label) :
+                            self.torsion_label1.index(tor1_label)
+                            + len(tor1_label) :  # noqa: E203
                         ]
                         + self.torsion_label1[: self.torsion_label1.index(tor1_label)]
                     )
@@ -479,14 +486,17 @@ class Chain:
                     tor2_label = self.torsion_label1[
                         self.torsion_label2.index(tor1_label)
                         + len(tor1_label)
-                        - len(self.torsion_label1) : self.torsion_label2.index(
+                        - len(
+                            self.torsion_label1
+                        ) : self.torsion_label2.index(  # noqa: E203
                             tor1_label
                         )
                     ]
                 elif tor1_label in self.torsion_labelr1:
                     tor2_label = (
                         self.torsion_labelr1[
-                            self.torsion_labelr1.index(tor1_label) + len(tor1_label) :
+                            self.torsion_labelr1.index(tor1_label)
+                            + len(tor1_label) :  # noqa: E203
                         ]
                         + self.torsion_labelr1[: self.torsion_labelr1.index(tor1_label)]
                     )
@@ -494,7 +504,9 @@ class Chain:
                     tor2_label = self.torsion_labelr1[
                         self.torsion_labelr2.index(tor1_label)
                         + len(tor1_label)
-                        - len(self.torsion_labelr1) : self.torsion_labelr2.index(
+                        - len(
+                            self.torsion_labelr1
+                        ) : self.torsion_labelr2.index(  # noqa: E203
                             tor1_label
                         )
                     ]
@@ -504,13 +516,14 @@ class Chain:
                     m2 = random.choice(monomer_index)
                     m2_name = random.choice(monomers[m2])
                     if self.tacticity == "atactic":
-                        ata_sequence = random.choices(
-                            [0, 1], [0.5, 0.5], k=self.num_monomers - 1
-                        )
+                        # ata_sequence = random.choices(
+                        #    [0, 1], [0.5, 0.5], k=self.num_monomers - 1
+                        # )
                         while not (
                             ht_label == m2_name[0]
                             and m1 != m2
-                            and tor1_label == m2_name[m2_name.index("T") :]
+                            and tor1_label
+                            == m2_name[m2_name.index("T") :]  # noqa: E203
                         ):
                             m2 = random.choice(monomer_index)
                             m2_name = random.choice(monomers[m2])
@@ -520,7 +533,8 @@ class Chain:
                         while not (
                             ht_label == m2_name[0]
                             and m1 != m2
-                            and tor2_label == m2_name[m2_name.index("T") :]
+                            and tor2_label
+                            == m2_name[m2_name.index("T") :]  # noqa: E203
                         ):
                             m2 = random.choice(monomer_index)
                             m2_name = random.choice(monomers[m2])
@@ -536,7 +550,8 @@ class Chain:
                         m1_name = random.choice(monomers[m1])
                         while not (
                             ht_label != m1_name[0]
-                            and tor1_label == m1_name[m1_name.index("T") :]
+                            and tor1_label
+                            == m1_name[m1_name.index("T") :]  # noqa: E203
                         ):
                             m1 = random.choice(monomer_index)
                             m1_name = random.choice(monomers[m1])
@@ -550,7 +565,8 @@ class Chain:
                                 while not (
                                     ht_label == m2_name[0]
                                     and m1 != m2
-                                    and tor1_label == m2_name[m2_name.index("T") :]
+                                    and tor1_label
+                                    == m2_name[m2_name.index("T") :]  # noqa: E203
                                 ):
                                     m2 = random.choice(monomer_index)
                                     m2_name = random.choice(monomers[m2])
@@ -560,7 +576,8 @@ class Chain:
                                 while not (
                                     ht_label == m2_name[0]
                                     and m1 != m2
-                                    and tor2_label == m2_name[m2_name.index("T") :]
+                                    and tor2_label
+                                    == m2_name[m2_name.index("T") :]  # noqa: E203
                                 ):
                                     m2 = random.choice(monomer_index)
                                     m2_name = random.choice(monomers[m2])
@@ -582,12 +599,12 @@ class Chain:
         else:
             for m1 in monomer_index:
                 for m1_name in monomers[m1]:
-                    tor1_label = m1_name[m1_name.index("T") :]
+                    tor1_label = m1_name[m1_name.index("T") :]  # noqa: E203
                     if tor1_label in self.torsion_label1:
                         tor2_label = (
                             self.torsion_label1[
                                 self.torsion_label1.index(tor1_label)
-                                + len(tor1_label) :
+                                + len(tor1_label) :  # noqa: E203
                             ]
                             + self.torsion_label1[
                                 : self.torsion_label1.index(tor1_label)
@@ -597,7 +614,9 @@ class Chain:
                         tor2_label = self.torsion_label1[
                             self.torsion_label2.index(tor1_label)
                             + len(tor1_label)
-                            - len(self.torsion_label1) : self.torsion_label2.index(
+                            - len(
+                                self.torsion_label1
+                            ) : self.torsion_label2.index(  # noqa: E203
                                 tor1_label
                             )
                         ]
@@ -605,7 +624,7 @@ class Chain:
                         tor2_label = (
                             self.torsion_labelr1[
                                 self.torsion_labelr1.index(tor1_label)
-                                + len(tor1_label) :
+                                + len(tor1_label) :  # noqa: E203
                             ]
                             + self.torsion_labelr1[
                                 : self.torsion_labelr1.index(tor1_label)
@@ -615,7 +634,9 @@ class Chain:
                         tor2_label = self.torsion_labelr1[
                             self.torsion_labelr2.index(tor1_label)
                             + len(tor1_label)
-                            - len(self.torsion_labelr1) : self.torsion_labelr2.index(
+                            - len(
+                                self.torsion_labelr1
+                            ) : self.torsion_labelr2.index(  # noqa: E203
                                 tor1_label
                             )
                         ]
@@ -624,9 +645,14 @@ class Chain:
                         self.configurations[config_index] = [m1_name, m2_name]
                         config_index += 1
                     else:
-                        for m2 in monomer_index[monomer_index.index(m1) + 1 :]:
+                        for m2 in monomer_index[
+                            monomer_index.index(m1) + 1 :  # noqa: E203
+                        ]:  # noqa: E203
                             for m2_name in monomers[m2]:
-                                if tor2_label == m2_name[m2_name.index("T") :]:
+                                if (
+                                    tor2_label
+                                    == m2_name[m2_name.index("T") :]  # noqa: E203
+                                ):  # noqa: E203
                                     self.configurations[config_index] = [
                                         m1_name,
                                         m2_name,
@@ -761,8 +787,10 @@ class Chain:
             # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, num_monomers=num_monomers)
 
             # Run polymod
-            run_polymod(".tmp/run_polymod.txt", validate_bond=True)
-            if validate_coords(".tmp/chains_unwrapped.pdb", ".tmp/bonds.dat"):
+            run_polymod(".tmp/run_polymod.txt", validate_bond=True)  # noqa: F405
+            if validate_coords(  # noqa: F405
+                ".tmp/chains_unwrapped.pdb", ".tmp/bonds.dat"
+            ):  # noqa: F405
                 config_success = 1
                 print("Success for Configuration", config_index)
                 break
@@ -839,7 +867,7 @@ class Chain:
             "_inf" if self.infinite else "",
         )
         self.helix_name = helix_name
-        write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)
+        write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
 
         self.built = 1
         self.holder = holder
@@ -899,7 +927,7 @@ class Chain:
 
             # Create LAMMPS input file
             if create_lmpinput_file:
-                write_lmp_ifile(
+                write_lmp_ifile(  # noqa: F405
                     ffield=ffield,
                     datafile=helix_name + ".data",
                     potentialfile="X6paircoeffs.txt",
@@ -907,7 +935,7 @@ class Chain:
 
         # View chain structure
         if use_visualize:
-            write_pdb(
+            write_pdb(  # noqa: F405
                 helix_name + "_view.pdb", holder.el_names, holder.pos, connect=False
             )
             # if create_lmpdata_file:

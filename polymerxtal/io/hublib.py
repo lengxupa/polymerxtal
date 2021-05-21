@@ -39,7 +39,7 @@ def prepend(line):
     try:
         oldval = os.environ[name]
         val = "%s:%s" % (val, oldval)
-    except:
+    except:  # noqa: E722
         pass
     os.environ[name] = val
 

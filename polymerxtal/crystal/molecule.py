@@ -33,9 +33,9 @@ class Molecule:
 
     def my_algorithm(self, parameters_list):
         # Performs our algorithm.
-        _first_stage(params)
-        _second_stage(params)
-        _third_stage(params)
+        self._first_stage(parameters_list)
+        self._second_stage(parameters_list)
+        self._third_stage(parameters_list)
 
     def _first_stage(self, parameters_list):
         # Performs the first stage of the algorithm.

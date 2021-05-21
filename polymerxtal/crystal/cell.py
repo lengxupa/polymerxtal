@@ -217,7 +217,8 @@ class UnitCell:
         ffield="Dreiding",
         charge="Gasteiger",
     ):
-        """polymerxtal.crystal.cell.UnitCell.build_unit_cell function builds a unit cell of a polymer crystal with specified information
+        """polymerxtal.crystal.cell.UnitCell.build_unit_cell function builds a unit cell of a polymer crystal with
+        specified information
 
         Parameters
         ----------
@@ -398,7 +399,8 @@ class HexagonalUnitCell(UnitCell):
             )
 
         # elif gamma == 90:
-        # 	if (a and b and (a/b != np.sqrt(3) or a/b != np.sqrt(1 / 3))) or (r_ab and (r_ab != np.sqrt(3) or r_ab != np.sqrt(1 / 3))):
+        # 	if (a and b and (a/b != np.sqrt(3) or a/b != np.sqrt(1 / 3))) or (r_ab and (r_ab != np.sqrt(3) or r_ab !=
+        #           np.sqrt(1 / 3))):
         # 		raise ValueError( "Hexagonal Unit cell parameters a/b ratio should equal to square root of 3 or 1/3")
         # 	super().__init__(chain = chain, density=density,r_ab=r_ab,a=a, b=b, alpha=90, beta=90, gamma=90)
         # else:

@@ -58,7 +58,7 @@ class XYZ_observer(Observer):
             print("Printing xyz subject.xyz")
 
 
-class energy_observer(Observer):
+class Energy_observer(Observer):
     def __init__(self, print_freq=1):
         self.print_freq = print_freq
 
@@ -73,7 +73,7 @@ def main():
     mc_system = System(mol_number=15)
 
     xyz_observer = XYZ_observer(print_freq=2)
-    energy_observer = energy_observer()
+    energy_observer = Energy_observer()
 
     mc_system.attach(xyz_observer)
     mc_system.attach(energy_observer)

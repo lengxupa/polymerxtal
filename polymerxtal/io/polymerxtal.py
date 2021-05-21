@@ -2,9 +2,9 @@
 Functions for manipulating PolymerXtal files.
 """
 
-import os
+# import os
 
-from .polymod import generate_polymod_input
+# from .polymod import generate_polymod_input
 
 
 def read_input(infile):
@@ -61,7 +61,7 @@ def complete_args(args):
 
     # Add polymer type information
     polymer_type = "PS-atactic"
-    flag_polymer_custom = 0
+    # flag_polymer_custom = 0
     polymer_types = [
         "PS-atactic",
         "PS-isotactic",
@@ -89,7 +89,8 @@ def complete_args(args):
             ):
                 polymer_type += "-atactic"
                 print(
-                    "Default tacticity: atactic, if you need to specify tacticity, please use syntax: polymer_type {polymer}-isotactic, for example, polymer_type PS-isotactic"
+                    "Default tacticity: atactic, if you need to specify tacticity, please use syntax: polymer_type \
+                        {polymer}-isotactic, for example, polymer_type PS-isotactic"
                 )
             if polymer_type not in polymer_types:
                 if polymer_type == "custom":
@@ -99,29 +100,30 @@ def complete_args(args):
                     return False
                 else:
                     print(
-                        "Polymer type does not exists in our system, Please check README for all incoporated grain types"
+                        "Polymer type does not exists in our system, Please check README for all incoporated grain \
+                            types"
                     )
                     return False
             else:
                 print("Polymer type: " + polymer_type)
         elif len(args["polymer_type"]) > 1 and args["polymer_type"][0] == "custom":
             polymer_type = args["polymer_type"][0]
-            flag_polymer_custom = 1
-            polymer_custom_input = args["polymer_type"][1]
+            # flag_polymer_custom = 1
+            # polymer_custom_input = args["polymer_type"][1]
         else:
             print("Please specify a polymer type")
             return False
     else:
         print("Default polymer type: PS-atactic")
 
-    molecular_weight = 0
-    if flag_polymer_custom:
-        polymer_type_custom = generate_polymod_input(polymer_custom_input)
-        if polymer_type_custom:
-            os.system("latch/latch in.txt > out.txt")
-            polymer_type_custom = read_latchout("out.txt", Dir=polymer_type_custom)
-            molecular_weight = writepolymodfile(
-                polymer_type_custom, "polymer_types/custom/file.txt"
-            )
-        else:
-            return False
+    # molecular_weight = 0
+    # if flag_polymer_custom:
+    #    polymer_type_custom = generate_polymod_input(polymer_custom_input)
+    #    if polymer_type_custom:
+    #        os.system("latch/latch in.txt > out.txt")
+    #        polymer_type_custom = read_latchout("out.txt", Dir=polymer_type_custom)
+    #        molecular_weight = writepolymodfile(
+    #            polymer_type_custom, "polymer_types/custom/file.txt"
+    #        )
+    #    else:
+    #        return False

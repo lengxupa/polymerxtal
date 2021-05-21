@@ -8,7 +8,7 @@ try:
     from ovito.io import import_file
 
     use_ovito = True
-except:
+except:  # noqa: E722
     from polymerxtal.data import atomic_radii
 
     use_ovito = False

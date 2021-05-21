@@ -81,7 +81,7 @@ class Translator:
             if key not in ["array"]:
                 raise KeyError("Translator - move_cluster: Must input array")
 
-        array = kwargs["array"]
+        # array = kwargs["array"]
 
         # print('Translating cluster should involve COM computation and subsequent translation')
         for particle in cluster.particles:

@@ -1,25 +1,34 @@
 """
 buttondef.py
-In this work, we present PolymerXtal, a software designed to build and analyze molecular-level polymer crystal structures. PolymerXtal provides a standardized process to generate polymer crystal structure based on monomer, tacticity, helicity, chiriality and unit cell information and analyze the crystallinity in polymer systems with given atom trajectories. These features have allowed PolymerXtal to lead further investigations of semi-crystalline polymers where the birthplace of the important physics in play and promote future research endeavors in the area of crystalline polymer simulations.
+In this work, we present PolymerXtal, a software designed to build and analyze molecular-level polymer crystal
+structures. PolymerXtal provides a standardized process to generate polymer crystal structure based on monomer,
+tacticity, helicity, chiriality and unit cell information and analyze the crystallinity in polymer systems with given
+atom trajectories. These features have allowed PolymerXtal to lead further investigations of semi-crystalline polymers
+where the birthplace of the important physics in play and promote future research endeavors in the area of crystalline
+polymer simulations.
 
 Handles functions to build molecular-level polymer crystal structures
 """
 
 import os
-import sys
-from subprocess import call, Popen, PIPE
-import glob
-import string
+
+# import sys
+from subprocess import Popen, PIPE  # call,
+
+# import glob
+# import string
 import time
-import re
+
+# import re
 import numpy as np
 import datetime
-import math
+
+# import math
 
 
 def copy_file(ifile, ofile, sentence, i):
-    src = file(ifile, "r")
-    des = file(ofile, "w")
+    src = open(ifile, "r")
+    des = open(ofile, "w")
     for line in src.readlines():
         if not (line.find(sentence)):
             line = sentence + i + "\n"
@@ -30,9 +39,9 @@ def copy_file(ifile, ofile, sentence, i):
 
 def change_box(ifile, ofile):
     find_box("new0.data")
-    src = file(ifile, "r")
-    des = file(ofile, "w")
-    box = file("Box.txt", "r")
+    src = open(ifile, "r")
+    des = open(ofile, "w")
+    box = open("Box.txt", "r")
     for line in src.readlines():
         if line.find("xlo xhi") != -1:
             ln = box.readline()
@@ -60,9 +69,9 @@ def change_box(ifile, ofile):
 
 def change_kaka(ifile, ofile):
     find_kaka(ifile)
-    src = file(ifile, "r")
-    des = file(ofile, "w")
-    box = file("Box.txt", "r")
+    src = open(ifile, "r")
+    des = open(ofile, "w")
+    box = open("Box.txt", "r")
     for line in src.readlines():
         if not (line.find("0.0 50 xlo xhi")):
             ln = box.readline()
@@ -83,8 +92,8 @@ def change_kaka(ifile, ofile):
 
 
 def find_box(ifile):
-    src = file(ifile, "r")
-    des = file("a.m", "w")
+    src = open(ifile, "r")
+    des = open("a.m", "w")
     a = 0
     des.write("A=[")
     for line in src.readlines():
@@ -101,8 +110,8 @@ def find_box(ifile):
 
 
 def find_kaka(ifile):
-    src = file(ifile, "r")
-    des = file("a.m", "w")
+    src = open(ifile, "r")
+    des = open("a.m", "w")
     a = 0
     des.write("A=[")
     for line in src.readlines():
@@ -119,7 +128,7 @@ def find_kaka(ifile):
 
 
 def write_box():
-    src = file("box.m", "w")
+    src = open("box.m", "w")
     src.write("run a.m;\n")
     src.write("ne=size(A,1);\n")
     src.write("B=sortrows(A);\n")
@@ -138,7 +147,7 @@ def write_box():
 
 
 def write_sublmp(seconds, N, ifile, tmp=0, te=""):
-    src = file("sub.sh", "w")
+    src = open("sub.sh", "w")
     src.write("#!/bin/sh -l\n")
     src.write("# FILENAME:  sub.sh\n")
     walltime = secondstowalltime(seconds)
@@ -234,8 +243,8 @@ def grabprocessors(ifile):
 
 def read_data(ifile):
     Dir = {}
-    Box = {}
-    Masses = {}
+    # Box = {}
+    # Masses = {}
     src = open(ifile, "r")
     a = 1
     s = ""
@@ -299,7 +308,7 @@ def findqueue(i, n):
             cmd = "ssh %s /usr/bin/slist" % cluster
             tst = Popen(cmd, shell=True, stdout=PIPE)
             outp, err = tst.communicate()
-            print outp
+            print(outp)
             if not (err):
                 break
         outplala = outp.split("\n")
@@ -317,7 +326,7 @@ def findqueue(i, n):
                 raw3 = raw2[1].strip().lstrip().rstrip(",").split(" ", 1)
                 raw4 = raw3[1].strip().lstrip().rstrip(",").split(" ", 1)
                 raw5 = raw4[1].strip().lstrip().rstrip(",").split(" ", 1)
-                list1 = []
+                # list1 = []
                 if (
                     content[0] == "debug"
                     or content[0] == "ncn"
@@ -336,7 +345,7 @@ def findqueue(i, n):
                         Dir[cluster][content[0]]["Max Walltime"] = 24 * 60 * 60
     a = 1
     k = 0
-    t = 0
+    # t = 0
     while a:
         k += 1
         for cluster in ["halstead", "rice"]:
@@ -539,9 +548,9 @@ def main(a, b, c):
             copy_file("tmpcha.txt", "cha.txt", sentence, str(NoM + 2))
             os.system("../bin/latch cha.txt")
             os.system("python main_test.py")
-            while not (validate("graphene.data") and valibond("graphene.data")):
-                os.system("../bin/latch cha.txt")
-                os.system("python main_test.py")
+            # while not (validate("graphene.data") and valibond("graphene.data")):
+            #    os.system("../bin/latch cha.txt")
+            #    os.system("python main_test.py")
             os.system("cp graphene.data ../../structure/%s/%s/%d" % (tac, tit, i))
             os.chdir("../../structure/%s/%s/%d" % (tac, tit, i))
             os.system("cp ../../../../input/change.in .")

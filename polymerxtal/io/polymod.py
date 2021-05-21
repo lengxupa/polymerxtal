@@ -2,6 +2,8 @@
 Functions for manipulating Polymer Modeler files.
 """
 
+import os
+
 from polymerxtal.polymod import main, readPDB
 
 from .validate import validate_bonds, readbond
@@ -152,45 +154,45 @@ def generate_polymod_input(polymer_custom_input):
                     "Please specify a positive number of custom polymer chain types you wish to build"
                 )
                 return False
-        if l[0] == "chain_type":
+        if ln[0] == "chain_type":
             if "chain" not in polymer_type_custom:
                 polymer_type_custom["chain"] = {}
             num_chain += 1
-            if len(l[1:]) > 1:
+            if len(ln[1:]) > 1:
                 if num_chain not in polymer_type_custom["chain"]:
                     polymer_type_custom["chain"][num_chain] = {}
                 if "arrangement" not in polymer_type_custom["chain"][num_chain]:
                     polymer_type_custom["chain"][num_chain]["arrangement"] = {}
-                if int(l[1]) == 0:
-                    if int(l[2]) < 1:
+                if int(ln[1]) == 0:
+                    if int(ln[2]) < 1:
                         print(
                             "Please specify a positive number of monomers in first pattern for chain type %d"
                             % num_chain
                         )
                         return False
-                    elif int(l[2]) != len(l[3:]):
+                    elif int(ln[2]) != len(ln[3:]):
                         print(
                             "Please specify a sequence of %d monomer(s) as repeated pattern for chain type %d"
-                            % (int(l[2]), num_chain)
+                            % (int(ln[2]), num_chain)
                         )
                         return False
                     else:
                         polymer_type_custom["chain"][num_chain]["arrangement"] = {
                             "type": 0,
-                            "len": int(l[2]),
-                            "sequence": l[3:],
+                            "len": int(ln[2]),
+                            "sequence": ln[3:],
                         }
-                elif int(l[1]) == 1:
-                    if polymer_type_custom["num_monomer"] != len(l[2:]):
+                elif int(ln[1]) == 1:
+                    if polymer_type_custom["num_monomer"] != len(ln[2:]):
                         print(
                             "Please specify %d probabilities of each monomer arrangement"
-                            % int(l[2])
+                            % int(ln[2])
                         )
                         return False
                     else:
                         polymer_type_custom["chain"][num_chain]["arrangement"] = {
                             "type": 1,
-                            "sequence": l[2:],
+                            "sequence": ln[2:],
                         }
                 else:
                     print(

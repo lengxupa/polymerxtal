@@ -10,18 +10,21 @@
 
 import numpy as np
 
-from .chain import Chain
+# from .chain import Chain
 from .config import REAL_MAX
-from .domain import Domain, OccAtom
+from .domain import OccAtom  # Domain,
 from .energy import Energy
-from .exclude import ExclCylinder, ExclSlab, ExclSphere
+
+# from .exclude import ExclCylinder, ExclSlab, ExclSphere
 from .monomer import Monomer, Torsion
 from .params import Params
-from .stereo import Stereo
-from .system import PolymerSystem
-from .utils import *
+
+# from .stereo import Stereo
+# from .system import PolymerSystem
+from .utils import *  # noqa: F403
 from .vector import getNearestSqDist
-from .zmatrix import ZMatrix
+
+# from .zmatrix import ZMatrix
 
 params = Params()
 update_count = 0

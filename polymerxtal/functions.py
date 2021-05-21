@@ -1,12 +1,18 @@
 """
 functions.py
-In this work, we present PolymerXtal, a software designed to build and analyze molecular-level polymer crystal structures. PolymerXtal provides a standardized process to generate polymer crystal structure based on monomer, tacticity, helicity, chiriality and unit cell information and analyze the crystallinity in polymer systems with given atom trajectories. These features have allowed PolymerXtal to lead further investigations of semi-crystalline polymers where the birthplace of the important physics in play and promote future research endeavors in the area of crystalline polymer simulations.
+In this work, we present PolymerXtal, a software designed to build and analyze molecular-level polymer crystal
+structures. PolymerXtal provides a standardized process to generate polymer crystal structure based on monomer,
+tacticity, helicity, chiriality and unit cell information and analyze the crystallinity in polymer systems with given
+atom trajectories. These features have allowed PolymerXtal to lead further investigations of semi-crystalline polymers
+where the birthplace of the important physics in play and promote future research endeavors in the area of crystalline
+polymer simulations.
 
 Handles the primary functions
 """
 
-import os, sys, os.path, math
-import shutil
+import os, sys, os.path  # , math  # noqa: E401
+
+# import shutil
 import numpy as np
 
 
@@ -44,9 +50,9 @@ def parameters(periodic, cell, coord, boundaries, radius):
         dx = 1
         dy = 0
         dz = 0
-        cx = -lx
-        cy = coord["y"] - shift["y"]
-        cz = coord["z"] - shift["z"]
+        # cx = -lx
+        # cy = coord["y"] - shift["y"]
+        # cz = coord["z"] - shift["z"]
         lc = lx
         length = [lx, 4 * radius, 4 * radius]
         cylinder_p = [-100, 2 * radius, 2 * radius]
@@ -61,9 +67,9 @@ def parameters(periodic, cell, coord, boundaries, radius):
         dy = 1
         dz = 0
         print(coord, shift)
-        cx = coord["x"] - shift["x"]
-        cy = -ly
-        cz = coord["z"] - shift["z"]
+        # cx = coord["x"] - shift["x"]
+        # cy = -ly
+        # cz = coord["z"] - shift["z"]
         lc = ly
         length = [4 * radius, ly, 4 * radius]
         cylinder_p = [2 * radius, -100, 2 * radius]
@@ -77,9 +83,9 @@ def parameters(periodic, cell, coord, boundaries, radius):
         dx = 0
         dy = 0
         dz = 1
-        cx = coord["x"] - shift["x"]
-        cy = coord["y"] - shift["y"]
-        cz = -lz
+        # cx = coord["x"] - shift["x"]
+        # cy = coord["y"] - shift["y"]
+        # cz = -lz
         lc = lz
         length = [4 * radius, 4 * radius, lz]
         cylinder_p = [2 * radius, 2 * radius, -100]
@@ -142,57 +148,57 @@ def read_dump(ifile, multiframe=0):
     return Dir
 
 
-def dump2data(datafile, dumpfile, ofile):
-    Dir = read_data(datafile)
-    if "Velocities" not in Dir:
-        Dir["Velocities"] = {}
-    src = open(dumpfile)
-    box = "x"
-    for line in src.readlines():
-        ln = line.split()
-        if len(ln) == 2 and ln[0] != "ITEM:":
-            Dir[box + "lo"] = eval(ln[0])
-            Dir[box + "hi"] = eval(ln[1])
-            if box == "x":
-                box = "y"
-                continue
-            if box == "y":
-                box = "z"
-                continue
-            continue
-        if len(ln) == 8:
-            Dir["Atoms"][eval(ln[0])][3] = eval(ln[2])
-            Dir["Atoms"][eval(ln[0])][4] = eval(ln[3])
-            Dir["Atoms"][eval(ln[0])][5] = eval(ln[4])
-            Dir["Atoms"][eval(ln[0])][6] = 0
-            Dir["Atoms"][eval(ln[0])][7] = 0
-            Dir["Atoms"][eval(ln[0])][8] = 0
+# def dump2data(datafile, dumpfile, ofile):
+#    Dir = read_data(datafile)
+#    if "Velocities" not in Dir:
+#        Dir["Velocities"] = {}
+#    src = open(dumpfile)
+#    box = "x"
+#    for line in src.readlines():
+#        ln = line.split()
+#        if len(ln) == 2 and ln[0] != "ITEM:":
+#            Dir[box + "lo"] = eval(ln[0])
+#            Dir[box + "hi"] = eval(ln[1])
+#            if box == "x":
+#                box = "y"
+#                continue
+#            if box == "y":
+#                box = "z"
+#                continue
+#            continue
+#        if len(ln) == 8:
+#            Dir["Atoms"][eval(ln[0])][3] = eval(ln[2])
+#            Dir["Atoms"][eval(ln[0])][4] = eval(ln[3])
+#            Dir["Atoms"][eval(ln[0])][5] = eval(ln[4])
+#            Dir["Atoms"][eval(ln[0])][6] = 0
+#            Dir["Atoms"][eval(ln[0])][7] = 0
+#            Dir["Atoms"][eval(ln[0])][8] = 0
 
-    #      if eval(ln[0]) not in Dir['Velocities']:
-    #        Dir['Velocities'][eval(ln[0])]=[]
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[5]))
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[6]))
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[7]))
-    #      Dir['Velocities'][eval(ln[0])][0]=eval(ln[5])
-    #      Dir['Velocities'][eval(ln[0])][1]=eval(ln[6])
-    #      Dir['Velocities'][eval(ln[0])][2]=eval(ln[7])
-    #    if len(ln)==11:
-    #      Dir['Atoms'][eval(ln[0])][3]=eval(ln[2])
-    #      Dir['Atoms'][eval(ln[0])][4]=eval(ln[3])
-    #      Dir['Atoms'][eval(ln[0])][5]=eval(ln[4])
-    #      Dir['Atoms'][eval(ln[0])][6]=eval(ln[8])
-    #      Dir['Atoms'][eval(ln[0])][7]=eval(ln[9])
-    #      Dir['Atoms'][eval(ln[0])][8]=eval(ln[10])
-    #      if eval(ln[0]) not in Dir['Velocities']:
-    #        Dir['Velocities'][eval(ln[0])]=[]
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[5]))
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[6]))
-    #        Dir['Velocities'][eval(ln[0])].append(eval(ln[7]))
-    #      Dir['Velocities'][eval(ln[0])][0]=eval(ln[5])
-    #      Dir['Velocities'][eval(ln[0])][1]=eval(ln[6])
-    #      Dir['Velocities'][eval(ln[0])][2]=eval(ln[7])
-    src.close()
-    write_data(Dir, ofile)
+#      if eval(ln[0]) not in Dir['Velocities']:
+#        Dir['Velocities'][eval(ln[0])]=[]
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[5]))
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[6]))
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[7]))
+#      Dir['Velocities'][eval(ln[0])][0]=eval(ln[5])
+#      Dir['Velocities'][eval(ln[0])][1]=eval(ln[6])
+#      Dir['Velocities'][eval(ln[0])][2]=eval(ln[7])
+#    if len(ln)==11:
+#      Dir['Atoms'][eval(ln[0])][3]=eval(ln[2])
+#      Dir['Atoms'][eval(ln[0])][4]=eval(ln[3])
+#      Dir['Atoms'][eval(ln[0])][5]=eval(ln[4])
+#      Dir['Atoms'][eval(ln[0])][6]=eval(ln[8])
+#      Dir['Atoms'][eval(ln[0])][7]=eval(ln[9])
+#      Dir['Atoms'][eval(ln[0])][8]=eval(ln[10])
+#      if eval(ln[0]) not in Dir['Velocities']:
+#        Dir['Velocities'][eval(ln[0])]=[]
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[5]))
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[6]))
+#        Dir['Velocities'][eval(ln[0])].append(eval(ln[7]))
+#      Dir['Velocities'][eval(ln[0])][0]=eval(ln[5])
+#      Dir['Velocities'][eval(ln[0])][1]=eval(ln[6])
+#      Dir['Velocities'][eval(ln[0])][2]=eval(ln[7])
+#    src.close()
+#    write_data(Dir, ofile)
 
 
 def write_data(Dir, ofile, v=1, a=0):
@@ -447,7 +453,8 @@ def input_coat7(oradius, idata, odata, tstep, polymer_type, HE_type, mctemp):
     des.write("  compute                              PEinter all  pe/atom pair\n")
     des.write("\n")
     des.write(
-        "thermo_style     custom step time etotal pe ke temp press pxx pyy pzz pxy pxz pyz density evdwl ecoul epair ebond eangle edihed eimp lx ly evdwl\n"
+        "thermo_style     custom step time etotal pe ke temp press pxx pyy pzz pxy pxz pyz density evdwl ecoul epair \
+            ebond eangle edihed eimp lx ly evdwl\n"
     )
     des.write("thermo                 5\n")
     des.write("\n")
@@ -641,20 +648,20 @@ def add_data(Dir_1, Dir_2, add="append"):
     return Dir_data
 
 
-def grabprocessors(ifile):
-    src = open(ifile)
-    for line in src.readlines():
-        ln = line.split()
-        if ln and ln[0] == "read_data":
-            datafile = ln[1]
-            break
-    src.close()
-    Dir = read_data(datafile)
-    atoms = Dir["atoms"]
-    if "bonds" in Dir:
-        return atoms / 2000 + 1
-    else:
-        return atoms / 1000 + 1
+# def grabprocessors(ifile):
+#    src = open(ifile)
+#    for line in src.readlines():
+#        ln = line.split()
+#        if ln and ln[0] == "read_data":
+#            datafile = ln[1]
+#            break
+#    src.close()
+#    Dir = read_data(datafile)
+#    atoms = Dir["atoms"]
+#    if "bonds" in Dir:
+#        return atoms / 2000 + 1
+#    else:
+#        return atoms / 1000 + 1
 
 
 def correctppn(ppn):
@@ -761,9 +768,9 @@ def addatomtype(ifile, ofile, elementlist):
     des.close()
 
 
-def writeghostdata(ifile):
-    Dir = read_data(ifile)
-    write_data(Dir, "ghost_grain.data", v=0, a=1)
+# def writeghostdata(ifile):
+#    Dir = read_data(ifile)
+#    write_data(Dir, "ghost_grain.data", v=0, a=1)
 
 
 def writepolymodfile(polymer_type_custom, ofile1):
@@ -871,7 +878,8 @@ def writepolymodfile(polymer_type_custom, ofile1):
                         des.write("\n")
                 else:
                     print(
-                        "Backbone torsion angle %d probabilities type for monomer %d not specified, use default with no change"
+                        "Backbone torsion angle %d probabilities type for monomer %d not specified, use default with \
+                            no change"
                         % ((j + 3), (i + 1))
                     )
                     tor_type = 0
@@ -909,8 +917,8 @@ def writepolymodfile(polymer_type_custom, ofile1):
                     )
                 )
             )
-            l = len(polymer_type_custom["chain"][i + 1]["arrangement"]["sequence"])
-            for j in range(l):
+            length = len(polymer_type_custom["chain"][i + 1]["arrangement"]["sequence"])
+            for j in range(length):
                 mw[i] += polymer_type_custom["monomer"][j + 1]["mass"] * float(
                     polymer_type_custom["chain"][i + 1]["arrangement"]["sequence"][j]
                 )
@@ -930,9 +938,9 @@ def writepolymodfile(polymer_type_custom, ofile1):
                     )
                 )
             )
-            l = polymer_type_custom["chain"][i + 1]["arrangement"]["len"]
+            length = polymer_type_custom["chain"][i + 1]["arrangement"]["len"]
             for j in polymer_type_custom["chain"][i + 1]["arrangement"]["sequence"]:
-                mw[i] += polymer_type_custom["monomer"][int(j)]["mass"] / l
+                mw[i] += polymer_type_custom["monomer"][int(j)]["mass"] / length
     r_mw = 0
     for i in range(polymer_type_custom["nc"]):
         des.write("%f " % polymer_type_custom["chain"][i + 1]["probability"])
@@ -1049,7 +1057,8 @@ def write_minimize(ofile, X6file, afile):
     des.write("read_data step0.data #        polymer_relax.data\n")
     des.write("neighbor          0.3 bin\n")
     des.write(
-        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz pxy pxz pyz lx ly lz vol density\n"
+        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz \
+        pxy pxz pyz lx ly lz vol density\n"
     )
     des.write("thermo            10\n")
     des.write("thermo_modify     flush yes\n")
@@ -1118,369 +1127,369 @@ def write_minimize(ofile, X6file, afile):
     des.write("\n")
 
 
-def main(args):
+# def main(args):
 
-    args = complete_args(args)
+#    args = complete_args(args)
 
-    os.system("cp polymer_types/" + polymer_type + "/* .")
+#    os.system("cp polymer_types/" + polymer_type + "/* .")
 
-    # Get number of chains, molecules
-    p_fra = 0.05
-    if "p_fra" in args:
-        if len(args["p_fra"]) == 1:
-            p_fra = eval(args["p_fra"][0])
-            if p_fra < 0 or p_fra > 1:
-                print("Please input a valid number between 0 to 1")
-                return False
-            else:
-                print(
-                    "Molecular weight fraction of polymer coated: "
-                    + str(p_fra * 100)
-                    + "%"
-                )
-        else:
-            print("Please specify molecular weight fraction of polymer coated")
-            return False
-    else:
-        print("Default 5% molecular weight fraction of polymer coated")
+# Get number of chains, molecules
+#    p_fra = 0.05
+#    if "p_fra" in args:
+#        if len(args["p_fra"]) == 1:
+#            p_fra = eval(args["p_fra"][0])
+#            if p_fra < 0 or p_fra > 1:
+#                print("Please input a valid number between 0 to 1")
+#                return False
+#            else:
+#                print(
+#                    "Molecular weight fraction of polymer coated: "
+#                    + str(p_fra * 100)
+#                    + "%"
+#                )
+#        else:
+#            print("Please specify molecular weight fraction of polymer coated")
+#            return False
+#    else:
+#        print("Default 5% molecular weight fraction of polymer coated")
 
-    nm = 40
-    if "nm" in args:
-        if len(args["nm"]) == 1:
-            nm = eval(args["nm"][0])
-            if nm < 1:
-                print("Please input a valid number equal or larger than 1")
-                return False
-            else:
-                print(str(int(nm)) + " monomers per chain")
-        else:
-            print("Please specify number of monomers per chain")
-            return False
-    else:
-        print("Default 40 monomers per chain")
+#    nm = 40
+#    if "nm" in args:
+#        if len(args["nm"]) == 1:
+#            nm = eval(args["nm"][0])
+#            if nm < 1:
+#                print("Please input a valid number equal or larger than 1")
+#                return False
+#            else:
+#                print(str(int(nm)) + " monomers per chain")
+#        else:
+#            print("Please specify number of monomers per chain")
+#            return False
+#    else:
+#        print("Default 40 monomers per chain")
 
-    mctemp = 600
-    if "mctemp" in args:
-        if len(args["mctemp"]) == 1:
-            mctemp = eval(args["mctemp"][0])
-            if mctemp < 0:
-                print("Please input a valid number equal or larger than 0")
-                return False
-            else:
-                print("Monte Carlo temperature: " + str(mctemp) + " K")
-        else:
-            print("Please specify Monte Carlo temperature")
-            return False
-    else:
-        print("Default Monte Carlo temperature: 600 K")
+#    mctemp = 600
+#    if "mctemp" in args:
+#        if len(args["mctemp"]) == 1:
+#            mctemp = eval(args["mctemp"][0])
+#            if mctemp < 0:
+#                print("Please input a valid number equal or larger than 0")
+#                return False
+#            else:
+#                print("Monte Carlo temperature: " + str(mctemp) + " K")
+#        else:
+#            print("Please specify Monte Carlo temperature")
+#            return False
+#    else:
+#        print("Default Monte Carlo temperature: 600 K")
 
-    np_flag = 0
-    rnp_flag = 0
-    if "parallel" in args:
-        np_flag = 1
-        print("LAMMPS will run in parallel mode")
-        if len(args["parallel"]) > 0:
-            if args["parallel"] == ["np"]:
-                if len(args["parallel"]) > 1:
-                    np = int(eval(args["parallel"][1]))
-                    if np <= 0:
-                        print("Please input a valid number larger than 0")
-                        return False
-                    else:
-                        print("%d of processors will be in use" % np)
-                else:
-                    print("Please input a number of processors you want to use")
-                    return False
-            else:
-                rnp_flag = 1
-                print(
-                    "Will calculating recommended number of processors after initial polymer configuration generated"
-                )
-        else:
-            rnp_flag = 1
-            print(
-                "Will calculating recommended number of processors after initial polymer configuration generated"
-            )
+#    np_flag = 0
+#    rnp_flag = 0
+#    if "parallel" in args:
+#        np_flag = 1
+#        print("LAMMPS will run in parallel mode")
+#        if len(args["parallel"]) > 0:
+#            if args["parallel"] == ["np"]:
+#                if len(args["parallel"]) > 1:
+#                    np = int(eval(args["parallel"][1]))
+#                    if np <= 0:
+#                        print("Please input a valid number larger than 0")
+#                        return False
+#                    else:
+#                        print("%d of processors will be in use" % np)
+#                else:
+#                    print("Please input a number of processors you want to use")
+#                    return False
+#            else:
+#                rnp_flag = 1
+#                print(
+#                    "Will calculating recommended number of processors after initial polymer configuration generated"
+#                )
+#        else:
+#            rnp_flag = 1
+#            print(
+#                "Will calculating recommended number of processors after initial polymer configuration generated"
+#            )
 
-    print("Running Lammps, get information about grain")
-    # Run Lammps, get information about grain
-    # Center of cylinder from upper and lower coordinates
-    # input_file(datafile)
-    # os.chdir('..')
-    writeinlammps(datafile, potential_headfile, potentialfile)
-    run_lammps()
-    # os.system('mv inr.lammps code')
-    # os.system('mv log.lammps code')
-    # os.system('mv tmp.out code')
-    # os.chdir('code')
-    cell_sizes, delta_cell = read_cell_sizes("../" + datafile)
-    periodic = min(delta_cell.items(), key=lambda x: x[1])[0]
-    mass, com, boundaries, coord, radius = get_boundaries(periodic)
-    dimension = 2
-    plane = "xy"
-    writeghostdata("../" + datafile)
-    Dir_seed = read_data("ghost_grain.data")
-    center = Get_Center_of_Mass(Dir_seed)
-    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
-    radius = math.ceil(D) + 5
-    print("Grain Radius:", D)  #'Coordinates cylinder: ', coord,
-    GD = D
+#    print("Running Lammps, get information about grain")
+# Run Lammps, get information about grain
+# Center of cylinder from upper and lower coordinates
+# input_file(datafile)
+# os.chdir('..')
+#    writeinlammps(datafile, potential_headfile, potentialfile)
+#    run_lammps()
+# os.system('mv inr.lammps code')
+# os.system('mv log.lammps code')
+# os.system('mv tmp.out code')
+# os.chdir('code')
+#    cell_sizes, delta_cell = read_cell_sizes("../" + datafile)
+#    periodic = min(delta_cell.items(), key=lambda x: x[1])[0]
+#    mass, com, boundaries, coord, radius = get_boundaries(periodic)
+#    dimension = 2
+#    plane = "xy"
+#    writeghostdata("../" + datafile)
+#    Dir_seed = read_data("ghost_grain.data")
+#    center = Get_Center_of_Mass(Dir_seed)
+#    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
+#    radius = math.ceil(D) + 5
+#    print("Grain Radius:", D)  #'Coordinates cylinder: ', coord,
+#    GD = D
 
-    nc = calc_polymer(mass, nm, polymer_type, p_fra, custom=mw)
+#    nc = calc_polymer(mass, nm, polymer_type, p_fra, custom=mw)
 
-    # Get new cell for polymod
-    # Run polymod
-    shift, cell_polymod, cpos, caxis, clength = parameters(
-        periodic, cell_sizes, coord, boundaries, radius
-    )
-    input_polymod(nc, nm, cell_polymod, cpos, caxis, radius, clength, mctemp)
+# Get new cell for polymod
+# Run polymod
+#    shift, cell_polymod, cpos, caxis, clength = parameters(
+#        periodic, cell_sizes, coord, boundaries, radius
+#    )
+#    input_polymod(nc, nm, cell_polymod, cpos, caxis, radius, clength, mctemp)
 
-    p_flag = 1
-    while p_flag:
-        print("Running PolymerModeler, generate initial configuration of polymers")
-        run_polymod()
+#    p_flag = 1
+#    while p_flag:
+#        print("Running PolymerModeler, generate initial configuration of polymers")
+#        run_polymod()
 
-        shutil.copy("atoms.dat", "./str2lammps/types")
-        shutil.copy("bonds.dat", "./str2lammps/types")
-        p = polymer_type.split("-")[0]
-        shutil.copy(
-            "./str2lammps/types/%s_atom_type.dat" % p,
-            "./str2lammps/types/atom_type.dat",
-        )
-        shutil.copy("./str2lammps/types/%s_atom_type.dat" % p, "%s_atom_type.dat" % p)
-        shutil.copy("bond_type.dat", "./str2lammps/types")
+#        shutil.copy("atoms.dat", "./str2lammps/types")
+#        shutil.copy("bonds.dat", "./str2lammps/types")
+#        p = polymer_type.split("-")[0]
+#        shutil.copy(
+#            "./str2lammps/types/%s_atom_type.dat" % p,
+#            "./str2lammps/types/atom_type.dat",
+#        )
+#        shutil.copy("./str2lammps/types/%s_atom_type.dat" % p, "%s_atom_type.dat" % p)
+#        shutil.copy("bond_type.dat", "./str2lammps/types")
 
-        addatomtype("%s_atom_type.dat" % p, "atom_type.dat", elementlist)
+#        addatomtype("%s_atom_type.dat" % p, "atom_type.dat", elementlist)
 
-        # Str2Lammps
-        os.chdir("./str2lammps/")
-        # print os.getcwd()
-        new_typing, data4lammps = run_data4lammps("Gasteiger", "Dreiding", cell_polymod)
-        # subprocess.Popen(new_typing, shell=True,
-        # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE)
-        # print(data4lammps)
-        print("Generating initial polymer datafile")
-        os.system(data4lammps)
-        # return_code = subprocess.Popen(data4lammps, shell=True,
-        # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE)
-        # stdout,stderr = return_code.communicate()
+# Str2Lammps
+#        os.chdir("./str2lammps/")
+# print os.getcwd()
+#        new_typing, data4lammps = run_data4lammps("Gasteiger", "Dreiding", cell_polymod)
+# subprocess.Popen(new_typing, shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# print(data4lammps)
+#        print("Generating initial polymer datafile")
+#        os.system(data4lammps)
+# return_code = subprocess.Popen(data4lammps, shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-        os.chdir("../unwrap/")
+#        os.chdir("../unwrap/")
 
-        print("Unwrap polymers")
-        os.system("../lmp_mpi < uw.in")
-        # return_code = subprocess.Popen('../lmp_mpi < uw.in', shell=True,
-        # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE)
-        # stdout,stderr = return_code.communicate()
+#        print("Unwrap polymers")
+#        os.system("../lmp_mpi < uw.in")
+# return_code = subprocess.Popen('../lmp_mpi < uw.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-        dump2data("expanded.data", "unwrap.dump", "step0.data")
-        os.chdir("..")
-        os.system("cp unwrap/step0.data .")
-        os.system("cp unwrap/unwrap.dump .")
-        Dir_dump = read_dump("unwrap.dump")
+#        dump2data("expanded.data", "unwrap.dump", "step0.data")
+#        os.chdir("..")
+#        os.system("cp unwrap/step0.data .")
+#        os.system("cp unwrap/unwrap.dump .")
+#        Dir_dump = read_dump("unwrap.dump")
 
-        na = 0
-        for t in Dir_dump:
-            na = Dir_dump[t]["NUMBER OF ATOMS"]
-            break
+#        na = 0
+#        for t in Dir_dump:
+#            na = Dir_dump[t]["NUMBER OF ATOMS"]
+#            break
 
-        write_minimize(
-            "minimize.in",
-            "str2lammps/X6paircoeffs.txt",
-            "str2lammps/types/%s_atom_type.dat" % p,
-        )
+#        write_minimize(
+#            "minimize.in",
+#            "str2lammps/X6paircoeffs.txt",
+#            "str2lammps/types/%s_atom_type.dat" % p,
+#        )
 
-        if rnp_flag:
-            print("Calculating recommended number of processors")
-            ppn = grabprocessors("minimize.in")
-            print(ppn)
-            nodes, ppn, np = correctppn(ppn)
-            print("%d of processors will be in use" % np)
+#        if rnp_flag:
+#            print("Calculating recommended number of processors")
+#            ppn = grabprocessors("minimize.in")
+#            print(ppn)
+#            nodes, ppn, np = correctppn(ppn)
+#            print("%d of processors will be in use" % np)
 
-        print("Running LAMMPS, minimize the intial configuration")
-        if np_flag:
-            os.system("mpiexec -np %d ./lmp_mpi < minimize.in" % np)
-        else:
-            os.system("./lmp_mpi < minimize.in")
-        # return_code = subprocess.Popen('./lmp_mpi < minimize.in', shell=True,
-        # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE)
-        # stdout,stderr = return_code.communicate()
+#        print("Running LAMMPS, minimize the intial configuration")
+#        if np_flag:
+#            os.system("mpiexec -np %d ./lmp_mpi < minimize.in" % np)
+#        else:
+#            os.system("./lmp_mpi < minimize.in")
+# return_code = subprocess.Popen('./lmp_mpi < minimize.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-        os.system("cp log.lammps log.minimize")
+#        os.system("cp log.lammps log.minimize")
 
-        print("Runing 10 steps for coating")
+#        print("Runing 10 steps for coating")
 
-        center = [cpos[0], cpos[1], 0]
+#        center = [cpos[0], cpos[1], 0]
 
-        for i in range(10):
-            print("Step %d" % (i + 1))
+#        for i in range(10):
+#            print("Step %d" % (i + 1))
 
-            input_coat4(
-                na, cpos, "step%d.data" % (i * 3 + 1), "step%d.data" % (i * 3 + 2)
-            )
+#            input_coat4(
+#                na, cpos, "step%d.data" % (i * 3 + 1), "step%d.data" % (i * 3 + 2)
+#            )
 
-            print("Running LAMMPS, assign velocities")
-            os.system("./lmp_mpi < run_coat4.in")
-            # return_code = subprocess.Popen('./lmp_mpi < run_coat4.in', shell=True,
-            # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE)
-            # stdout,stderr = return_code.communicate()
+#            print("Running LAMMPS, assign velocities")
+#            os.system("./lmp_mpi < run_coat4.in")
+# return_code = subprocess.Popen('./lmp_mpi < run_coat4.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-            os.system("cp log.lammps log.run_coat4_%d" % i)
+#            os.system("cp log.lammps log.run_coat4_%d" % i)
 
-            Dir_seed = read_data("step%d.data" % (i * 3 + 2))
-            oradius, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
-            print("Current outter radius:", oradius)
+#            Dir_seed = read_data("step%d.data" % (i * 3 + 2))
+#            oradius, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
+#            print("Current outter radius:", oradius)
 
-            Dir = read_data("step%d.data" % (i * 3 + 2))
-            if "Pair Coeffs" in Dir:
-                del Dir["Pair Coeffs"]
-            write_data(Dir, "step%d.data" % (i * 3 + 3))
+#            Dir = read_data("step%d.data" % (i * 3 + 2))
+#            if "Pair Coeffs" in Dir:
+#                del Dir["Pair Coeffs"]
+#            write_data(Dir, "step%d.data" % (i * 3 + 3))
 
-            input_coat5(
-                cpos,
-                radius - 5,
-                oradius,
-                "step%d.data" % (i * 3 + 3),
-                "step%d.data" % (i * 3 + 4),
-                i * 5000,
-                "str2lammps/X6paircoeffs.txt",
-                mctemp,
-            )
+#            input_coat5(
+#                cpos,
+#                radius - 5,
+#                oradius,
+#                "step%d.data" % (i * 3 + 3),
+#                "step%d.data" % (i * 3 + 4),
+#                i * 5000,
+#                "str2lammps/X6paircoeffs.txt",
+#                mctemp,
+#            )
 
-            print("Running LAMMPS, coat polymers")
-            if np_flag:
-                os.system("mpiexec -np %d ./lmp_mpi < run_coat5.in" % np)
-            else:
-                os.system("./lmp_mpi < run_coat5.in")
-            # return_code = subprocess.Popen('./lmp_mpi < run_coat5.in', shell=True,
-            # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE)
-            # stdout,stderr = return_code.communicate()
+#            print("Running LAMMPS, coat polymers")
+#            if np_flag:
+#                os.system("mpiexec -np %d ./lmp_mpi < run_coat5.in" % np)
+#            else:
+#                os.system("./lmp_mpi < run_coat5.in")
+# return_code = subprocess.Popen('./lmp_mpi < run_coat5.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-            os.system("cp log.lammps log.run_coat5_%d" % i)
+#            os.system("cp log.lammps log.run_coat5_%d" % i)
 
-            if not os.path.exists("step%d.data" % (i * 3 + 4)):
-                break
+#            if not os.path.exists("step%d.data" % (i * 3 + 4)):
+#                break
 
-        if os.path.exists("step31.data"):
-            os.system("mv step31.data ../polymer.data")
-            p_flag = 0
-        else:
-            print("Failed. Generating another configuration")
+#        if os.path.exists("step31.data"):
+#            os.system("mv step31.data ../polymer.data")
+#            p_flag = 0
+#        else:
+#            print("Failed. Generating another configuration")
 
-    print("Polymer datafile polymer.data is ready, now combining with grain datafile")
+#    print("Polymer datafile polymer.data is ready, now combining with grain datafile")
 
-    Dir_polymer = read_data("../polymer.data")
-    vector = [-cpos[0], -cpos[1], 0]
-    Dir_polymer = data_Translation(Dir_polymer, vector, box=1)
-    vector = [-coord["x"], -coord["y"], 0]
-    Dir_RDX = data_Translation(Dir_RDX, vector)
-    Dir_data = add_data(Dir_polymer, Dir_RDX)
-    write_data(Dir_data, "../initial_polymer_grain.data", v=0)
-    print("Initial combined datafile initial_polymer_grain.data is ready to use")
-    print("Center Coordinates: x, ", 0, "y, ", 0)
-    print("Calculating initial polymer thickness")
-    Dir_seed = read_data("../initial_polymer_grain.data")
-    center = [0, 0, 0]
-    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
-    PT = D - GD
-    print("Initial polymer thickness:", PT)
-    # des=open('p_thickness.dat','w')
-    # des.write(str(PT))
-    # des.close()
-    shutil.copy("atom_type.dat", "./str2lammps/types")
-    os.chdir("./str2lammps/")
-    new_typing, data4lammps = run_data4lammps("Gasteiger", "Dreiding", cell_polymod)
-    print("Generating new potentialfile")
-    os.system(data4lammps)
-    os.chdir("..")
-    shutil.copy("./str2lammps/X6paircoeffs.txt", "X6paircoeffs.txt")
-    shiftpotential("X6paircoeffs.txt", "../potential.mod", "potential.mod", Dir_polymer)
-    print("Runing 10 steps for coating with grain")
+#    Dir_polymer = read_data("../polymer.data")
+#    vector = [-cpos[0], -cpos[1], 0]
+#    Dir_polymer = data_Translation(Dir_polymer, vector, box=1)
+#    vector = [-coord["x"], -coord["y"], 0]
+#    Dir_RDX = data_Translation(Dir_RDX, vector)
+#    Dir_data = add_data(Dir_polymer, Dir_RDX)
+#    write_data(Dir_data, "../initial_polymer_grain.data", v=0)
+#    print("Initial combined datafile initial_polymer_grain.data is ready to use")
+#    print("Center Coordinates: x, ", 0, "y, ", 0)
+#    print("Calculating initial polymer thickness")
+#    Dir_seed = read_data("../initial_polymer_grain.data")
+#    center = [0, 0, 0]
+#    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
+#    PT = D - GD
+#    print("Initial polymer thickness:", PT)
+# des=open('p_thickness.dat','w')
+# des.write(str(PT))
+# des.close()
+#    shutil.copy("atom_type.dat", "./str2lammps/types")
+#    os.chdir("./str2lammps/")
+#    new_typing, data4lammps = run_data4lammps("Gasteiger", "Dreiding", cell_polymod)
+#    print("Generating new potentialfile")
+#    os.system(data4lammps)
+#    os.chdir("..")
+#    shutil.copy("./str2lammps/X6paircoeffs.txt", "X6paircoeffs.txt")
+#    shiftpotential("X6paircoeffs.txt", "../potential.mod", "potential.mod", Dir_polymer)
+#    print("Runing 10 steps for coating with grain")
 
-    center = [0, 0, 0]
+#    center = [0, 0, 0]
 
-    input_coat6(na, "../initial_polymer_grain.data", "step32.data")
+#    input_coat6(na, "../initial_polymer_grain.data", "step32.data")
 
-    if rnp_flag:
-        print("Calculating recommended number of processors")
-        ppn = grabprocessors("run_coat6.in")
-        print(ppn)
-        nodes, ppn, np = correctppn(ppn)
-        print("%d of processors will be in use" % np)
+#    if rnp_flag:
+#        print("Calculating recommended number of processors")
+#        ppn = grabprocessors("run_coat6.in")
+#        print(ppn)
+#        nodes, ppn, np = correctppn(ppn)
+#        print("%d of processors will be in use" % np)
 
-    for i in range(10):
-        print("Step %d" % (i + 1))
+#    for i in range(10):
+#        print("Step %d" % (i + 1))
 
-        if i:
-            input_coat6(na, "step%d.data" % (i * 3 + 31), "step%d.data" % (i * 3 + 32))
+#        if i:
+#            input_coat6(na, "step%d.data" % (i * 3 + 31), "step%d.data" % (i * 3 + 32))
 
-        print("Running LAMMPS, assign velocities")
-        os.system("./lmp_mpi < run_coat6.in")
-        # return_code = subprocess.Popen('./lmp_mpi < run_coat4.in', shell=True,
-        # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE)
-        # stdout,stderr = return_code.communicate()
+#        print("Running LAMMPS, assign velocities")
+#        os.system("./lmp_mpi < run_coat6.in")
+# return_code = subprocess.Popen('./lmp_mpi < run_coat4.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-        os.system("cp log.lammps log.run_coat6_%d" % i)
+#        os.system("cp log.lammps log.run_coat6_%d" % i)
 
-        Dir_seed = read_data("step%d.data" % (i * 3 + 32))
-        oradius, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
-        print("Current outter radius:", oradius)
+#        Dir_seed = read_data("step%d.data" % (i * 3 + 32))
+#        oradius, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
+#        print("Current outter radius:", oradius)
 
-        input_coat7(
-            oradius,
-            "step%d.data" % (i * 3 + 32),
-            "step%d.data" % (i * 3 + 33),
-            i * 5000,
-            Dir_polymer["atom types"],
-            len(elementlist),
-            mctemp,
-        )
+#        input_coat7(
+#            oradius,
+#            "step%d.data" % (i * 3 + 32),
+#            "step%d.data" % (i * 3 + 33),
+#            i * 5000,
+#            Dir_polymer["atom types"],
+#            len(elementlist),
+#            mctemp,
+#        )
 
-        print("Running LAMMPS, coat polymers")
-        if np_flag:
-            os.system("mpiexec -np %d ./lmp_mpi < run_coat7.in" % np)
-        else:
-            os.system("./lmp_mpi < run_coat7.in")
-            # return_code = subprocess.Popen('./lmp_mpi < run_coat5.in', shell=True,
-            # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE)
-            # stdout,stderr = return_code.communicate()
+#        print("Running LAMMPS, coat polymers")
+#        if np_flag:
+#            os.system("mpiexec -np %d ./lmp_mpi < run_coat7.in" % np)
+#        else:
+#            os.system("./lmp_mpi < run_coat7.in")
+# return_code = subprocess.Popen('./lmp_mpi < run_coat5.in', shell=True,
+# stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE)
+# stdout,stderr = return_code.communicate()
 
-        os.system("cp log.lammps log.run_coat7_%d" % i)
+#        os.system("cp log.lammps log.run_coat7_%d" % i)
 
-        Dir = read_data("step%d.data" % (i * 3 + 33))
-        if "Pair Coeffs" in Dir:
-            del Dir["Pair Coeffs"]
-        if "Bond Coeffs" in Dir:
-            del Dir["Bond Coeffs"]
-        if "Angle Coeffs" in Dir:
-            del Dir["Angle Coeffs"]
-        if "Dihedral Coeffs" in Dir:
-            del Dir["Dihedral Coeffs"]
-        if "Improper Coeffs" in Dir:
-            del Dir["Improper Coeffs"]
-        write_data(Dir, "step%d.data" % (i * 3 + 34))
+#        Dir = read_data("step%d.data" % (i * 3 + 33))
+#        if "Pair Coeffs" in Dir:
+#            del Dir["Pair Coeffs"]
+#        if "Bond Coeffs" in Dir:
+#            del Dir["Bond Coeffs"]
+#        if "Angle Coeffs" in Dir:
+#            del Dir["Angle Coeffs"]
+#        if "Dihedral Coeffs" in Dir:
+#            del Dir["Dihedral Coeffs"]
+#        if "Improper Coeffs" in Dir:
+#            del Dir["Improper Coeffs"]
+#        write_data(Dir, "step%d.data" % (i * 3 + 34))
 
-    os.system("mv step61.data ../%s" % output)
-    print("Datafile %s is ready to use" % output)
-    print("Center Coordinates: x, ", 0, "y, ", 0)
-    print("Calculating initial polymer thickness")
-    Dir_seed = read_data("../%s" % output)
-    center = [0, 0, 0]
-    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
-    PT = D - GD
-    print("Polymer thickness:", PT)
-    des = open("p_thickness.dat", "w")
-    des.write(str(PT))
-    des.close()
-    return True
+#    os.system("mv step61.data ../%s" % output)
+#    print("Datafile %s is ready to use" % output)
+#    print("Center Coordinates: x, ", 0, "y, ", 0)
+#    print("Calculating initial polymer thickness")
+#    Dir_seed = read_data("../%s" % output)
+#    center = [0, 0, 0]
+#    D, center = Get_Mass_Radius(Dir_seed, center, dimension, plane)
+#    PT = D - GD
+#    print("Polymer thickness:", PT)
+#    des = open("p_thickness.dat", "w")
+#    des.write(str(PT))
+#    des.close()
+#    return True
 
 
 def zen(with_attribution=True):
@@ -1537,5 +1546,5 @@ if __name__ == "__main__":
     # Do something if this file is invoked on its own
     print(canvas())
     infile = sys.argv[1]
-    args = polymerxtal.read_input(infile)
-    main(arg)
+    # args = polymerxtal.read_input(infile)
+    # main(arg)

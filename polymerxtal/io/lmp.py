@@ -2,8 +2,9 @@
 Functions for manipulating LAMMPS files.
 """
 
+import math
 import os
-from subprocess import call, Popen, PIPE
+from subprocess import Popen, PIPE  # call,
 from time import strftime
 
 from .hublib import check_nanohub
@@ -55,8 +56,8 @@ def read_data(data_file):
 
     # This function would be easier to unit test if it took in a string instead of a file.
     data_dir = {}
-    box = {}
-    masses = {}
+    # box = {}
+    # masses = {}
     with open(data_file, "r") as data_src:
         skip_line = 1
         feature = ""
@@ -142,13 +143,16 @@ def write_lmp_ifile(
             des.write("\n")
         else:
             raise Exception(
-                "Unknown force field style to generate potential style definitions for LAMMPS input file.\nPlease include a file for LAMMPS potential style definitions and set the path to potential_headfile parameter"
+                "Unknown force field style to generate potential style definitions for LAMMPS input file.\nPlease \
+                    include a file for LAMMPS potential style definitions and set the path to potential_headfile \
+                    parameter"
             )
     if datafile:
         des.write("read_data       %s\n" % datafile)
     des.write("neighbor          0.3 bin\n")
     des.write(
-        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz pxy pxz pyz lx ly lz vol density\n"
+        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz \
+            pxy pxz pyz lx ly lz vol density\n"
     )
     des.write("thermo            10\n")
     des.write("thermo_modify     flush yes\n")
@@ -195,7 +199,8 @@ def write_lmp_ifile(
     # des.write("variable        mincz equal bound(all,zmin)\n")
     # des.write("\n")
     # des.write(
-    #    "fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy v_maxcz v_mincz v_M file tmp.out\n"
+    #    "fix             1 all ave/time 1 1 1 c_graincm[1] c_graincm[2] c_graincm[3] v_maxcx v_mincx v_maxcy v_mincy
+    #       v_maxcz v_mincz v_M file tmp.out\n"
     # )
     # Here is the tmp.out output after running LAMMPS
     # des.write("run             0\n")
@@ -215,13 +220,14 @@ def call_lammps(lmp_input, np, nanohub=None, prefix="mpiexec", print_to_screen=F
         None
     """
 
-    log_name = "out"
+    # log_name = "out"
 
     if nanohub:
         # with open('temp.in', 'w') as f:
         #    f.write(simulation.input)
         # if simulation.name:
-        #    print('%s: sending %s simulation to computer cluster at nanoHUB' % (strftime('%H:%M:%S'), simulation.name))
+        #    print('%s: sending %s simulation to computer cluster at nanoHUB' % (strftime('%H:%M:%S'), \
+        #       simulation.name))
         # else:
         #    print('%s: sending simulation to computer cluster at nanoHUB' % strftime('%H:%M:%S'))
         # sys.stdout.flush()
@@ -253,7 +259,8 @@ def call_lammps(lmp_input, np, nanohub=None, prefix="mpiexec", print_to_screen=F
         # if simulation.debug:
         #    print(simulation.input)
         #    warning_print('debug setting involves streaming output from LAMMPS process and can degrade performance')
-        #    warning_print('only use debug for debugging purposes, use print_to_screen to collect stdout after process finishes')
+        #    warning_print('only use debug for debugging purposes, use print_to_screen to collect stdout after \
+        #       process finishes')
         #    p.stdin.write(simulation.input)
         #    q = Queue()
         #    t = Thread(target=enqueue_output, args=(p.stdout, q))
@@ -321,14 +328,17 @@ def run_lammps(lmp_input, np=None, nanohub=None, save_input=True, prefix="mpiexe
         return_code = call_lammps(lmp_input, np, nanohub=check_nanohub(), prefix=prefix)
     except OSError:
         raise Exception("There was a problem calling LAMMPS with {}".format(prefix))
-    except:
+    except:  # noqa: E722
         if check_lmps_exec():
             raise Exception(
-                "There was a problem running LAMMPS. The process started but did not finish successfully. Check the log file, or rerun the simulation with debug=True to debug issue from LAMMPS output"
+                "There was a problem running LAMMPS. The process started but did not finish successfully. Check the \
+                    log file, or rerun the simulation with debug=True to debug issue from LAMMPS output"
             )
         else:
             raise Exception(
-                "There was a problem running LAMMPS. LAMMPS is not configured properly. Make sure the LAMMPS_EXEC environment variable is set to the correct LAMMPS executable path. The current path is set to:\n\n{}".format(
+                "There was a problem running LAMMPS. LAMMPS is not configured properly. Make sure the LAMMPS_EXEC \
+                    environment variable is set to the correct LAMMPS executable path. The current path is set \
+                    to:\n\n{}".format(
                     LAMMPS_EXEC
                 )
             )
@@ -341,7 +351,7 @@ def run_lammps(lmp_input, np=None, nanohub=None, save_input=True, prefix="mpiexe
 
 
 def read_cell_sizes(data_file):
-    # read_cell_sizes function provides a quick step to read the simulation box information
+    """read_cell_sizes function provides a quick step to read the simulation box information"""
     cell_sizes = {}
     delta_cell = {}
     with open(data_file) as f:
@@ -374,12 +384,15 @@ def read_cell_sizes(data_file):
 
 
 def get_boundaries(direction):
-    # get_boundaries function gets the center of mass and the boundaris - the minimum and maximum x, y and z positions - of a molecule or molecules from LAMMPS out put tmp.out
+    """
+    get_boundaries function gets the center of mass and the boundaris - the minimum and maximum x, y and z positions -
+    of a molecule or molecules from LAMMPS out put tmp.out
+    """
     boundaries = {}
     com = {}
     with open("tmp.out", "r") as infile:
         r = infile.readline()
-        r = infile.readline()
+        r = infile.readline()  # noqa: F841
         for line in infile:
             print(line)
             line = [float(x) for x in line.split()]
@@ -393,7 +406,7 @@ def get_boundaries(direction):
     # Get max radius
     distance = []
     coord = {}
-    polymod = {}
+    # polymod = {}
     for key, values in sorted(boundaries.items()):
         if key == direction:
             continue
