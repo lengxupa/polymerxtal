@@ -9,19 +9,21 @@
 # ============================================================================
 
 import numpy as np
-import os, random, time
+import os, time  # random,   # noqa: E401
 
 from .config import MAX_BONDS, REAL_MAX
 from .energy import setSelfAvoidCutoff, Energy
 from .element import readElements
 from .exclude import ExclCylinder, ExclSlab, ExclSphere
-from .monomer import *
+from .monomer import *  # noqa: F403
 from .os import storeDir, changeDir, restoreDir
-from .scan import *
-from .stdio import FILE
+from .scan import *  # noqa: F403
+
+# from .stdio import FILE
 from .stereo import Stereo, createStereo
 from .types import writeAtomTypes, writeBondTypes
-from .zmatrix import ZMatrix
+
+# from .zmatrix import ZMatrix
 
 # Get the location of the current module
 current_location = os.path.dirname(__file__)
@@ -49,13 +51,13 @@ class Params:
     # Result: initilize p
     # ============================================================================
     def __init__(self):
-        v0 = np.zeros(3)
+        # v0 = np.zeros(3)
 
         self.system_min = np.zeros(3)  # minimum point of simulation box
         self.system_max = np.zeros(3)  # maximum point of simulation box
         self.system_size = np.zeros(3)  # system_max - system_min
         self.domain_size = np.zeros(3)  # size of thread spatial domain
-        self.known_monomers = Monomer()  # list
+        self.known_monomers = Monomer()  # list  # noqa: F405
         self.known_stereo = Stereo()  # list
         self.chain_stereo = {}  # size num_stereo
         self.excluded_slabs = ExclSlab()  # list
@@ -115,7 +117,7 @@ class Params:
     def getElements(self):
         global read_elements
         if not read_elements:
-            leng = len(self.data_dir) + len(self.element_data) + 2
+            # leng = len(self.data_dir) + len(self.element_data) + 2
 
             el_path = "%s/%s" % (self.data_dir, self.element_data)
             readElements(el_path)
@@ -128,73 +130,74 @@ class Params:
     # Result: fill p by reading indicated input file; calls choke() on input error
     # ============================================================================
     def readParams(self, path):
-        s = createScanner(path)
+        s = createScanner(path)  # noqa: F405
         done = 0
         name = ""
-        file_name = ""
+        # file_name = ""
         full_path = ""
 
         def CHOKE_PARSE(param):
             raise SyntaxError(
-                "File %s, line %d: unknown %s, %s" % (s.path, s.lineno, param, s.tokstr)
+                "File %s, line %d: unknown %s, %s"
+                % (s.path, s.lineno, param, s.tokstr)  # noqa: F405
             )
 
         while not done:
             tokval = s.getToken()
-            if tokval == TOK_EOF:
+            if tokval == TOK_EOF:  # noqa: F405
                 done += 1
 
-            elif tokval == TOK_DATA_DIR:
+            elif tokval == TOK_DATA_DIR:  # noqa: F405
                 s.getToken()
                 self.data_dir = ""
                 self.data_dir = s.tokstr
 
-            elif tokval == TOK_ELEMENT_DATA:
+            elif tokval == TOK_ELEMENT_DATA:  # noqa: F405
                 s.getToken()
                 self.element_data = ""
                 self.element_data = s.tokstr
 
-            elif tokval == TOK_BOND_SCALE:
+            elif tokval == TOK_BOND_SCALE:  # noqa: F405
                 self.bond_scale = s.getRealToken()
 
-            elif tokval == TOK_TEMPERATURE:
+            elif tokval == TOK_TEMPERATURE:  # noqa: F405
                 self.temperature = s.getRealToken()
 
-            elif tokval == TOK_BACKBONE_BOND_LENGTH:
+            elif tokval == TOK_BACKBONE_BOND_LENGTH:  # noqa: F405
                 self.backbone_bond_length = s.getRealToken()
 
-            elif tokval == TOK_DENSITY:
+            elif tokval == TOK_DENSITY:  # noqa: F405
                 self.density = s.getRealToken()
 
-            elif tokval == TOK_CHAINS:
+            elif tokval == TOK_CHAINS:  # noqa: F405
                 self.num_chains = s.getIntToken()
 
-            elif tokval == TOK_MONOMERS:
+            elif tokval == TOK_MONOMERS:  # noqa: F405
                 self.num_monomers = s.getIntToken()
 
-            elif tokval == TOK_MONOMERS_STDDEV:
+            elif tokval == TOK_MONOMERS_STDDEV:  # noqa: F405
                 self.num_monomers_stddev = s.getRealToken()
 
-            elif tokval == TOK_SYSTEM_MIN:
+            elif tokval == TOK_SYSTEM_MIN:  # noqa: F405
                 self.system_min[0] = s.getRealToken()
                 self.system_min[1] = s.getRealToken()
                 self.system_min[2] = s.getRealToken()
                 self.explicit_volume = 1
 
-            elif tokval == TOK_SYSTEM_MAX:
+            elif tokval == TOK_SYSTEM_MAX:  # noqa: F405
                 self.system_max[0] = s.getRealToken()
                 self.system_max[1] = s.getRealToken()
                 self.system_max[2] = s.getRealToken()
                 self.explicit_volume = 1
 
-            elif tokval == TOK_EXCLUDE:
+            elif tokval == TOK_EXCLUDE:  # noqa: F405
                 t = s.getToken()
                 n = 0
-                if TOK_INVERT == t:
+                if TOK_INVERT == t:  # noqa: F405
                     n += 1
                     t = s.getToken()
-                if t == TOK_CYLINDER:
-                    ec = createExclCylinder()
+                if t == TOK_CYLINDER:  # noqa: F405
+                    ec = createExclCylinder()  # noqa: F405
                     ec.invert = n
                     if ec.invert:
                         self.inverted_volume = 1
@@ -209,8 +212,8 @@ class Params:
                     ec.next = self.excluded_cylinders
                     self.excluded_cylinders = ec
                     self.excluded_volume += np.pi * ec.radius * ec.radius * ec.length
-                elif t == TOK_SLAB:
-                    es = createExclSlab()
+                elif t == TOK_SLAB:  # noqa: F405
+                    es = createExclSlab()  # noqa: F405
                     es.invert = n
                     if es.invert:
                         self.inverted_volume = 1
@@ -233,8 +236,8 @@ class Params:
                         * (es.max[1] - es.min[1])
                         * (es.max[2] - es.min[2])
                     )
-                elif t == TOK_SPHERE:
-                    esph = createExclSphere()
+                elif t == TOK_SPHERE:  # noqa: F405
+                    esph = createExclSphere()  # noqa: F405
                     esph.invert = n
                     if esph.invert:
                         self.inverted_volume = 1
@@ -251,102 +254,102 @@ class Params:
                 else:
                     CHOKE_PARSE("exclusion")
 
-            elif tokval == TOK_GRID_SIZE:
+            elif tokval == TOK_GRID_SIZE:  # noqa: F405
                 self.grid_size = s.getRealToken()
 
-            elif tokval == TOK_DOMAINS:
+            elif tokval == TOK_DOMAINS:  # noqa: F405
                 self.num_domains_x = s.getIntToken()
                 self.num_domains_y = s.getIntToken()
                 self.num_domains_z = s.getIntToken()
 
-            elif tokval == TOK_LOG_FILE:
+            elif tokval == TOK_LOG_FILE:  # noqa: F405
                 s.getToken()
                 self.log_file = s.tokstr
 
-            elif tokval == TOK_STATUS_FILE:
+            elif tokval == TOK_STATUS_FILE:  # noqa: F405
                 s.getToken()
                 self.status_file = s.tokstr
 
-            elif tokval == TOK_RNG_SEED:
+            elif tokval == TOK_RNG_SEED:  # noqa: F405
                 self.rng_seed = s.getIntToken()
 
-            elif tokval == TOK_RECALCULATE_POSITIONS:
+            elif tokval == TOK_RECALCULATE_POSITIONS:  # noqa: F405
                 self.recalculate_positions = 1
 
-            elif tokval == TOK_RECALCULATE_NEIGHBORS:
+            elif tokval == TOK_RECALCULATE_NEIGHBORS:  # noqa: F405
                 self.recalculate_neighbors = 1
 
-            elif tokval == TOK_ENERGY_CUTOFF:
+            elif tokval == TOK_ENERGY_CUTOFF:  # noqa: F405
                 self.energy_cutoff = s.getRealToken()
 
-            elif tokval == TOK_SELF_AVOID_CUTOFF:
+            elif tokval == TOK_SELF_AVOID_CUTOFF:  # noqa: F405
                 self.self_avoid_cutoff = s.getRealToken()
                 setSelfAvoidCutoff(self.self_avoid_cutoff)
 
-            elif tokval == TOK_BOND_CUTOFF:
+            elif tokval == TOK_BOND_CUTOFF:  # noqa: F405
                 self.bond_cutoff = s.getIntToken()
                 if self.bond_cutoff > MAX_BONDS:
                     raise ValueError("bond_cutoff > MAX_BONDS")
 
-            elif tokval == TOK_CONFIGS:
+            elif tokval == TOK_CONFIGS:  # noqa: F405
                 self.num_configs = s.getIntToken()
 
-            elif tokval == TOK_CHAIN_LENGTH_HISTO_BIN:
+            elif tokval == TOK_CHAIN_LENGTH_HISTO_BIN:  # noqa: F405
                 self.chain_length_histo_bin = s.getRealToken()
 
-            elif tokval == TOK_SAMPLE:
+            elif tokval == TOK_SAMPLE:  # noqa: F405
                 t = s.getToken()
-                if t == TOK_MONTE_CARLO:
+                if t == TOK_MONTE_CARLO:  # noqa: F405
                     self.sample_monte_carlo = 1
-                elif t == TOK_NONE:
+                elif t == TOK_NONE:  # noqa: F405
                     self.sample_monte_carlo = 0
                 else:
                     CHOKE_PARSE("sample option")
 
-            elif tokval == TOK_ENERGY:
+            elif tokval == TOK_ENERGY:  # noqa: F405
                 t = s.getToken()
-                if t == TOK_LJ:
+                if t == TOK_LJ:  # noqa: F405
                     self.energy_func = Energy.energyLJ
-                elif t == TOK_SELF_AVOID:
+                elif t == TOK_SELF_AVOID:  # noqa: F405
                     self.energy_func = Energy.energySelfAvoid
-                elif t == TOK_NONE:
+                elif t == TOK_NONE:  # noqa: F405
                     self.energy_func = Energy.energyNone
                 else:
                     CHOKE_PARSE("energy option")
 
-            elif tokval == TOK_WRITE:
+            elif tokval == TOK_WRITE:  # noqa: F405
                 t = s.getToken()
-                if t == TOK_WRAPPED_PDB:
+                if t == TOK_WRAPPED_PDB:  # noqa: F405
                     self.write_wrapped_pdb = 1
-                elif t == TOK_WRAPPED_XYZ:
+                elif t == TOK_WRAPPED_XYZ:  # noqa: F405
                     self.write_wrapped_xyz = 1
-                elif t == TOK_UNWRAPPED_PDB:
+                elif t == TOK_UNWRAPPED_PDB:  # noqa: F405
                     self.write_unwrapped_pdb = 1
-                elif t == TOK_UNWRAPPED_XYZ:
+                elif t == TOK_UNWRAPPED_XYZ:  # noqa: F405
                     self.write_unwrapped_xyz = 1
-                elif t == TOK_TORSION_ROTATION:
+                elif t == TOK_TORSION_ROTATION:  # noqa: F405
                     s.getToken()
                     msearch = findMonomer(s.tokstr, self)
                     if (not msearch) or not hasattr(msearch, "next"):
                         CHOKE_PARSE("monomer")
                     a = s.getIntToken() - 1  # torsion index
                     b = s.getIntToken()  # angle step
-                    leng = len(msearch.name) + 22
+                    # leng = len(msearch.name) + 22
                     f = "%s_torsion_%2d_%3ddeg.pdb" % (msearch.name, a, b)
-                    writeInternalRotationPDB(msearch, a, b, f)
+                    writeInternalRotationPDB(msearch, a, b, f)  # noqa: F405
                     f = ""
-                elif t == TOK_CHAIN_LENGTH:
+                elif t == TOK_CHAIN_LENGTH:  # noqa: F405
                     self.write_chain_length = 1
-                elif t == TOK_CHAIN_LENGTH_HISTO:
+                elif t == TOK_CHAIN_LENGTH_HISTO:  # noqa: F405
                     self.write_chain_length_histo = 1
-                elif t == TOK_TORSION_HISTO:
+                elif t == TOK_TORSION_HISTO:  # noqa: F405
                     self.write_torsion_histo = 1
-                elif t == TOK_INTERMEDIATE:
+                elif t == TOK_INTERMEDIATE:  # noqa: F405
                     self.write_intermediate = 1
                 else:
                     CHOKE_PARSE("write option")
 
-            elif tokval == TOK_MONOMER:
+            elif tokval == TOK_MONOMER:  # noqa: F405
                 s.getToken()
                 name = s.tokstr
                 s.getToken()
@@ -354,7 +357,7 @@ class Params:
                 a = s.getIntToken() - 1  # head index
                 b = s.getIntToken() - 1  # tail index
                 self.getElements()
-                m = readMonomer(name, f, a, b, self.bond_scale)
+                m = readMonomer(name, f, a, b, self.bond_scale)  # noqa: F405
                 m.next = self.known_monomers
                 self.known_monomers = m
                 name = ""
@@ -362,13 +365,13 @@ class Params:
                 if m.num_atoms > self.max_monomer_atoms:
                     self.max_monomer_atoms = m.num_atoms
 
-            elif tokval == TOK_TORSION:
+            elif tokval == TOK_TORSION:  # noqa: F405
                 if not (m and hasattr(m, "next")):
                     raise TypeError(
                         "File %s, line %d: no monomer specified for torsion"
                         % (s.path, s.lineno)
                     )
-                if TOK_ALL == s.getToken():
+                if TOK_ALL == s.getToken():  # noqa: F405
                     a = 2
                     b = m.num_bb
                 else:
@@ -381,9 +384,9 @@ class Params:
                         )
                     a = b - 1
                 tmp = s.getToken()
-                if tmp == TOK_FIXED:
+                if tmp == TOK_FIXED:  # noqa: F405
                     for n in range(a, b):
-                        m.torsions[n] = Torsion(0)
+                        m.torsions[n] = Torsion(0)  # noqa: F405
                         t = s.getToken()
                         if is_number(s.tokstr):
                             ang = float(s.tokstr)
@@ -392,17 +395,17 @@ class Params:
                             ang = -REAL_MAX
                         for n in range(a, b):
                             m.setFixedTorsion(n, ang)
-                elif tmp == TOK_FREE:
+                elif tmp == TOK_FREE:  # noqa: F405
                     for n in range(a, b):
-                        m.torsions[n] = Torsion(1)
-                elif tmp == TOK_ENERGY:
+                        m.torsions[n] = Torsion(1)  # noqa: F405
+                elif tmp == TOK_ENERGY:  # noqa: F405
                     for n in range(a, b):
-                        m.torsions[n] = Torsion(2)
-                    if TOK_CALCULATE == s.getToken():
+                        m.torsions[n] = Torsion(2)  # noqa: F405
+                    if TOK_CALCULATE == s.getToken():  # noqa: F405
                         s.getToken()
                         for n in range(a, b):
-                            m.torsions[n] = TORSION_ENERGY_CALC
-                            calculateTorsionEnergies(
+                            m.torsions[n] = TORSION_ENERGY_CALC  # noqa: F405
+                            calculateTorsionEnergies(  # noqa: F405
                                 m,
                                 n,
                                 self.bond_cutoff,
@@ -416,13 +419,13 @@ class Params:
                 else:
                     CHOKE_PARSE("torsion option")
 
-            elif tokval == TOK_STEREO:
+            elif tokval == TOK_STEREO:  # noqa: F405
                 s.getToken()
                 name = s.tokstr
                 tmp = s.getToken()
-                if tmp == TOK_PATTERN:
+                if tmp == TOK_PATTERN:  # noqa: F405
                     a = 1
-                elif tmp == TOK_WEIGHT:
+                elif tmp == TOK_WEIGHT:  # noqa: F405
                     a = 0
                 else:
                     CHOKE_PARSE("stereo option")
@@ -435,7 +438,7 @@ class Params:
                     if not (msearch and hasattr(msearch, "next")):
                         CHOKE_PARSE("monomer")
                     st.addStereoMonomer(msearch, 0.0 if a else s.getRealToken())
-                if TOK_TERM == s.getToken():
+                if TOK_TERM == s.getToken():  # noqa: F405
                     s.getToken()
                     msearch = findMonomer(s.tokstr, self)
                     if not (msearch and hasattr(msearch, "next")):
@@ -446,7 +449,7 @@ class Params:
                 st.next = self.known_stereo
                 self.known_stereo = st
 
-            elif tokval == TOK_CHAIN_STEREO:
+            elif tokval == TOK_CHAIN_STEREO:  # noqa: F405
                 self.num_stereo = s.getIntToken()
                 for n in range(self.num_stereo):
                     s.getToken()
@@ -456,7 +459,7 @@ class Params:
                     self.chain_stereo[n] = st
                     self.chain_stereo_weights[n] = s.getRealToken()
 
-            elif tokval == TOK_POLYMER:
+            elif tokval == TOK_POLYMER:  # noqa: F405
                 s.getToken()
                 self.getElements()
                 q = s.tokstr.rfind("/")
@@ -464,18 +467,18 @@ class Params:
                     raise ValueError(
                         "Expecting <polymer>/<torsion_option> polymer argument"
                     )
-                leng = len(self.data_dir) + len(s.tokstr) + 11
+                # leng = len(self.data_dir) + len(s.tokstr) + 11
                 full_path = "%s/polymers/%s" % (self.data_dir, s.tokstr)
                 storeDir()
                 changeDir(full_path)
-                self.readParams(s.tokstr[q + 1 :])
+                self.readParams(s.tokstr[q + 1 :])  # noqa: E203
                 restoreDir()
                 full_path = ""
 
-            elif tokval == TOK_ISOLATE_CHAINS:
+            elif tokval == TOK_ISOLATE_CHAINS:  # noqa: F405
                 self.isolate_chains += 1
 
-            elif tokval == TOK_TORSION_STEP:
+            elif tokval == TOK_TORSION_STEP:  # noqa: F405
                 self.num_delta_steps = s.getIntToken()
                 self.torsion_step = s.getRealToken()
 
@@ -524,13 +527,13 @@ class Params:
             f.printf("   mass (without head and tail): %f amu\n" % m.central_mass)
             for i in range(2, m.num_bb):
                 f.printf("   Backbone atom %d torsion angle: " % (i + 1))
-                if m.torsions[i] == Torsion.TORSION_FIXED:
+                if m.torsions[i] == Torsion.TORSION_FIXED:  # noqa: F405
                     f.printf("fixed\n")
-                elif m.torsions[i] == Torsion.TORSION_FREE:
+                elif m.torsions[i] == Torsion.TORSION_FREE:  # noqa: F405
                     f.printf("freely rotating\n")
-                elif m.torsions[i] == Torsion.TORSION_ENERGY:
+                elif m.torsions[i] == Torsion.TORSION_ENERGY:  # noqa: F405
                     f.printf("bonded interactions (E(phi)) specified\n")
-                elif m.torsions[i] == Torsion.TORSION_ENERGY_CALC:
+                elif m.torsions[i] == Torsion.TORSION_ENERGY_CALC:  # noqa: F405
                     f.printf("bonded interactions (E(phi)) calculated internally\n")
             f.printf(
                 "   %d extra bonds not represented in z-matrix\n" % m.num_extra_bonds

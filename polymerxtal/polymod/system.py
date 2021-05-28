@@ -10,11 +10,13 @@
 
 import numpy as np
 
-from .chain import Chain
-from .domain import Domain, OccAtom
-from .params import Params
+# from .chain import Chain
+from .domain import OccAtom  # Domain,
+
+# from .params import Params
 from .utils import foldPosition, hashBin
-from .zmatrix import ZMatrix
+
+# from .zmatrix import ZMatrix
 
 
 class PolymerSystem:

@@ -1,4 +1,4 @@
-import os, sys
+import os, sys  # noqa: E401
 
 
 def fchdir(fd):
@@ -11,7 +11,7 @@ def fchdir(fd):
         # print("Inserting inside-", os.getcwd())
 
     # Caching the exception
-    except:
+    except:  # noqa: E722
         print("Something wrong with specified directory. Exception- ", sys.exc_info())
         return -1
 

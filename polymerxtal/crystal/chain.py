@@ -10,31 +10,34 @@ from polymerxtal.polymod import readPDB
 from polymerxtal.struct2lammps import Create_Data_File
 from polymerxtal.visualize import ovito_view
 
+from polymerxtal.crystal.custom import custom_build_helix
 from polymerxtal.crystal.helice import Helice
 from polymerxtal.crystal.infinite import (
     create_infinite_chain,
     correct_infinite_chain_position,
 )
+from polymerxtal.crystal.measure import calculate_rotation
 from polymerxtal.crystal.monomer import polymer_types  # PolymerType,
 from polymerxtal.crystal.move import Sphere, Cluster, Translator, Rotator
 from polymerxtal.crystal.unit import chain_periodicity
 
 
-def calculate_rotation(vk):
-    z = np.array([0, 0, 1])
-    axis = np.cross(vk, z)
-    theta = np.arccos(np.dot(z, vk))
-    return axis, theta
+def is_integer_num(n):
+    if isinstance(n, int):
+        return True
+    if isinstance(n, float):
+        return n.is_integer()
+    return False
 
 
-def correct_chain_orientation(holder, num_monomers, unit_num_monomers):
-    unit, unit_distance, vk = chain_periodicity(holder, num_monomers, unit_num_monomers)
+def correct_chain_orientation(holder, unit_vector):
+
     chain_cluster = Cluster()
 
     for atom in holder.pos:
         chain_cluster.add_particle(Sphere(holder.pos[atom]))
 
-    axis, theta = calculate_rotation(vk)
+    axis, theta = calculate_rotation(unit_vector)
 
     rotator = Rotator()
     chain_cluster.move(rotator, axis=axis, theta=theta)
@@ -42,7 +45,7 @@ def correct_chain_orientation(holder, num_monomers, unit_num_monomers):
     for i in range(holder.num_atoms):
         holder.pos[i] = chain_cluster.particles[i].center
 
-    return holder, unit_distance
+    return holder
 
 
 def get_mininum_position(positions):
@@ -107,6 +110,8 @@ class Chain:
                 POM - Polyoxymethylene
                 PTFE - Polytetrafluoroethylene
                 PVC - Polyvinyl chloride
+                Chitosan
+                Cellulose
         helice : Helice class (optional)
             Current support helicities include:
                 Helice(2,1,1) - Planar zig-zag
@@ -135,7 +140,7 @@ class Chain:
 
         polymer_type = "PE"
         helice = Helice()
-        num_monomers = 30
+        num_monomers = 1
         tacticity = ""
         chiriality = ""
         head_tail_defect_ratio = 0
@@ -149,6 +154,13 @@ class Chain:
                 helice = kwargs["helice"]
             elif key == "num_monomers":
                 num_monomers = kwargs["num_monomers"]
+                if is_integer_num(num_monomers):
+                    if num_monomers < 1:
+                        raise ValueError(
+                            "Number of monomers should be equal or larger than 1"
+                        )
+                else:
+                    raise ValueError("Number of monomers should be an integer")
             elif key == "tacticity":
                 tacticity = kwargs["tacticity"]
             elif key == "chiriality":
@@ -171,146 +183,180 @@ class Chain:
                 + " do not exist in our library, please consider using custom feature"
             )
         self.polymer_type = polymer_types[polymer_type]
-        monomer_backbone_atoms = len(self.polymer_type.backbone_atoms)
 
-        if helice.atoms % monomer_backbone_atoms:
-            raise Exception(
-                "Number of backbone atoms in a motif must be multiple of number of monomer backbone atoms %d\n"
-                % monomer_backbone_atoms
-            )
-        if tacticity == "syndiotactic":
-            multiple = int(monomer_backbone_atoms * 2 / helice.atoms)
-            if (multiple * helice.atoms) % (monomer_backbone_atoms * 2):
-                raise Exception(
-                    "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of \
-                        the number of monomer backbone atoms %d\n"
-                    % monomer_backbone_atoms
-                    * 2
-                )
-            elif multiple != 1:
-                print(
-                    "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice \
-                        of the number of monomer backbone atoms %d\n"
-                    % (monomer_backbone_atoms * 2)
-                )
-                print(
-                    "Trying Helice_%d_%d_%d..."
-                    % (helice.atoms * multiple, helice.motifs, helice.turns * multiple)
-                )
-                helice = Helice(
-                    helice.atoms * multiple, helice.motifs, helice.turns * multiple
-                )
-        # else:
-        #    if monomer_backbone_atoms != helice.atoms:
-        #        raise ValueError("Number of backbone atoms in a motif must be %d" % helice.atoms)
-        helice_backbone_atoms = helice.atoms * helice.motifs
-        self.helice = helice
+        if self.polymer_type.helicity:
+            self.custom = 0
+        else:
+            self.custom = 1
 
-        if not 0 <= (head_tail_defect_ratio) <= 1:
-            raise ValueError(
-                "Defect ratio of head to head and tail to tail connections is",
-                head_tail_defect_ratio,
-                "and should be in the range of [0,1]",
-            )
-        self.head_tail_defect_ratio = head_tail_defect_ratio
+        if self.custom:
+            print("Warning: Custom type, only read helice motifs and turns info")
+            self.helice = helice
+            self.num_monomers = num_monomers
 
-        self.unit_num_monomers = int(helice_backbone_atoms / monomer_backbone_atoms)
-        if "num_monomers" not in kwargs:
-            if infinite:
-                if tacticity == "atactic" or head_tail_defect_ratio:
-                    num_monomers = 10 * self.unit_num_monomers
-                elif helice_backbone_atoms > 2:
-                    num_monomers = self.unit_num_monomers
+            self.tacticity = tacticity
+            if self.tacticity:
+                if self.tacticity == "N/A":
+                    self.tacticity = ""
                 else:
-                    num_monomers = 2
+                    print("Warning: Custom type does not have tacticity")
+                    self.tacticity = ""
 
-        if num_monomers < self.unit_num_monomers:
-            raise ValueError(
-                "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent \
-                    number of monomers is %d"
-                % (self.unit_num_monomers, helice, num_monomers)
-            )
+            self.chiriality = chiriality
+            if self.chiriality:
+                if self.chiriality == "N/A":
+                    self.chiriality = ""
+                else:
+                    print("Warning: Custom type does not have chiriality")
+                    self.chiriality = ""
 
-        if infinite:
-            if num_monomers % self.unit_num_monomers:
+            self.infinite = infinite
+
+        else:
+            monomer_backbone_atoms = len(self.polymer_type.backbone_atoms)
+
+            if helice.atoms % monomer_backbone_atoms:
+                raise Exception(
+                    "Number of backbone atoms in a motif must be multiple of number of monomer backbone atoms %d\n"
+                    % monomer_backbone_atoms
+                )
+            if tacticity == "syndiotactic":
+                multiple = int(monomer_backbone_atoms * 2 / helice.atoms)
+                if (multiple * helice.atoms) % (monomer_backbone_atoms * 2):
+                    raise Exception(
+                        "Number of backbone atoms in a motif for syndiotactic configuration must be multiple of twice of \
+                            the number of monomer backbone atoms %d\n"
+                        % monomer_backbone_atoms
+                        * 2
+                    )
+                elif multiple != 1:
+                    print(
+                        "Number of backbone atoms in a motif for syndiotactic configuration should be multiple of twice \
+                            of the number of monomer backbone atoms %d\n"
+                        % (monomer_backbone_atoms * 2)
+                    )
+                    print(
+                        "Trying Helice_%d_%d_%d..."
+                        % (
+                            helice.atoms * multiple,
+                            helice.motifs,
+                            helice.turns * multiple,
+                        )
+                    )
+                    helice = Helice(
+                        helice.atoms * multiple, helice.motifs, helice.turns * multiple
+                    )
+            # else:
+            #    if monomer_backbone_atoms != helice.atoms:
+            #        raise ValueError("Number of backbone atoms in a motif must be %d" % helice.atoms)
+            helice_backbone_atoms = helice.atoms * helice.motifs
+            self.helice = helice
+
+            if not 0 <= (head_tail_defect_ratio) <= 1:
                 raise ValueError(
-                    "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s \
-                        chain.\nCurrent number of monomers is %d"
+                    "Defect ratio of head to head and tail to tail connections is",
+                    head_tail_defect_ratio,
+                    "and should be in the range of [0,1]",
+                )
+            self.head_tail_defect_ratio = head_tail_defect_ratio
+
+            self.unit_num_monomers = int(helice_backbone_atoms / monomer_backbone_atoms)
+            if "num_monomers" not in kwargs:
+                if infinite:
+                    if tacticity == "atactic" or head_tail_defect_ratio:
+                        num_monomers = 10 * self.unit_num_monomers
+                    elif helice_backbone_atoms > 2:
+                        num_monomers = self.unit_num_monomers
+                    else:
+                        num_monomers = 2
+
+            if num_monomers < self.unit_num_monomers:
+                raise ValueError(
+                    "Number of monomers should be equal or larger than %d in order to generate Helice_%s chain.\nCurrent \
+                        number of monomers is %d"
                     % (self.unit_num_monomers, helice, num_monomers)
                 )
-            elif num_monomers * monomer_backbone_atoms < 3:
-                raise ValueError(
-                    "Number of backbone atoms should be more than 2 in order to create infinite periodic \
-                        chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate \
-                        number of monomers."
-                    % (num_monomers * monomer_backbone_atoms)
-                )
-        self.num_monomers = num_monomers + 2 if infinite else num_monomers
 
-        self.tacticity = tacticity
-        if self.tacticity:
-            if self.tacticity == "N/A":
-                self.tacticity = ""
-            elif self.tacticity not in ["isotactic", "atactic", "syndiotactic"]:
-                raise TypeError(
-                    "Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic"
-                )
-            elif not self.polymer_type.side_atom:
-                raise ValueError("Please specify side_atom")
+            if infinite:
+                if num_monomers % self.unit_num_monomers:
+                    raise ValueError(
+                        "Number of monomers should be multiple of %d in order to generate infinite periodic Helice_%s \
+                            chain.\nCurrent number of monomers is %d"
+                        % (self.unit_num_monomers, helice, num_monomers)
+                    )
+                elif num_monomers * monomer_backbone_atoms < 3:
+                    raise ValueError(
+                        "Number of backbone atoms should be more than 2 in order to create infinite periodic \
+                            chain.\nCurrent number of backbone atoms along the periodic chain is %d\nPlease increate \
+                            number of monomers."
+                        % (num_monomers * monomer_backbone_atoms)
+                    )
+            self.num_monomers = num_monomers + 2 if infinite else num_monomers
 
-        self.chiriality = chiriality
-        if str(self.helice) in ["2_1_1", "4_1_2"]:
-            self.torsion_seq = [180, 180, 180, 180]
-            if self.chiriality:
-                self.chiriality = ""
-                print("Zig-zag conformation does not have chiriality")
-        elif str(self.helice) in ["2_2_1", "4_2_2"]:
-            if self.chiriality == "left":
-                self.torsion_seq = [300, 300, 300, 300]
-            elif self.chiriality == "right":
-                self.torsion_seq = [60, 60, 60, 60]
-            else:
-                raise ValueError("Please specify chiriality: left or right")
-        elif str(self.helice) in ["2_3_1", "4_3_2"]:
-            if self.chiriality == "left":
-                self.torsion_seq = [180, 300, 180, 300]
-            elif self.chiriality == "right":
-                self.torsion_seq = [60, 180, 60, 180]
-            else:
-                raise ValueError("Please specify chiriality: left or right")
-        elif str(self.helice) == "4_1_1":
-            self.torsion_seq = [60, 180, 300, 180]
-            if self.chiriality:
-                self.chiriality = ""
-                print("Helice_4_1_1 conformation does not have chiriality")
-        elif str(self.helice) == "4_2_1":
-            if self.chiriality == "left":
-                self.torsion_seq = [180, 180, 300, 300]
-            elif self.chiriality == "right":
-                self.torsion_seq = [60, 60, 180, 180]
-            else:
-                raise ValueError("Please specify chiriality: left or right")
-        elif str(self.helice) == "4_3_1":
-            if self.chiriality == "left":
-                if self.helice.sub_type:
-                    self.torsion_seq = [180, 300, 300, 300]
+            self.tacticity = tacticity
+            if self.tacticity:
+                if self.tacticity == "N/A":
+                    self.tacticity = ""
+                elif self.tacticity not in ["isotactic", "atactic", "syndiotactic"]:
+                    raise TypeError(
+                        "Unknown tacticity, please specify one of the following: isotactic, atactic and syndiotactic"
+                    )
+                elif not self.polymer_type.side_atom:
+                    raise ValueError("Please specify side_atom")
+
+            self.chiriality = chiriality
+            if str(self.helice) in ["2_1_1", "4_1_2"]:
+                self.torsion_seq = [180, 180, 180, 180]
+                if self.chiriality:
+                    self.chiriality = ""
+                    print("Zig-zag conformation does not have chiriality")
+            elif str(self.helice) in ["2_2_1", "4_2_2"]:
+                if self.chiriality == "left":
+                    self.torsion_seq = [300, 300, 300, 300]
+                elif self.chiriality == "right":
+                    self.torsion_seq = [60, 60, 60, 60]
                 else:
-                    self.torsion_seq = [180, 180, 180, 300]
-            elif self.chiriality == "right":
-                if self.helice.sub_type:
-                    self.torsion_seq = [60, 60, 60, 180]
+                    raise ValueError("Please specify chiriality: left or right")
+            elif str(self.helice) in ["2_3_1", "4_3_2"]:
+                if self.chiriality == "left":
+                    self.torsion_seq = [180, 300, 180, 300]
+                elif self.chiriality == "right":
+                    self.torsion_seq = [60, 180, 60, 180]
                 else:
-                    self.torsion_seq = [60, 180, 180, 180]
+                    raise ValueError("Please specify chiriality: left or right")
+            elif str(self.helice) == "4_1_1":
+                self.torsion_seq = [60, 180, 300, 180]
+                if self.chiriality:
+                    self.chiriality = ""
+                    print("Helice_4_1_1 conformation does not have chiriality")
+            elif str(self.helice) == "4_2_1":
+                if self.chiriality == "left":
+                    self.torsion_seq = [180, 180, 300, 300]
+                elif self.chiriality == "right":
+                    self.torsion_seq = [60, 60, 180, 180]
+                else:
+                    raise ValueError("Please specify chiriality: left or right")
+            elif str(self.helice) == "4_3_1":
+                if self.chiriality == "left":
+                    if self.helice.sub_type:
+                        self.torsion_seq = [180, 300, 300, 300]
+                    else:
+                        self.torsion_seq = [180, 180, 180, 300]
+                elif self.chiriality == "right":
+                    if self.helice.sub_type:
+                        self.torsion_seq = [60, 60, 60, 180]
+                    else:
+                        self.torsion_seq = [60, 180, 180, 180]
+                else:
+                    raise ValueError("Please specify chiriality: left or right")
             else:
-                raise ValueError("Please specify chiriality: left or right")
-        else:
-            raise Exception("Helice_%s is currently not supported" % self.helice)
+                raise Exception("Helice_%s is currently not supported" % self.helice)
 
-        self.configs = configs
-        self.infinite = infinite
-        # self.pattern = 0
-        self.monomers = []
-        self.weights = {}
+            self.configs = configs
+            self.infinite = infinite
+            # self.pattern = 0
+            self.monomers = []
+            self.weights = {}
 
     @property
     def polymer_type(self):
@@ -439,166 +485,44 @@ class Chain:
 
     def find_configurations(self, find_inverse_path=False):
 
-        if self.head_tail_defect_ratio:
-            find_inverse_path = True
-        self.backbones = self.polymer_type.identify_backbone_path(
-            find_inverse_path=find_inverse_path
-        )
+        if self.custom:
+            pass
 
-        monomers = {}
-        monomer_index = []
-
-        for key in self.backbones:
-            m = self.backbones[key].name.split("T")
-            if m[0] not in monomers:
-                monomers[m[0]] = []
-                monomer_index.append(m[0])
-            for T in [60, 180, 300]:
-                m_name = self.backbones[key].name + "T" + str(T)
-                key_torsions = {eval(m[1]), T}
-                if key_torsions in self.torsion_sets:
-                    monomers[m[0]].append(m_name)
-
-        self.configurations = {}
-        config_index = 1
-
-        if self.tacticity == "atactic" or find_inverse_path:
-            # self.pattern = 0
-            while config_index <= self.configs:
-                ht_sequence = random.choices(
-                    [0, 1],
-                    [1 - self.head_tail_defect_ratio, self.head_tail_defect_ratio],
-                    k=self.num_monomers - 1,
-                )
-                m1 = random.choice(monomer_index)
-                m1_name = random.choice(monomers[m1])
-                ht_label = m1_name[0]
-                tor1_label = m1_name[m1_name.index("T") :]  # noqa: E203
-                if tor1_label in self.torsion_label1:
-                    tor2_label = (
-                        self.torsion_label1[
-                            self.torsion_label1.index(tor1_label)
-                            + len(tor1_label) :  # noqa: E203
-                        ]
-                        + self.torsion_label1[: self.torsion_label1.index(tor1_label)]
-                    )
-                elif tor1_label in self.torsion_label2:
-                    tor2_label = self.torsion_label1[
-                        self.torsion_label2.index(tor1_label)
-                        + len(tor1_label)
-                        - len(
-                            self.torsion_label1
-                        ) : self.torsion_label2.index(  # noqa: E203
-                            tor1_label
-                        )
-                    ]
-                elif tor1_label in self.torsion_labelr1:
-                    tor2_label = (
-                        self.torsion_labelr1[
-                            self.torsion_labelr1.index(tor1_label)
-                            + len(tor1_label) :  # noqa: E203
-                        ]
-                        + self.torsion_labelr1[: self.torsion_labelr1.index(tor1_label)]
-                    )
-                elif tor1_label in self.torsion_labelr2:
-                    tor2_label = self.torsion_labelr1[
-                        self.torsion_labelr2.index(tor1_label)
-                        + len(tor1_label)
-                        - len(
-                            self.torsion_labelr1
-                        ) : self.torsion_labelr2.index(  # noqa: E203
-                            tor1_label
-                        )
-                    ]
-                if (not self.tacticity) or self.tacticity == "isotactic":
-                    m2_name = m1 + tor2_label
-                else:
-                    m2 = random.choice(monomer_index)
-                    m2_name = random.choice(monomers[m2])
-                    if self.tacticity == "atactic":
-                        # ata_sequence = random.choices(
-                        #    [0, 1], [0.5, 0.5], k=self.num_monomers - 1
-                        # )
-                        while not (
-                            ht_label == m2_name[0]
-                            and m1 != m2
-                            and tor1_label
-                            == m2_name[m2_name.index("T") :]  # noqa: E203
-                        ):
-                            m2 = random.choice(monomer_index)
-                            m2_name = random.choice(monomers[m2])
-                        m3_name = m1 + tor2_label
-                        m4_name = m2 + tor2_label
-                    elif self.tacticity == "syndiotactic":
-                        while not (
-                            ht_label == m2_name[0]
-                            and m1 != m2
-                            and tor2_label
-                            == m2_name[m2_name.index("T") :]  # noqa: E203
-                        ):
-                            m2 = random.choice(monomer_index)
-                            m2_name = random.choice(monomers[m2])
-                if self.tacticity == "atactic":
-                    self.configurations[config_index] = [
-                        random.choice([m1_name, m2_name])
-                    ]
-                else:
-                    self.configurations[config_index] = [m1_name]
-                for i, ht_seq in enumerate(ht_sequence):
-                    if ht_seq:
-                        m1 = random.choice(monomer_index)
-                        m1_name = random.choice(monomers[m1])
-                        while not (
-                            ht_label != m1_name[0]
-                            and tor1_label
-                            == m1_name[m1_name.index("T") :]  # noqa: E203
-                        ):
-                            m1 = random.choice(monomer_index)
-                            m1_name = random.choice(monomers[m1])
-                        ht_label = m1_name[0]
-                        if self.tacticity == "isotactic" or (not self.tacticity):
-                            m2_name = m1 + tor2_label
-                        else:
-                            m2 = random.choice(monomer_index)
-                            m2_name = random.choice(monomers[m2])
-                            if self.tacticity == "atactic":
-                                while not (
-                                    ht_label == m2_name[0]
-                                    and m1 != m2
-                                    and tor1_label
-                                    == m2_name[m2_name.index("T") :]  # noqa: E203
-                                ):
-                                    m2 = random.choice(monomer_index)
-                                    m2_name = random.choice(monomers[m2])
-                                m3_name = m1 + tor2_label
-                                m4_name = m2 + tor2_label
-                            elif self.tacticity == "syndiotactic":
-                                while not (
-                                    ht_label == m2_name[0]
-                                    and m1 != m2
-                                    and tor2_label
-                                    == m2_name[m2_name.index("T") :]  # noqa: E203
-                                ):
-                                    m2 = random.choice(monomer_index)
-                                    m2_name = random.choice(monomers[m2])
-                    if self.tacticity == "atactic":
-                        if i % 2:
-                            self.configurations[config_index].append(
-                                random.choice([m1_name, m2_name])
-                            )
-                        else:
-                            self.configurations[config_index].append(
-                                random.choice([m3_name, m4_name])
-                            )
-                    else:
-                        if i % 2:
-                            self.configurations[config_index].append(m1_name)
-                        else:
-                            self.configurations[config_index].append(m2_name)
-                config_index += 1
         else:
-            for m1 in monomer_index:
-                for m1_name in monomers[m1]:
+            if self.head_tail_defect_ratio:
+                find_inverse_path = True
+            self.backbones = self.polymer_type.identify_backbone_path(
+                find_inverse_path=find_inverse_path
+            )
+
+            monomers = {}
+            monomer_index = []
+
+            for key in self.backbones:
+                m = self.backbones[key].name.split("T")
+                if m[0] not in monomers:
+                    monomers[m[0]] = []
+                    monomer_index.append(m[0])
+                for T in [60, 180, 300]:
+                    m_name = self.backbones[key].name + "T" + str(T)
+                    key_torsions = {eval(m[1]), T}
+                    if key_torsions in self.torsion_sets:
+                        monomers[m[0]].append(m_name)
+
+            self.configurations = {}
+            config_index = 1
+
+            if self.tacticity == "atactic" or find_inverse_path:
+                # self.pattern = 0
+                while config_index <= self.configs:
+                    ht_sequence = random.choices(
+                        [0, 1],
+                        [1 - self.head_tail_defect_ratio, self.head_tail_defect_ratio],
+                        k=self.num_monomers - 1,
+                    )
+                    m1 = random.choice(monomer_index)
+                    m1_name = random.choice(monomers[m1])
+                    ht_label = m1_name[0]
                     tor1_label = m1_name[m1_name.index("T") :]  # noqa: E203
                     if tor1_label in self.torsion_label1:
                         tor2_label = (
@@ -640,24 +564,154 @@ class Chain:
                                 tor1_label
                             )
                         ]
-                    if self.tacticity == "isotactic" or (not self.tacticity):
+                    if (not self.tacticity) or self.tacticity == "isotactic":
                         m2_name = m1 + tor2_label
-                        self.configurations[config_index] = [m1_name, m2_name]
-                        config_index += 1
                     else:
-                        for m2 in monomer_index[
-                            monomer_index.index(m1) + 1 :  # noqa: E203
-                        ]:  # noqa: E203
-                            for m2_name in monomers[m2]:
-                                if (
-                                    tor2_label
-                                    == m2_name[m2_name.index("T") :]  # noqa: E203
-                                ):  # noqa: E203
-                                    self.configurations[config_index] = [
-                                        m1_name,
-                                        m2_name,
-                                    ]
-                                    config_index += 1
+                        m2 = random.choice(monomer_index)
+                        m2_name = random.choice(monomers[m2])
+                        if self.tacticity == "atactic":
+                            # ata_sequence = random.choices(
+                            #    [0, 1], [0.5, 0.5], k=self.num_monomers - 1
+                            # )
+                            while not (
+                                ht_label == m2_name[0]
+                                and m1 != m2
+                                and tor1_label
+                                == m2_name[m2_name.index("T") :]  # noqa: E203
+                            ):
+                                m2 = random.choice(monomer_index)
+                                m2_name = random.choice(monomers[m2])
+                            m3_name = m1 + tor2_label
+                            m4_name = m2 + tor2_label
+                        elif self.tacticity == "syndiotactic":
+                            while not (
+                                ht_label == m2_name[0]
+                                and m1 != m2
+                                and tor2_label
+                                == m2_name[m2_name.index("T") :]  # noqa: E203
+                            ):
+                                m2 = random.choice(monomer_index)
+                                m2_name = random.choice(monomers[m2])
+                    if self.tacticity == "atactic":
+                        self.configurations[config_index] = [
+                            random.choice([m1_name, m2_name])
+                        ]
+                    else:
+                        self.configurations[config_index] = [m1_name]
+                    for i, ht_seq in enumerate(ht_sequence):
+                        if ht_seq:
+                            m1 = random.choice(monomer_index)
+                            m1_name = random.choice(monomers[m1])
+                            while not (
+                                ht_label != m1_name[0]
+                                and tor1_label
+                                == m1_name[m1_name.index("T") :]  # noqa: E203
+                            ):
+                                m1 = random.choice(monomer_index)
+                                m1_name = random.choice(monomers[m1])
+                            ht_label = m1_name[0]
+                            if self.tacticity == "isotactic" or (not self.tacticity):
+                                m2_name = m1 + tor2_label
+                            else:
+                                m2 = random.choice(monomer_index)
+                                m2_name = random.choice(monomers[m2])
+                                if self.tacticity == "atactic":
+                                    while not (
+                                        ht_label == m2_name[0]
+                                        and m1 != m2
+                                        and tor1_label
+                                        == m2_name[m2_name.index("T") :]  # noqa: E203
+                                    ):
+                                        m2 = random.choice(monomer_index)
+                                        m2_name = random.choice(monomers[m2])
+                                    m3_name = m1 + tor2_label
+                                    m4_name = m2 + tor2_label
+                                elif self.tacticity == "syndiotactic":
+                                    while not (
+                                        ht_label == m2_name[0]
+                                        and m1 != m2
+                                        and tor2_label
+                                        == m2_name[m2_name.index("T") :]  # noqa: E203
+                                    ):
+                                        m2 = random.choice(monomer_index)
+                                        m2_name = random.choice(monomers[m2])
+                        if self.tacticity == "atactic":
+                            if i % 2:
+                                self.configurations[config_index].append(
+                                    random.choice([m1_name, m2_name])
+                                )
+                            else:
+                                self.configurations[config_index].append(
+                                    random.choice([m3_name, m4_name])
+                                )
+                        else:
+                            if i % 2:
+                                self.configurations[config_index].append(m1_name)
+                            else:
+                                self.configurations[config_index].append(m2_name)
+                    config_index += 1
+            else:
+                for m1 in monomer_index:
+                    for m1_name in monomers[m1]:
+                        tor1_label = m1_name[m1_name.index("T") :]  # noqa: E203
+                        if tor1_label in self.torsion_label1:
+                            tor2_label = (
+                                self.torsion_label1[
+                                    self.torsion_label1.index(tor1_label)
+                                    + len(tor1_label) :  # noqa: E203
+                                ]
+                                + self.torsion_label1[
+                                    : self.torsion_label1.index(tor1_label)
+                                ]
+                            )
+                        elif tor1_label in self.torsion_label2:
+                            tor2_label = self.torsion_label1[
+                                self.torsion_label2.index(tor1_label)
+                                + len(tor1_label)
+                                - len(
+                                    self.torsion_label1
+                                ) : self.torsion_label2.index(  # noqa: E203
+                                    tor1_label
+                                )
+                            ]
+                        elif tor1_label in self.torsion_labelr1:
+                            tor2_label = (
+                                self.torsion_labelr1[
+                                    self.torsion_labelr1.index(tor1_label)
+                                    + len(tor1_label) :  # noqa: E203
+                                ]
+                                + self.torsion_labelr1[
+                                    : self.torsion_labelr1.index(tor1_label)
+                                ]
+                            )
+                        elif tor1_label in self.torsion_labelr2:
+                            tor2_label = self.torsion_labelr1[
+                                self.torsion_labelr2.index(tor1_label)
+                                + len(tor1_label)
+                                - len(
+                                    self.torsion_labelr1
+                                ) : self.torsion_labelr2.index(  # noqa: E203
+                                    tor1_label
+                                )
+                            ]
+                        if self.tacticity == "isotactic" or (not self.tacticity):
+                            m2_name = m1 + tor2_label
+                            self.configurations[config_index] = [m1_name, m2_name]
+                            config_index += 1
+                        else:
+                            for m2 in monomer_index[
+                                monomer_index.index(m1) + 1 :  # noqa: E203
+                            ]:  # noqa: E203
+                                for m2_name in monomers[m2]:
+                                    if (
+                                        tor2_label
+                                        == m2_name[m2_name.index("T") :]  # noqa: E203
+                                    ):  # noqa: E203
+                                        self.configurations[config_index] = [
+                                            m1_name,
+                                            m2_name,
+                                        ]
+                                        config_index += 1
 
     def input_polymod(self, ofile, config_index):
 
@@ -772,38 +826,43 @@ class Chain:
     def build_helix(self):
         self.find_configurations()
 
-        print(
-            "Total %d possible configurations found for Helice %s"
-            % (len(self.configurations), self.helice)
-        )
+        if self.custom:
+            holder, unit_vector, unit_distance=custom_build_helix(self.polymer_type,self.num_monomers)
+            return holder, unit_vector, unit_distance
 
-        config_success = 0
-        for config_index in self.configurations:
-            print("Try Configuration", config_index)
-
-            # Build polymod input file
-            self.input_polymod(".tmp/run_polymod.txt", config_index)
-            # input_polymod('run_polymod.txt',monomer_path,helice,backbone_atoms=backbone_atoms,tacticity=tacticity,side_atom=side_atom,chiriality=chiriality,num_monomers=num_monomers)
-            # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, num_monomers=num_monomers)
-
-            # Run polymod
-            run_polymod(".tmp/run_polymod.txt", validate_bond=True)  # noqa: F405
-            if validate_coords(  # noqa: F405
-                ".tmp/chains_unwrapped.pdb", ".tmp/bonds.dat"
-            ):  # noqa: F405
-                config_success = 1
-                print("Success for Configuration", config_index)
-                break
-            else:
-                print("Fail for Configuration", config_index)
-
-        if config_success:
-            return readPDB(".tmp/chains_unwrapped.pdb")
         else:
-            raise Exception(
-                "Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of atoms."
-                % (self.helice, self.polymer_type.name)
+            print(
+                "Total %d possible configurations found for Helice %s"
+                % (len(self.configurations), self.helice)
             )
+
+            config_success = 0
+            for config_index in self.configurations:
+                print("Try Configuration", config_index)
+
+                # Build polymod input file
+                self.input_polymod(".tmp/run_polymod.txt", config_index)
+                # input_polymod('run_polymod.txt',monomer_path,helice,backbone_atoms=backbone_atoms,tacticity=tacticity,side_atom=side_atom,chiriality=chiriality,num_monomers=num_monomers)
+                # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, num_monomers=num_monomers)
+
+                # Run polymod
+                run_polymod(".tmp/run_polymod.txt", validate_bond=True)  # noqa: F405
+                if validate_coords(  # noqa: F405
+                    ".tmp/chains_unwrapped.pdb", ".tmp/bonds.dat"
+                ):  # noqa: F405
+                    config_success = 1
+                    print("Success for Configuration", config_index)
+                    break
+                else:
+                    print("Fail for Configuration", config_index)
+
+            if config_success:
+                return readPDB(".tmp/chains_unwrapped.pdb")
+            else:
+                raise Exception(
+                    "Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of atoms."
+                    % (self.helice, self.polymer_type.name)
+                )
 
     def build_chain(
         self,
@@ -836,38 +895,54 @@ class Chain:
         # in_path = os.path.join(current_location, '..', 'data', 'polymod_input', 'sample_chain.txt')
         # monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
 
-        # Build helix
-        holder = self.build_helix()
+        if self.custom:
+            holder, unit_vector, unit_distance = self.build_helix()
 
-        # Correct chain orientation
-        holder, unit_distance = correct_chain_orientation(
-            holder, self.num_monomers, self.unit_num_monomers
-        )
+            # Correct chain orientation
+            holder = correct_chain_orientation(holder, unit_vector)
 
-        # Create infinite periodic polymer helix chain
-        if self.infinite:
-            holder = create_infinite_chain(holder, self.num_monomers)
+            helix_name = (
+                self.polymer_type.name + "_custom" + ("_inf" if self.infinite else "")
+            )
+            self.helix_name = helix_name
+            write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
 
-        # Correct chain position
-        holder = correct_chain_position(holder)
+        else:
+            # Build helix
+            holder = self.build_helix()
 
-        # Further correct chain position for infinite chain
-        if self.infinite:
-            holder = correct_infinite_chain_position(holder)
+            # Calculate unit distance and unit vector
+            unit, unit_vector, unit_distance = chain_periodicity(
+                holder, self.num_monomers, self.unit_num_monomers
+            )
 
-        helix_name = self.polymer_type.name + "_helix_%s%s%s%s%s" % (
-            self.helice,
-            "_" + self.tacticity[:3] if self.tacticity else "",
-            "+"
-            if self.chiriality == "right"
-            else "-"
-            if self.chiriality == "left"
-            else "",
-            "_custom" if self.head_tail_defect_ratio else "",
-            "_inf" if self.infinite else "",
-        )
-        self.helix_name = helix_name
-        write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
+            # Correct chain orientation
+            holder = correct_chain_orientation(holder, unit_vector)
+
+            # Create infinite periodic polymer helix chain
+            if self.infinite:
+                holder = create_infinite_chain(holder, self.num_monomers)
+
+            # Correct chain position
+            holder = correct_chain_position(holder)
+
+            # Further correct chain position for infinite chain
+            if self.infinite:
+                holder = correct_infinite_chain_position(holder)
+
+            helix_name = self.polymer_type.name + "_helix_%s%s%s%s%s" % (
+                self.helice,
+                "_" + self.tacticity[:3] if self.tacticity else "",
+                "+"
+                if self.chiriality == "right"
+                else "-"
+                if self.chiriality == "left"
+                else "",
+                "_custom" if self.head_tail_defect_ratio else "",
+                "_inf" if self.infinite else "",
+            )
+            self.helix_name = helix_name
+            write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
 
         self.built = 1
         self.holder = holder

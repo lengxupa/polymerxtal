@@ -8,7 +8,7 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-import errno, os, sys
+import errno, os  # , sys  # noqa: E401
 
 from .unistd import fchdir
 
@@ -50,6 +50,6 @@ def changeDir(directory):
 # storeDir()
 # ============================================================================
 def restoreDir():
-    if (not prevdir) or -1 == fchdir(prevdir):
+    if (not prevdir) or -1 == fchdir(prevdir):  # noqa: F823
         raise IOError("Unable to return to previous directory")
-    prevdir = ""
+    prevdir = ""  # noqa: F841

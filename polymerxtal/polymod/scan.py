@@ -10,7 +10,7 @@
 
 import re
 
-from .stdio import FILE
+# from .stdio import FILE
 from .utils import openFile
 
 TOK_EOF = 0
@@ -138,7 +138,7 @@ switcher = {
     "self_avoid": TOK_SELF_AVOID,
     "self_avoid_cutoff": TOK_SELF_AVOID_CUTOFF,
     "[-+]?[0-9]+": TOK_INT,
-    "[-+]?\d*\.\d+|\d+": TOK_REAL,
+    "[-+]?\d*\.\d+|\d+": TOK_REAL,  # noqa: W605
     "[a-zA-Z0-9_/\\.-]+": TOK_STRING,
 }
 

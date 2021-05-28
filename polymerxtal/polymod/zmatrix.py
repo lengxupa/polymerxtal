@@ -14,7 +14,8 @@ import numpy as np
 
 from .config import REAL_MAX, MAX_BONDS
 from .element import getElementName
-from .stdio import FILE
+
+# from .stdio import FILE
 from .types import AtomType
 from .utils import DEG2RAD
 

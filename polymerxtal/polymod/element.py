@@ -8,7 +8,7 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-from .scan import Scanner, createScanner, TOK_EOF
+from .scan import createScanner, TOK_EOF  # Scanner,
 
 # File scope
 elements = {}

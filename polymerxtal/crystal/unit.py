@@ -71,4 +71,4 @@ def chain_periodicity(h, num_monomers, unit_num_monomers):
         distance = np.linalg.norm(vk)
     vk /= np.linalg.norm(vk)
 
-    return unit, distance, vk
+    return unit, vk, distance 

@@ -1,13 +1,17 @@
-##Gasteiger charger
+# Gasteiger charger
 import os
-import sys
 
-# import handleAtoms
-# import handleBonds
+# import sys
+
+from .handleAtoms import Atomtypes, AtomsInfo
+
+from .handleBonds import getBonds
 
 current_location = os.path.dirname(__file__)
+
+
 #####################################################################################
-##get parameter file name, with installed path
+# get parameter file name, with installed path
 def getGasteigerParamFile():
     datadir = os.path.join(current_location, "data")
     # cwd=os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -21,14 +25,14 @@ def getGasteiger_parameters(forcefield):
     Gparas = []
     Gasteigerfile = getGasteigerParamFile()
     fin = open(Gasteigerfile, "r")
-    ##fin=open("Gasteiger_parameters.txt",'r')
+    # fin=open("Gasteiger_parameters.txt",'r')
     dataline = fin.readline()
     while dataline != "":
-        words = dataline[0 : len(dataline) - 1].split()
+        words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         if str(words[0]).upper() == str(forcefield).upper():
             dataline = fin.readline()
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atomtype = words[0]
                 ai = eval(words[1])
@@ -36,7 +40,7 @@ def getGasteiger_parameters(forcefield):
                 ci = eval(words[3])
                 Gparas.append([atomtype, ai, bi, ci])
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return Gparas
@@ -45,13 +49,13 @@ def getGasteiger_parameters(forcefield):
 #################################################################
 def getAtomsBonds():
     inpfile = "atom_type.dat"
-    atomtypes = handleAtoms.Atomtypes(inpfile)
+    atomtypes = Atomtypes(inpfile)
     # print "Atomtypes total=",len(atomtypes)
     inpfile = "atoms.dat"
-    atoms = handleAtoms.AtomsInfo(inpfile)
+    atoms = AtomsInfo(inpfile)
     # print "Atoms total=",len(atoms)
     inpfile = "bonds.dat"
-    bonds = handleBonds.getBonds(inpfile, 0, 1)
+    bonds = getBonds(inpfile, 0, 1)
     # print "Bonds total=",len(bonds)
     return atomtypes, atoms, bonds
 
@@ -66,7 +70,7 @@ def getGasteigerCharge(Gparas, atomtypes, atoms, bonds):
     x = [0]
     xp = [0]
 
-    ##initialization
+    # initialization
     for i in range(natoms):
         atypeID = atoms[i][2]
         atype = atomtypes[atypeID - 1][1]
@@ -103,7 +107,7 @@ def getGasteigerCharge(Gparas, atomtypes, atoms, bonds):
         x.append(ai)
         xp.append([ai, bi, ci])
 
-    ##Loop over n
+    # Loop over n
     for n in range(1, 100):
         for k in range(nbonds):
             i = bonds[k][2]
@@ -138,7 +142,7 @@ def getGasteigerCharge(Gparas, atomtypes, atoms, bonds):
         if nconverg == natoms:
             Goutput(Q)
             break
-    ##Check total charge
+    # Check total charge
     s = 0.0
     for i in range(len(Q)):
         s = s + Q[i]

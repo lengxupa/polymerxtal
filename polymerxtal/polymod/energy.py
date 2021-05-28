@@ -10,7 +10,7 @@
 
 import numpy as np
 
-from .element import *  # getElement*()
+from .element import *  # getElement*()  # noqa: F403
 
 # File scope
 self_avoid_cutoff_sq = 0.0
@@ -22,7 +22,7 @@ self_avoid_cutoff_sq = 0.0
 # Result: set square self-avoiding cutoff energy
 # ============================================================================
 def setSelfAvoidCutoff(rcut):
-    self_avoid_cutoff_sq = rcut * rcut
+    self_avoid_cutoff_sq = rcut * rcut  # noqa: F841
 
 
 class Energy:
@@ -34,11 +34,15 @@ class Energy:
     # types type1 and type2, separated by the square distance r2
     # ============================================================================
     def energyLJ(type1, type2, r2):
-        p2 = getElementLJ_R0(type1) * getElementLJ_R0(type2) / r2  # (R/R0)^-2
+        p2 = (
+            getElementLJ_R0(type1) * getElementLJ_R0(type2) / r2  # noqa: F405
+        )  # (R/R0)^-2  # noqa: F405
         p6 = p2 * p2 * p2
 
         return (
-            np.sqrt(getElementLJ_D0(type1) * getElementLJ_D0(type2)) * p6 * (p6 - 2.0)
+            np.sqrt(getElementLJ_D0(type1) * getElementLJ_D0(type2))  # noqa: F405
+            * p6
+            * (p6 - 2.0)  # noqa: F405
         )
 
     # ============================================================================
@@ -48,7 +52,7 @@ class Energy:
     # distance for types type1 and type2, else return 0
     # ============================================================================
     def energyHardCore(type1, type2, r2):
-        r = getElementR0(type1) + getElementR0(type2)
+        r = getElementR0(type1) + getElementR0(type2)  # noqa: F405
 
         return 1e3 if (r2 < r * r) else 0.0
 

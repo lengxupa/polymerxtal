@@ -47,11 +47,15 @@ def get_tail_torsion(mpath, head, tail):
 
 
 class PolymerType:
-    def __init__(self, name, path, backbone_atoms=[], side_atom=0):
+    def __init__(
+        self, name, path, backbone_atoms=[], side_atom=0, append_atoms={}, helicity=1
+    ):
         self.name = name
         self.path = path
         self.backbone_atoms = backbone_atoms
         self.side_atom = side_atom
+        self.append_atoms = append_atoms
+        self.helicity = helicity
 
     def __str__(self):
         return self.name
@@ -164,5 +168,26 @@ polymer_types = {
     ),
     "PAN": PolymerType(
         "PAN", os.path.join(monomer_path, "PAN.pdb"), backbone_atoms=[3, 2], side_atom=5
+    ),
+    "Chitosan": PolymerType(
+        "Chitosan",
+        os.path.join(monomer_path, "Chitosan_3D.pdb"),
+        backbone_atoms=[34, 35],
+        append_atoms={34: [201], 35: [202]},
+        helicity=0,
+    ),
+    "Cellulose": PolymerType(
+        "Cellulose",
+        os.path.join(monomer_path, "Cellulose.pdb"),
+        backbone_atoms=[34, 35],
+        append_atoms={34: [201], 35: [202]},
+        helicity=0,
+    ),
+    "Chitosan_2D": PolymerType(
+        "Chitosan_2D",
+        os.path.join(monomer_path, "Chitosan_2D.pdb"),
+        backbone_atoms=[34, 35],
+        append_atoms={34: [201], 35: [202]},
+        helicity=0,
     ),
 }

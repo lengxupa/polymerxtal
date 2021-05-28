@@ -11,24 +11,27 @@
 import numpy as np
 import random
 
-from .build import *
+from .build import *  # noqa: F403
 from .chain import Chain, createChain
 from .config import MAX_BONDS
-from .domain import createDomain, Bin, Domain
-from .monomer import Monomer, Bond
+from .domain import createDomain  # Bin, , Domain
+
+# from .monomer import Monomer, Bond
 from .params import Params
-from .stdio import *
-from .stereo import Stereo
+from .stdio import *  # noqa: F403
+
+# from .stereo import Stereo
 from .system import PolymerSystem
 from .timer import Timer
-from .types import *
-from .utils import *
-from .zmatrix import ZMatrix
+from .types import *  # noqa: F403
+from .utils import *  # noqa: F403
+
+# from .zmatrix import ZMatrix
 
 # File scope
 polysys = PolymerSystem()
-log_file = FILE()
-status_file = FILE()
+log_file = FILE()  # noqa: F405
+status_file = FILE()  # noqa: F405
 timer = Timer()
 params = Params()
 
@@ -52,9 +55,9 @@ def logMessage(msg):
 def cleanup(params):
     polysys.cleanupSystem(params)  # before freeParams()
     del params
-    if log_file.path and stdout != log_file:
+    if log_file.path and stdout != log_file:  # noqa: F405
         log_file.fclose()
-    if status_file.path and stdout != status_file:
+    if status_file.path and stdout != status_file:  # noqa: F405
         status_file.fclose()
 
 
@@ -85,12 +88,12 @@ def showVersion(f):
 def main(args):
     done = 0
     infile = ""
-    usage = (
-        "Usage: %s [flags] infile\n"
-        + "Flags:\n"
-        + "   -v   Show version and build info, then exit\n"
-        + "   -h   Show help message, then exit\n"
-    )
+    # usage = (
+    #    "Usage: %s [flags] infile\n"
+    #    + "Flags:\n"
+    #    + "   -v   Show version and build info, then exit\n"
+    #    + "   -h   Show help message, then exit\n"
+    # )
     mini = np.zeros(3)
     maxi = np.zeros(3)
     total_monomers = 0
@@ -107,22 +110,22 @@ def main(args):
             if "-" == p[0]:
                 if len(p) > 2 and p[2]:
                     # multi-char flag
-                    SHOW_USAGE(stderr)
+                    SHOW_USAGE(stderr)  # noqa: F405
                     raise SyntaxError('\nUnknown flag: "%s"\n' % p)
                 if len(p) == 2:
                     if p[1] == "h":
-                        SHOW_USAGE(stdout)
+                        SHOW_USAGE(stdout)  # noqa: F405
                         done += 1
                     elif p[1] == "v":
-                        showVersion(stdout)
+                        showVersion(stdout)  # noqa: F405
                         done += 1
                     else:
-                        SHOW_USAGE(stderr)
+                        SHOW_USAGE(stderr)  # noqa: F405
                         raise SyntaxError('\nUnknown flag: "%s"\n' % p[1])
                         break
             else:
                 if infile:
-                    SHOW_USAGE(stderr)
+                    SHOW_USAGE(stderr)  # noqa: F405
                     raise SyntaxError(
                         "\nInput file specified twice: %s, %s\n" % (infile, p)
                     )
@@ -132,7 +135,7 @@ def main(args):
         cleanup()
         return 0
     if not infile:
-        SHOW_USAGE(stderr)
+        SHOW_USAGE(stderr)  # noqa: F405
         raise SyntaxError("\nMissing input file\n")
 
     # Read input
@@ -182,13 +185,13 @@ def main(args):
         # Now params.total_volume holds the true polymer volume
         if 0 == params.num_monomers:
             params.num_monomers = int(
-                (params.density * CA2CC(params.total_volume))
-                / float(params.num_chains * AMU2GRAM(monomer_mass))
+                (params.density * CA2CC(params.total_volume))  # noqa: F405
+                / float(params.num_chains * AMU2GRAM(monomer_mass))  # noqa: F405
             )
     else:
-        params.total_volume = CC2CA(
+        params.total_volume = CC2CA(  # noqa: F405
             float(params.num_chains * params.num_monomers)
-            * AMU2GRAM(monomer_mass)
+            * AMU2GRAM(monomer_mass)  # noqa: F405
             / params.density
         )  # polymer volume
         params.system_min[0] = 0.0
@@ -213,14 +216,14 @@ def main(args):
     params.domain_size[2] = params.system_size[2] / float(params.num_domains_z)
 
     # Log file
-    log_file = stdout
+    log_file = stdout  # noqa: F405
     if params.log_file:
-        log_file = openFile(params.log_file, "w")
+        log_file = openFile(params.log_file, "w")  # noqa: F405
 
     # Status file
-    status_file = stdout
+    status_file = stdout  # noqa: F405
     if params.status_file:
-        status_file = openFile(params.status_file, "w")
+        status_file = openFile(params.status_file, "w")  # noqa: F405 F841  # noqa:
 
     # Report parameters
     log_file.printf("\n========================================")
@@ -264,7 +267,7 @@ def main(args):
         else:
             n = params.num_monomers
         # Choose a Stereo option for this Chain
-        j = selectWeight(
+        j = selectWeight(  # noqa: F405
             params.chain_stereo_weights, params.num_stereo, polysys.rngs[0]
         )
         s = params.chain_stereo[j]
@@ -287,7 +290,7 @@ def main(args):
     log_file.printf("\nMaximum atoms: %d\n" % total_atoms)
     log_file.printf(
         "Rough estimate of density: %f g/cm^3\n\n"
-        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))
+        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))  # noqa: F405
     )
 
     # Build Chains
@@ -297,7 +300,7 @@ def main(args):
     #      buildChains(&sys, &params, omp_get_thread_num());
     #   }
     # else
-    buildChains(polysys, params, 0)
+    buildChains(polysys, params, 0)  # noqa: F405
     # endif
 
     # Final log outputs
@@ -338,19 +341,19 @@ def main(args):
     log_file.printf("Total atoms: %d\n" % total_atoms)
     log_file.printf(
         "Final density: %f g/cm^3\n"
-        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))
+        % (AMU2GRAM(total_mass) / CA2CC(params.total_volume))  # noqa: F405
     )
 
     # PDB output
     if params.write_wrapped_pdb:
-        f = openFile("chains_wrapped.pdb", "w")
+        f = openFile("chains_wrapped.pdb", "w")  # noqa: F405
         n = 1
         for i in range(params.num_chains):
             if not polysys.chains[i].dead:
                 polysys.chains[i].writeChainPDB(n, 1, f, params)
         f.fclose()
     if params.write_unwrapped_pdb:
-        f = openFile(".tmp/chains_unwrapped.pdb", "w")
+        f = openFile(".tmp/chains_unwrapped.pdb", "w")  # noqa: F405
         n = 1
         for i in range(params.num_chains):
             if not polysys.chains[i].dead:
@@ -359,14 +362,14 @@ def main(args):
 
     # XYZ output
     if params.write_wrapped_xyz:
-        f = openFile("chains_wrapped.xyz", "w")
+        f = openFile("chains_wrapped.xyz", "w")  # noqa: F405
         f.printf("%d\nChains\n" % total_atoms)
         for i in range(params.num_chains):
             if not polysys.chains[i].dead:
                 polysys.chains[i].writeChainXYZ(1, f, params)
         f.fclose()
     if params.write_unwrapped_xyz:
-        f = openFile("chains_unwrapped.xyz", "w")
+        f = openFile("chains_unwrapped.xyz", "w")  # noqa: F405
         f.printf("%d\nChains\n" % total_atoms)
         for i in range(params.num_chains):
             if not polysys.chains[i].dead:
@@ -391,7 +394,7 @@ def main(args):
                 bins[
                     int(polysys.chains[i].length[nm] / params.chain_length_histo_bin)
                 ] += 1
-        f = openFile("chain_length_histo.dat", "w")
+        f = openFile("chain_length_histo.dat", "w")  # noqa: F405
         f.printf("# length (A)    count\n")
         for i in range(num_bins):
             f.printf("%f  %d\n" % ((i + 1) * params.chain_length_histo_bin, bins[i]))
@@ -410,7 +413,7 @@ def main(args):
             for j in range(polysys.chains[i].num_monomers):
                 length[j] += polysys.chains[i].length[j] * polysys.chains[i].weight[j]
                 weight[j] += polysys.chains[i].weight[j]
-        f = openFile("mean_chain_length.dat", "w")
+        f = openFile("mean_chain_length.dat", "w")  # noqa: F405
         f.printf("# monomers  mean length (A)\n")
         for i in range(max_monomers):
             f.printf(
@@ -431,7 +434,7 @@ def main(args):
                 continue
             for j in range(360):
                 count[j] += polysys.chains[i].torsion_count[j]
-        f = openFile("torsion_histo.dat", "w")
+        f = openFile("torsion_histo.dat", "w")  # noqa: F405
         f.printf("# angle (deg)   count\n")
         for i in range(360):
             f.printf("%d  %d\n" % (i, count[i]))
@@ -444,16 +447,16 @@ def main(args):
     if params.write_intermediate:
         pos = np.zeros(3)
 
-        f = openFile(".tmp/atom_type.dat", "w")
-        writeAtomTypesDreiding(f)
+        f = openFile(".tmp/atom_type.dat", "w")  # noqa: F405
+        writeAtomTypesDreiding(f)  # noqa: F405
         f.fclose()
-        f = openFile(".tmp/bond_type.dat", "w")
-        writeBondTypesDreiding(f)
+        f = openFile(".tmp/bond_type.dat", "w")  # noqa: F405
+        writeBondTypesDreiding(f)  # noqa: F405
         f.fclose()
         na = 0
         for i in range(params.num_chains):
             na += polysys.chains[i].curr_atom
-        f = openFile(".tmp/atoms.dat", "w")
+        f = openFile(".tmp/atoms.dat", "w")  # noqa: F405
         f.printf("%d atoms\n\nATOMS\n\n" % na)
         na = 1
         for i in range(params.num_chains):
@@ -461,7 +464,7 @@ def main(args):
                 continue
             for j in range(polysys.chains[i].curr_atom):
                 pos = polysys.chains[i].zm.getPosition(j, pos)
-                foldPosition(
+                foldPosition(  # noqa: F405
                     pos, params.system_min, params.system_max, params.system_size
                 )
                 f.printf(
@@ -469,7 +472,9 @@ def main(args):
                     % (
                         na,
                         i + 1,
-                        getAtomTypeIndex(polysys.chains[i].zm.entries[j].type),
+                        getAtomTypeIndex(  # noqa: F405
+                            polysys.chains[i].zm.entries[j].type
+                        ),  # noqa: F405
                         0.0,  # XXX charge
                         pos[0],
                         pos[1],
@@ -478,7 +483,7 @@ def main(args):
                 )
                 na += 1
         f.fclose()
-        f = openFile(".tmp/bonds.dat", "w")
+        f = openFile(".tmp/bonds.dat", "w")  # noqa: F405
         f.printf("BONDS\n\n")
         na = 0
         nb = 1
@@ -495,7 +500,7 @@ def main(args):
                         "%d  %d  %d  %d\n"
                         % (
                             nb,
-                            getBondTypeIndex(type1, type2),
+                            getBondTypeIndex(type1, type2),  # noqa: F405
                             na + 1,
                             offset + polysys.chains[i].zm.entries[j].bond_index + 1,
                         )
@@ -510,7 +515,7 @@ def main(args):
                     "%d  %d  %d  %d\n"
                     % (
                         nb,
-                        getBondTypeIndex(type1, type2),
+                        getBondTypeIndex(type1, type2),  # noqa: F405
                         offset + b.index1 + 1,
                         offset + b.index2 + 1,
                     )

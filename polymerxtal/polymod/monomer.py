@@ -15,11 +15,11 @@ from polymerxtal.crystal.measure import calculate_angle
 
 from .config import REAL_MAX
 from .element import getElementIndex, getElementName, getElementMass, getElementR0
-from .scan import *
-from .stdio import FILE, fgets
-from .types import *
+from .scan import *  # noqa: F403
+from .stdio import fgets  # FILE,
+from .types import *  # noqa: F403
 from .utils import RAD2DEG, kB, openFile
-from .zmatrix import ZMatrix, createZMatrix, ZEntry
+from .zmatrix import createZMatrix  # ZMatrix, , ZEntry
 
 
 # A bond between two monomer atoms, not represented by the z-matrix
@@ -77,7 +77,7 @@ def createHolder(num_atoms):
     for i in range(num_atoms):
         h.pos[i] = np.zeros(3)
         h.el_names[i] = ""
-        h.atom_types[i] = AtomType()
+        h.atom_types[i] = AtomType()  # noqa: F405
     h.num_atoms = num_atoms
     return h
 
@@ -97,8 +97,8 @@ def addZVar(name, value):
 
     # printf("variable: %s = %s\n", zv->name, zv->value);  fflush(stdout);
 
-    zv.next = z_variables
-    z_variables = zv
+    zv.next = z_variables  # noqa: F823
+    z_variables = zv  # noqa: F841
 
 
 # ============================================================================
@@ -112,7 +112,7 @@ def addZVar(name, value):
 def getRealValue(string):
     zv = z_variables
 
-    while zv and hasattr(av, "next"):
+    while zv and hasattr(zv, "next"):
         if zv.name == string:
             return getRealValue(zv.value)
         zv = zv.next
@@ -126,15 +126,15 @@ def getRealValue(string):
 # ============================================================================
 def cleanupZVars():
 
-    zv1 = z_variables
-    while zv1 and hasattr(av1, "next"):
+    zv1 = z_variables  # noqa: F823
+    while zv1 and hasattr(zv1, "next"):
         zv2 = zv1.next
-        zv1.next = ZVars()
+        zv1.next = ZVars()  # noqa: F405
         zv1.name = ""
         zv1.value = ""
         del zv1
         zv1 = zv2
-    z_variables = ZVars()
+    z_variables = ZVars()  # noqa: F841 F405
 
 
 # ============================================================================
@@ -181,7 +181,7 @@ def readXYZ(s):
 # ============================================================================
 def readZM(s, zmptr):
     h = {}
-    TOKLEN = 256
+    # TOKLEN = 256
     v0 = np.zeros(3)
 
     # Expected format of the zmatrix file:
@@ -203,7 +203,7 @@ def readZM(s, zmptr):
     # This method reads the file twice; see comments below in findBonds()
     # for why this is not a problem.
 
-    if TOK_INT == s.getToken():
+    if TOK_INT == s.getToken():  # noqa: F405
         i = 0
         skip_N = 1
     else:
@@ -214,13 +214,13 @@ def readZM(s, zmptr):
     prevtok = "%s" % s.tokstr
     tokval = s.getToken()
     i += 1
-    while (tokval != TOK_EOF) and (tokval != TOK_EQUAL):
+    while (tokval != TOK_EOF) and (tokval != TOK_EQUAL):  # noqa: F405
         # Count tokens until the first '='
         prevtok = "%s" % s.tokstr
         tokval = s.getToken()
         i += 1
     i -= 1  # ignore current token: EOF or '='
-    if TOK_EQUAL == tokval:
+    if TOK_EQUAL == tokval:  # noqa: F405
         i -= 1  # don't count name of first variable
     n = 0
     if i > 0:
@@ -238,7 +238,7 @@ def readZM(s, zmptr):
         n += 1
     if i != 0:
         raise TypeError("Invalid zmatrix: missing information")
-    while TOK_EQUAL == tokval:
+    while TOK_EQUAL == tokval:  # noqa: F405
         # "name = value" pairs follow; variable name is in prevtok
         s.getToken()
         addZVar(prevtok, s.tokstr)
@@ -492,7 +492,7 @@ def setAtomTypes(h, blist):
     H_index = getElementIndex("H")
 
     for i in range(h.num_atoms):
-        at = AtomType()
+        at = AtomType()  # noqa: F405
         # Count the number of bonds which involve atom i
         at.element_index = getElementIndex(h.el_names[i])
         at.num_bonds = 0
@@ -523,8 +523,8 @@ def setAtomTypes(h, blist):
                 # printf("atom %d is in a H-bond\n", i+1); fflush(stdout);
                 h.atom_types[i].num_bonds = -1
 
-        if -1 == getAtomTypeIndex(h.atom_types[i]):  # new type
-            addAtomType(h.atom_types[i])
+        if -1 == getAtomTypeIndex(h.atom_types[i]):  # new type  # noqa: F405
+            addAtomType(h.atom_types[i])  # noqa: F405
 
 
 # ============================================================================
@@ -533,15 +533,15 @@ def setAtomTypes(h, blist):
 # Result: registers known bond types
 # ============================================================================
 def setBondTypes(h, blist):
-    at1 = AtomType()
-    at2 = AtomType()
+    at1 = AtomType()  # noqa: F405
+    at2 = AtomType()  # noqa: F405
 
     b = blist
     while b and hasattr(b, "next"):
         at1 = h.atom_types[b.index1]
         at2 = h.atom_types[b.index2]
-        if -1 == getBondTypeIndex(at1, at2):
-            addBondType(at1, at2)
+        if -1 == getBondTypeIndex(at1, at2):  # noqa: F405
+            addBondType(at1, at2)  # noqa: F405
         b = b.next
 
 
@@ -586,7 +586,7 @@ class Monomer:
         rev_indices = {}
         not_bb = {}
         i_not_bb = 0
-        v0 = np.zeros(3)
+        # v0 = np.zeros(3)
 
         # Use indices[] to order the atoms, starting with the head, and identify
         # backbone atoms to the tail.  The chain building algorithms depend on
@@ -768,7 +768,7 @@ class Monomer:
             # ang = round(ang/ANGLE_TARGET)*ANGLE_TARGET;
 
             self.zm.entries[i].torsion_angle = ang
-            zei = self.zm.entries[i]
+            # zei = self.zm.entries[i]
 
             # Torsion corrections
             d2min = 1e9
@@ -885,12 +885,12 @@ class Monomer:
     # calls choke() on error
     # ============================================================================
     def readTorsionEnergies(self, index, path, temperature):
-        s = createScanner(path)
+        s = createScanner(path)  # noqa: F405
         kT = kB * temperature
 
         # Expected format: "angle (deg)    energy (kcal/mol) \n"
         n = 0
-        while TOK_EOF != s.getToken():
+        while TOK_EOF != s.getToken():  # noqa: F405
             n += 1
         n /= 2
         self.torsion_angles[index] = {}
@@ -934,7 +934,7 @@ class Monomer:
 def readMonomer(name, path, head_index, tail_index, eq_bond_scale=1.2):
     zm = {}
     blist = Bond()
-    s = Scanner()
+    s = Scanner()  # noqa: F405
 
     # printf("\nMonomer %s...\n", name); fflush(stdout);
     # Read atomic species and positions into h
@@ -943,12 +943,12 @@ def readMonomer(name, path, head_index, tail_index, eq_bond_scale=1.2):
         raise NameError("Unable to determine file type of monomer file %s" % path)
     p += 1
     if path[p:] == "xyz":
-        s = createScanner(path)
+        s = createScanner(path)  # noqa: F405
         h = readXYZ(s)
     elif path[p:] == "zm":
         if 0 != head_index:
             raise ValueError("For .zm input, head atom must be first")
-        s = createScanner(path)
+        s = createScanner(path)  # noqa: F405
         h = readZM(s, zm)
     elif path[p:] == "pdb":
         h = readPDB(path)
@@ -990,7 +990,7 @@ def readMonomer(name, path, head_index, tail_index, eq_bond_scale=1.2):
     m.num_extra_bonds = 0
     m.findExtraBonds(blist)
     del blist
-    blist = Bond()
+    # blist = Bond()
 
     # Setup torsions
     for i in range(m.num_bb):

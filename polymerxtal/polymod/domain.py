@@ -10,7 +10,7 @@
 
 import numpy as np
 
-from .params import Params
+# from .params import Params
 from .utils import getNeighborIndices, hashBin
 
 
@@ -102,7 +102,7 @@ class Domain:
         for i in range(self.total_bins):
             oa = self.bins[i].oa_list
             prev = OccAtom()
-            while oa and hasattr(os, "next"):
+            while oa and hasattr(oa, "next"):
                 if oa.chain == chain_index and oa.atom >= atom_start:
                     if prev and hasattr(prev, "next"):
                         prev.next = oa.next

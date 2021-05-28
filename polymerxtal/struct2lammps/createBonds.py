@@ -4,32 +4,33 @@ This module handles functions related to create bonds
 
 # from hublib.cmd import runCommand
 import numpy as np
-import os
-import subprocess
+
+# import os
+# import subprocess
 import sys
 
-try:
-    import openbabel as ob
-except:
-    try:
-        import ovito
+# try:
+#    import openbabel as ob
+# except:  # noqa: E722
+#    try:
+#        import ovito  # noqa: F401
 
-        use_ovito = True
-    except:
-        use_ovito = False
+#        use_ovito = True
+#    except:  # noqa: E722
+#        use_ovito = False
 
-    from polymerxtal.io import check_nanohub
+#    from polymerxtal.io import check_nanohub
 
-    use_nanohub = check_nanohub()
+#    use_nanohub = check_nanohub()
 
-    if not (use_ovito and use_nanohub):
-        import openbabel as ob
+#    if not (use_ovito and use_nanohub):
+#        import openbabel as ob
 
 
 from polymerxtal.io import run_lammps
 
 from .createBondCommands import create_bonds_commands
-from .readFiles import *
+from .readFiles import *  # noqa: F403
 from .runData4Lammps import read_cell_sizes
 
 
@@ -37,10 +38,10 @@ def create_bonds(
     outfilelmpdat, outfilepdb, bondscale, files_in_lattice, user_boundaries
 ):
 
-    ntypes = read_n_types(".tmp/bonds/test.lmpdat")
-    types, dictt = read_atom_pdb(outfilepdb, ntypes)
+    ntypes = read_n_types(".tmp/bonds/test.lmpdat")  # noqa: F405
+    types, dictt = read_atom_pdb(outfilepdb, ntypes)  # noqa: F405
     print("debug createBonds.py: create_bonds - types -", types)
-    mass = get_mass(types)
+    mass = get_mass(types)  # noqa: F405
     uboundaries = simulation_box(outfilelmpdat, files_in_lattice, user_boundaries)
     create_lmpdat(".tmp/bonds/new.lmpdat", files_in_lattice, uboundaries, outfilepdb)
     write_mass(".tmp/bonds/new.lmpdat", ntypes, mass)
@@ -65,7 +66,7 @@ def simulation_box(outfilelmpdat, file_with_lattice, user_boundaries):
         for k, v in cell_sizes.items():
             if len(cell_sizes[k]) < 3:
                 print("{0}: {1:.3f} {2:.3f}".format(k, float(v[0]), float(v[1])))
-        uboundaries = user_boundaries
+        # uboundaries = user_boundaries
 
     else:
         print("Box size parameters read:")
@@ -242,7 +243,7 @@ thermo_style   custom step etotal ke pe temp density vol pxx pyy pzz lx ly lz
 
 """
 
-    atomCombinations = create_atom_combinations(ntypes)
+    # atomCombinations = create_atom_combinations(ntypes)
     outInfile = ".tmp/bonds/bondcreate.in"
     with open(outInfile, "w") as f:
         f.write(constant_string1)
@@ -270,8 +271,8 @@ def create_connectivity(infile):
 
     links_dict = {}
     links = []
-    atoms = read_atoms_lmpdat(infile)
-    bonds = read_bonds_lmpdat(infile)
+    atoms = read_atoms_lmpdat(infile)  # noqa: F405
+    bonds = read_bonds_lmpdat(infile)  # noqa: F405
     print("Number of atoms: ", len(atoms))
     print("Number of bonds: ", len(bonds))
 
@@ -288,7 +289,8 @@ def create_connectivity(infile):
     if len(links_dict) < len(atoms):
         print(len(atoms), len(links_dict))
         print(
-            "WARNING: Some atoms are not connected, increasing the bondscale might change this. Data file will be still generated"
+            "WARNING: Some atoms are not connected, increasing the bondscale might change this. Data file will be \
+                still generated"
         )
 
     return links_dict
@@ -342,14 +344,14 @@ def create_ID_dictionary(infile_pdb, infile_lmpdat):
 
     # ID dict: key = lmpdat ID
     #         value = pdb ID
-    pdb_atoms = read_atoms_pdb(infile_pdb)
-    lmpdat_atoms = read_atoms_lmpdat(infile_lmpdat)
+    pdb_atoms = read_atoms_pdb(infile_pdb)  # noqa: F405
+    lmpdat_atoms = read_atoms_lmpdat(infile_lmpdat)  # noqa: F405
     ID_dict = {}
 
     for key in pdb_atoms.keys():
         if key not in lmpdat_atoms.keys():
             new_key = find_key(key, lmpdat_atoms)
-            if new_key == None:
+            if new_key is None:
                 sys.stderr.write(
                     "Coordinates in pdbfile.pdb and bonded.lmpdat are different"
                 )

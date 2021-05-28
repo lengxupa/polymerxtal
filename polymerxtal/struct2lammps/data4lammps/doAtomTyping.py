@@ -1,6 +1,8 @@
 from numpy import dot, cross
-import os
-import sys
+
+# import os
+# import sys
+
 
 # forcefield=sys.argv[1]
 ############################################################
@@ -8,7 +10,7 @@ def getAtomtypes():
     atomtypes = []
     fin = open(".tmp/types/atom_type.dat", "r")
     for line in fin:
-        words = str.split(line[0 : len(line) - 1])
+        words = str.split(line[0 : len(line) - 1])  # noqa: E203
         atype = str(
             words[1]
         )  # Dont change the upper because otherwise wont recognize several values
@@ -27,7 +29,7 @@ def getRingatoms(N):
 
     fin = open(".tmp/types/atominring.dat", "r")
     for line in fin:
-        words = str.split(line[0 : len(line) - 1])
+        words = str.split(line[0 : len(line) - 1])  # noqa: E203
         atomID = eval(words[0])
         ringsize = eval(words[1])
         atominring[atomID - 1] = ringsize
@@ -42,7 +44,7 @@ def getBondorders(NB):
 
     fin = open(".tmp/types/bondorder.dat", "r")
     for line in fin:
-        words = str.split(line[0 : len(line) - 1])
+        words = str.split(line[0 : len(line) - 1])  # noqa: E203
         bondID = eval(words[0])
         BOvalue = eval(words[1])
         bondorder[bondID - 1] = BOvalue
@@ -50,7 +52,7 @@ def getBondorders(NB):
 
 
 ############################################################
-##Find links to each atom
+# Find links to each atom
 def AtomLink(atoms, bonds):
     totalatoms = len(atoms)
     nlink = []
@@ -96,7 +98,7 @@ def linkelems(atomlinks, atoms, atomtypes):
 
 
 #####################################################################
-##Sort atom information
+# Sort atom information
 def getAtoms():
     fin = open(".tmp/types/atoms.dat", "r")
     dataline = fin.readline()
@@ -111,7 +113,7 @@ def getAtoms():
     dataline = fin.readline()
     for i in range(totalatoms):
         dataline = fin.readline()
-        words = str.split(dataline[0 : len(dataline) - 1])
+        words = str.split(dataline[0 : len(dataline) - 1])  # noqa: E203
         natom = eval(str(words[0]))
         nmolecule = eval(str.strip(str(words[1])))
         atomtype = eval(str(words[2]))
@@ -140,7 +142,7 @@ def getBonds():
 
     bondID = 0
     dataline = fin.readline()
-    words = str.split(dataline[0 : len(dataline) - 1])
+    words = str.split(dataline[0 : len(dataline) - 1])  # noqa: E203
     while words != []:
         bondtype = eval(str(words[1]))
         atom1 = eval(str(words[2]))
@@ -150,7 +152,7 @@ def getBonds():
         bonds.append([bondID, bondtype, atom1, atom2])
 
         dataline = fin.readline()
-        words = str.split(dataline[0 : len(dataline) - 1])
+        words = str.split(dataline[0 : len(dataline) - 1])  # noqa: E203
 
     dataline = fin.readline()
     words = str.split("\n")
@@ -160,7 +162,7 @@ def getBonds():
 
 #####################################################################################
 def getDREIDINGatomtypes(atoms, atomlinks, atomelems, atomlinkelems, atominring):
-    ##atominring[i]==-1, resonant ring
+    # atominring[i]==-1, resonant ring
     atomtype = []
     for i in range(len(atomelems)):
         atomtype.append("")
@@ -330,17 +332,17 @@ def getPCFFatomtypes(atomlinks, atomelems, atomlinkelems, atominring, bondorder)
             if atomPCFFtype[i] == "":
                 atomPCFFtype[i] = "c"
         elif atomelem == "N_":
-            if atominring[i] == 5 or atominring[i] == 6:  ##in a 5- or 6-ring
+            if atominring[i] == 5 or atominring[i] == 6:  # in a 5- or 6-ring
                 atomPCFFtype[i] = "np"
             elif (
                 atominring[i] == 6 and atomlinkelems[i].count("H_") == 1
-            ):  ##in a 6-ring
+            ):  # in a 6-ring
                 atomPCFFtype[i] = "nh"
-            if len(atomlinks[i]) == 1:  ##sp triple
+            if len(atomlinks[i]) == 1:  # sp triple
                 atomPCFFtype[i] = "nt"
             if len(atomlinks[i]) == 4:
                 atomPCFFtype[i] = "n+"
-            if len(atomlinks[i]) == 2 and atominring[i] == 0:  ##one double bond
+            if len(atomlinks[i]) == 2 and atominring[i] == 0:  # one double bond
                 atomPCFFtype[i] = "n=2"
             elif len(atomlinks[i]) == 2:
                 atomPCFFtype[i] = "nz"
@@ -446,7 +448,7 @@ def getPCFFatomtypes(atomlinks, atomelems, atomlinkelems, atominring, bondorder)
             if len(atomlinks[i]) == 2:
                 if atomlinkelems[i].count("C_") == 2:
                     atomPCFFtype[i] = "sc"
-                elif atomlinkelems[i].count("C_") == 2:  ##more rule
+                elif atomlinkelems[i].count("C_") == 2:  # more rule
                     atomPCFFtype[i] = "sp"
                 elif atomlinkelems[i].count("H_") == 1:
                     atomPCFFtype[i] = "sh"
@@ -455,8 +457,8 @@ def getPCFFatomtypes(atomlinks, atomelems, atomlinkelems, atominring, bondorder)
             if len(atomlinks[i]) == 4:
                 if atomlinkelems[i].count("O_") == 1:
                     atomPCFFtype[i] = "sf"
-            ##if xxx==xx:
-            ##    atomPCFFtype[i]="s-"
+            # if xxx==xx:
+            #    atomPCFFtype[i]="s-"
             if atomPCFFtype[i] == "":
                 atomPCFFtype[i] = "s"
         elif atomelem == "P_":
@@ -557,7 +559,7 @@ def atomTyping(
             atoms, atomlinks, atomelems, atomlinkelems, atominring
         )
 
-    ##summarize
+    # summarize
     sumatomtypes = collectAtomtypes(newatomtypes)
     atomwithnewtypeID = assignAtomtypeID(newatomtypes, sumatomtypes)
     return sumatomtypes, atomwithnewtypeID
@@ -582,7 +584,7 @@ def bondTyping(atomwithnewtypeID, atoms, bonds):
         a1type = atoms[i1 - 1][2]
         a2type = atoms[i2 - 1][2]
         bondtypes[bondID - 1] = [a1type, a2type]
-    ##collect types
+    # collect types
     newbondtypes = collectBondtypes(bondtypes)
     bonds = assignBondtypeID(newbondtypes, atoms, bonds)
     return newbondtypes, bonds

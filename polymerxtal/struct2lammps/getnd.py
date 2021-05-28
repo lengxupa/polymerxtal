@@ -2,14 +2,14 @@
 This module generates LAMMPS data file using ovito
 """
 
-import numpy as np
+# import numpy as np
 import os
 
 try:
     import ovito
 
     use_ovito = True
-except:
+except:  # noqa: E722
     use_ovito = False
 
 from polymerxtal.io import check_nanohub

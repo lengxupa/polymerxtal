@@ -48,21 +48,25 @@ def updateStatus():
     update_count += 1
     if update_count == params.total_domains:
         for i in range(params.num_chains):
-            curr_monomers += polysys.chains[i].curr_monomer
-            pct = int(100.0 * float(curr_monomers) / float(total_monomers))
+            curr_monomers += polysys.chains[i].curr_monomer  # noqa: F405
+            pct = int(
+                100.0 * float(curr_monomers) / float(total_monomers)  # noqa: F405
+            )  # noqa: F405
             # ifdef RAPPTURE_STATUS
             # fprintf(status_file, "=RAPPTURE-PROGRESS=>%d\n", pct);
             # else
             BARLEN = 30
-            fputc("|", status_file)
+            fputc("|", status_file)  # noqa: F405
             maxi = int(float(pct * BARLEN) * 0.01)
             for i in range(BARLEN):
-                fputc("=" if i < maxi else " ", status_file)
-            status_file.printf("| %3d%% (%f s)   " % (pct, timer.getElapsedTime()))
-            if stdout == status_file:
-                fputc("\r" if pct < 100 else "\n", status_file)
+                fputc("=" if i < maxi else " ", status_file)  # noqa: F405
+            status_file.printf(  # noqa: F405
+                "| %3d%% (%f s)   " % (pct, timer.getElapsedTime())  # noqa: F405
+            )  # noqa: F405
+            if stdout == status_file:  # noqa: F405
+                fputc("\r" if pct < 100 else "\n", status_file)  # noqa: F405
             else:
-                status_file.rewind()
+                status_file.rewind()  # noqa: F405
             # endif
             update_count = 0
 
@@ -95,8 +99,8 @@ def interpolateTorsion(angle, m, ti, E, p):
         E = m.torsion_energies[ti][i] + dE * (angle - m.torsion_angles[ti][i]) / dang
         p = m.torsion_probs[ti][i] + dp * (angle - m.torsion_angles[ti][i]) / dang
     else:
-        E = m.torsion_energies[ti][i]
-        p = m.torsion_probs[ti][i]
+        E = m.torsion_energies[ti][i]  # noqa: F841
+        p = m.torsion_probs[ti][i]  # noqa: F841
 
 
 # ============================================================================
@@ -122,7 +126,7 @@ def setTorsions(
                 if wb:
                     wb *= 1.0
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_FREE:
-                sign = -1.0 if random.random() < 0.5 else 1.0
+                sign = -1.0 if random.random() < 0.5 else 1.0  # noqa: F405
                 c.zm.entries[zm_offset + i].torsion_angle += sign * torsion_step
                 if c.zm.entries[zm_offset + i].torsion_angle >= 360.0:
                     c.zm.entries[zm_offset + i].torsion_angle -= 360.0
@@ -133,7 +137,7 @@ def setTorsions(
                 if wb:
                     wb *= 1.0
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_ENERGY:
-                sign = -1.0 if random.random() < 0.5 else 1.0
+                sign = -1.0 if random.random() < 0.5 else 1.0  # noqa: F405
                 c.zm.entries[zm_offset + i].torsion_angle += sign * torsion_step
                 if c.zm.entries[zm_offset + i].torsion_angle >= 360.0:
                     c.zm.entries[zm_offset + i].torsion_angle -= 360.0
@@ -143,13 +147,13 @@ def setTorsions(
                     c.zm.entries[zm_offset + i].torsion_angle,
                     m,
                     i + torsion_offset,
-                    E,
-                    p,
+                    E,  # noqa: F405
+                    p,  # noqa: F405
                 )
                 if Eb:
-                    Eb += E
+                    Eb += E  # noqa: F405
                 if wb:
-                    wb *= m.torsion_prob_min[i + torsion_offset] / p
+                    wb *= m.torsion_prob_min[i + torsion_offset] / p  # noqa: F405
 
         else:  # initial choice
             if m.torsions[i + torsion_offset] == Torsion.TORSION_FIXED:
@@ -158,9 +162,11 @@ def setTorsions(
                         i + torsion_offset
                     ][0]
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_FREE:
-                c.zm.entries[zm_offset + i].torsion_angle = random.random() * 360.0
+                c.zm.entries[zm_offset + i].torsion_angle = (
+                    random.random() * 360.0  # noqa: F405
+                )  # noqa: F405
             elif m.torsions[i + torsion_offset] == Torsion.TORSION_ENERGY:
-                n = selectWeight(
+                n = selectWeight(  # noqa: F405
                     m.torsion_probs[i + torsion_offset],
                     m.num_torsions[i + torsion_offset],
                     rng,
@@ -198,7 +204,7 @@ def rejectConfig(c, indices, num_indices, store_positions, start_unset, p):
         # note that this is NOT the final position...
         if store_positions:
             c.zm.setPosition(indices[i], pos)
-        foldPosition(pos, p.system_min, p.system_max, p.system_size)
+        foldPosition(pos, p.system_min, p.system_max, p.system_size)  # noqa: F405
         ec = p.excluded_cylinders
         while ec and hasattr(ec, "next"):
             if ec.invert != ec.insideExclCylinder(pos):
@@ -264,51 +270,51 @@ def fillNeighbors(s, d, nbrs, domain_edge, oa_nbrs):
     # Bins; d->nbr_domains[0] is d (and nbrs[0] is index of the Bin that
     # holds the current atom under investigation)
 
-    if domain_edge[MIN_X_EDGE] and (not domain_edge[MIN_Y_EDGE]):
+    if domain_edge[MIN_X_EDGE] and (not domain_edge[MIN_Y_EDGE]):  # noqa: F405
         nd[1] = 4
-    elif (not domain_edge[MIN_X_EDGE]) and domain_edge[MIN_Y_EDGE]:
+    elif (not domain_edge[MIN_X_EDGE]) and domain_edge[MIN_Y_EDGE]:  # noqa: F405
         nd[1] = 2
-    elif domain_edge[MIN_X_EDGE] and domain_edge[MIN_Y_EDGE]:
+    elif domain_edge[MIN_X_EDGE] and domain_edge[MIN_Y_EDGE]:  # noqa: F405
         nd[1] = 1
 
-    if domain_edge[MIN_Y_EDGE]:
+    if domain_edge[MIN_Y_EDGE]:  # noqa: F405
         nd[2] = 2
 
-    if domain_edge[MAX_X_EDGE] and (not domain_edge[MIN_Y_EDGE]):
+    if domain_edge[MAX_X_EDGE] and (not domain_edge[MIN_Y_EDGE]):  # noqa: F405
         nd[3] = 5
-    elif (not domain_edge[MAX_X_EDGE]) and domain_edge[MIN_Y_EDGE]:
+    elif (not domain_edge[MAX_X_EDGE]) and domain_edge[MIN_Y_EDGE]:  # noqa: F405
         nd[3] = 2
-    elif domain_edge[MAX_X_EDGE] and domain_edge[MIN_Y_EDGE]:
+    elif domain_edge[MAX_X_EDGE] and domain_edge[MIN_Y_EDGE]:  # noqa: F405
         nd[3] = 3
 
-    if domain_edge[MIN_X_EDGE]:
+    if domain_edge[MIN_X_EDGE]:  # noqa: F405
         nd[4] = 4
 
-    if domain_edge[MAX_X_EDGE]:
+    if domain_edge[MAX_X_EDGE]:  # noqa: F405
         nd[5] = 5
 
-    if domain_edge[MAX_Y_EDGE] and (not domain_edge[MIN_X_EDGE]):
+    if domain_edge[MAX_Y_EDGE] and (not domain_edge[MIN_X_EDGE]):  # noqa: F405
         nd[6] = 7
-    elif (not domain_edge[MAX_Y_EDGE]) and domain_edge[MIN_X_EDGE]:
+    elif (not domain_edge[MAX_Y_EDGE]) and domain_edge[MIN_X_EDGE]:  # noqa: F405
         nd[6] = 4
-    elif domain_edge[MAX_Y_EDGE] and domain_edge[MIN_X_EDGE]:
+    elif domain_edge[MAX_Y_EDGE] and domain_edge[MIN_X_EDGE]:  # noqa: F405
         nd[6] = 6
 
-    if domain_edge[MAX_Y_EDGE]:
+    if domain_edge[MAX_Y_EDGE]:  # noqa: F405
         nd[7] = 7
 
-    if domain_edge[MAX_Y_EDGE] and (not domain_edge[MAX_X_EDGE]):
+    if domain_edge[MAX_Y_EDGE] and (not domain_edge[MAX_X_EDGE]):  # noqa: F405
         nd[8] = 7
-    elif (not domain_edge[MAX_Y_EDGE]) and domain_edge[MAX_X_EDGE]:
+    elif (not domain_edge[MAX_Y_EDGE]) and domain_edge[MAX_X_EDGE]:  # noqa: F405
         nd[8] = 5
-    elif domain_edge[MAX_Y_EDGE] and domain_edge[MAX_X_EDGE]:
+    elif domain_edge[MAX_Y_EDGE] and domain_edge[MAX_X_EDGE]:  # noqa: F405
         nd[8] = 8
 
-    if domain_edge[MIN_Z_EDGE]:
+    if domain_edge[MIN_Z_EDGE]:  # noqa: F405
         for i in range(9, 18):
             nd[i] = nd[i - 9] + 9
 
-    if domain_edge[MAX_Z_EDGE]:
+    if domain_edge[MAX_Z_EDGE]:  # noqa: F405
         for i in range(18, 27):
             nd[i] = nd[i - 18] + 18
 
@@ -365,7 +371,7 @@ def sumInteractions(
         # note that this is NOT the final position...
         if store_positions:
             c.zm.setPosition(indices[i], ipos)
-        foldPosition(ipos, p.system_min, p.system_max, p.system_size)
+        foldPosition(ipos, p.system_min, p.system_max, p.system_size)  # noqa: F405
         if (
             ipos[0] > d.max[0]
             or ipos[0] < d.min[0]
@@ -375,14 +381,16 @@ def sumInteractions(
             or ipos[2] < d.min[2]
         ):
             # ipos is in another Domain ...
-            domain = hashBin(
+            domain = hashBin(  # noqa: F405
                 ipos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y
             )
             if domain != prev_domain:
                 nd = s.domains[domain]
-                bin = hashBin(ipos, nd.min, nd.bin_size, nd.num_bins_x, nd.num_bins_y)
+                bin = hashBin(  # noqa: F405
+                    ipos, nd.min, nd.bin_size, nd.num_bins_x, nd.num_bins_y
+                )  # noqa: F405
                 if p.recalculate_neighbors:
-                    getNeighborIndices(
+                    getNeighborIndices(  # noqa: F405
                         bin,
                         d.nbr_bins,
                         d.domain_edge,
@@ -398,10 +406,12 @@ def sumInteractions(
                 prev_domain = domain
         else:
             # ipos is in d
-            bin = hashBin(ipos, d.min, d.bin_size, d.num_bins_x, d.num_bins_y)
+            bin = hashBin(  # noqa: F405
+                ipos, d.min, d.bin_size, d.num_bins_x, d.num_bins_y
+            )  # noqa: F405
             if bin != prev_bin:
                 if p.recalculate_neighbors:
-                    getNeighborIndices(
+                    getNeighborIndices(  # noqa: F405
                         bin,
                         d.nbr_bins,
                         d.domain_edge,
@@ -422,7 +432,9 @@ def sumInteractions(
             if not c.zm.isBonded(indices[i], indices[j], p.bond_cutoff):
                 jtype = c.zm.entries[indices[j]].type.element_index
                 jpos = c.zm.getPosition(indices[j], jpos)
-                foldPosition(jpos, p.system_min, p.system_max, p.system_size)
+                foldPosition(  # noqa: F405
+                    jpos, p.system_min, p.system_max, p.system_size
+                )  # noqa: F405
                 r2 = getNearestSqDist(jpos, ipos, p.system_size, p.half_system_size)
                 if r2 < ecut2:
                     E += energy_func(itype, jtype, r2)
@@ -449,7 +461,9 @@ def sumInteractions(
                     # fflush(stdout);
 
                     jpos = cn.zm.getPosition(oa.atom, jpos)
-                    foldPosition(jpos, p.system_min, p.system_max, p.system_size)
+                    foldPosition(  # noqa: F405
+                        jpos, p.system_min, p.system_max, p.system_size
+                    )  # noqa: F405
                     r2 = getNearestSqDist(jpos, ipos, p.system_size, p.half_system_size)
                     if r2 < ecut2:
                         E += energy_func(itype, jtype, r2)
@@ -473,7 +487,7 @@ def buildChains(s, p, domain_index):
     for i in range(p.max_monomer_atoms):
         atom_indices[i] = 0
         prev_angles[i] = 0.0
-    kT_inv = 1.0 / (kB * p.temperature)
+    kT_inv = 1.0 / (kB * p.temperature)  # noqa: F405
     m = Monomer()
     m.create()
     rng = s.rngs[domain_index]
@@ -488,7 +502,7 @@ def buildChains(s, p, domain_index):
             s.getPendingAtoms(d, p)
 
             # Choose a Chain randomly
-            chain_index = int(random.random() * p.num_chains)
+            chain_index = int(random.random() * p.num_chains)  # noqa: F405
             if domain_index != s.chains[chain_index].domain:
                 continue  # on to the next Chain
             if (
@@ -536,15 +550,21 @@ def buildChains(s, p, domain_index):
                 start_unset = 2
                 k = 0
                 # Force single chain backbone to lie along x
-                pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                    d.max[0] - d.min[0]
+                )  # noqa: F405
+                pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                    d.max[1] - d.min[1]
+                )  # noqa: F405
+                pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                    d.max[2] - d.min[2]
+                )  # noqa: F405
                 c.zm.setPosition(0, pos)
                 # Select a random orientation of the atom 0 - atom 1 bond;
                 # by convention, getPosition() orients this bond along x
                 # if the atom 1 position is not set.
-                th = 2.0 * np.pi * random.random()
-                ph = np.arccos(2.0 * random.random() - 1.0)
+                th = 2.0 * np.pi * random.random()  # noqa: F405
+                ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                 r = c.zm.entries[1].bond_length
                 g = r * np.sin(ph)
                 pos[0] += g * np.cos(th)
@@ -574,15 +594,21 @@ def buildChains(s, p, domain_index):
                         p,
                     )
                 ):
-                    pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                    pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                    pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                    pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                        d.max[0] - d.min[0]
+                    )  # noqa: F405
+                    pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                        d.max[1] - d.min[1]
+                    )  # noqa: F405
+                    pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                        d.max[2] - d.min[2]
+                    )  # noqa: F405
                     c.zm.setPosition(0, pos)
                     # Select a random orientation of the atom 0 - atom 1 bond;
                     # by convention, getPosition() orients this bond along x
                     # if the atom 1 position is not set.
-                    th = 2.0 * np.pi * random.random()
-                    ph = np.arccos(2.0 * random.random() - 1.0)
+                    th = 2.0 * np.pi * random.random()  # noqa: F405
+                    ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                     r = c.zm.entries[1].bond_length
                     g = r * np.sin(ph)
                     pos[0] += g * np.cos(th)
@@ -607,7 +633,7 @@ def buildChains(s, p, domain_index):
                     #   logMessage("Rejecting chain %d: ", chain_index+1);
                     #   logMessage(" unable to position monomer 1");
 
-                    bad_chain += 1
+                    bad_chain += 1  # noqa: F405
                     break  # out of inner build loop
             else:
                 # Not the first Monomer added to c
@@ -678,7 +704,7 @@ def buildChains(s, p, domain_index):
                     if Ef > Emax:
                         Emax = Ef
                     dE = Ef - Ei
-                    if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                    if dE > 0 and np.exp(-dE * kT_inv) < random.random():  # noqa: F405
                         # Reject configuration
                         for k in range(num_torsions):
                             c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
@@ -705,15 +731,21 @@ def buildChains(s, p, domain_index):
                     start_unset = 2
                     k = 0
                     # Force single chain backbone to lie along x
-                    pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                    pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                    pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                    pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                        d.max[0] - d.min[0]
+                    )  # noqa: F405
+                    pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                        d.max[1] - d.min[1]
+                    )  # noqa: F405
+                    pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                        d.max[2] - d.min[2]
+                    )  # noqa: F405
                     c.zm.setPosition(0, pos)
                     # Select a random orientation of the atom 0 - atom 1 bond;
                     # by convention, getPosition() orients this bond along x
                     # if the atom 1 position is not set.
-                    th = 2.0 * np.pi * random.random()
-                    ph = np.arccos(2.0 * random.random() - 1.0)
+                    th = 2.0 * np.pi * random.random()  # noqa: F405
+                    ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                     r = c.zm.entries[1].bond_length
                     g = r * np.sin(ph)
                     pos[0] += g * np.cos(th)
@@ -743,15 +775,21 @@ def buildChains(s, p, domain_index):
                         )
                     ):
                         k += 1
-                        pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                        pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                        pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                        pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                            d.max[0] - d.min[0]
+                        )  # noqa: F405
+                        pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                            d.max[1] - d.min[1]
+                        )  # noqa: F405
+                        pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                            d.max[2] - d.min[2]
+                        )  # noqa: F405
                         c.zm.setPosition(0, pos)
                         # Select a random orientation of the atom 0 - atom 1 bond;
                         # by convention, getPosition() orients this bond along x
                         # if the atom 1 position is not set.
-                        th = 2.0 * np.pi * random.random()
-                        ph = np.arccos(2.0 * random.random() - 1.0)
+                        th = 2.0 * np.pi * random.random()  # noqa: F405
+                        ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                         r = c.zm.entries[1].bond_length
                         g = r * np.sin(ph)
                         pos[0] += g * np.cos(th)
@@ -837,7 +875,7 @@ def buildChains(s, p, domain_index):
                             torsion_offset,
                             rng,
                             Eb,
-                            NULL,
+                            NULL,  # noqa: F405
                             0.0,
                         )
                         Ef = Eb + sumInteractions(
@@ -854,7 +892,10 @@ def buildChains(s, p, domain_index):
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
-                        if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                        if (
+                            dE > 0
+                            and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                        ):  # noqa: F405
                             # Reject configuration
                             for k in range(num_torsions):
                                 c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
@@ -944,7 +985,10 @@ def buildChains(s, p, domain_index):
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
-                        if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                        if (
+                            dE > 0
+                            and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                        ):  # noqa: F405
                             # Reject configuration
                             for k in range(num_torsions):
                                 c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
@@ -1017,7 +1061,10 @@ def buildChains(s, p, domain_index):
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
-                            if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                            if (
+                                dE > 0
+                                and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                            ):  # noqa: F405
                                 # Reject configuration
                                 for k in range(num_torsions):
                                     c.zm.entries[i_mon + k].torsion_angle = prev_angles[
@@ -1056,7 +1103,9 @@ def buildChains(s, p, domain_index):
                             pos = c.zm.getPosition(j, pos)
                             c.zm.setPosition(j, pos)
                             # Add folded positions to grid
-                            foldPosition(pos, p.system_min, p.system_max, p.system_size)
+                            foldPosition(  # noqa: F405
+                                pos, p.system_min, p.system_max, p.system_size
+                            )  # noqa: F405
                             if (
                                 pos[0] > d.max[0]
                                 or pos[0] < d.min[0]
@@ -1089,15 +1138,21 @@ def buildChains(s, p, domain_index):
                     start_unset = 2
                     k = 0
                     # Force single chain backbone to lie along x
-                    pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                    pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                    pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                    pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                        d.max[0] - d.min[0]
+                    )  # noqa: F405
+                    pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                        d.max[1] - d.min[1]
+                    )  # noqa: F405
+                    pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                        d.max[2] - d.min[2]
+                    )  # noqa: F405
                     c.zm.setPosition(0, pos)
                     # Select a random orientation of the atom 0 - atom 1 bond;
                     # by convention, getPosition() orients this bond along x
                     # if the atom 1 position is not set.
-                    th = 2.0 * np.pi * random.random()
-                    ph = np.arccos(2.0 * random.random() - 1.0)
+                    th = 2.0 * np.pi * random.random()  # noqa: F405
+                    ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                     r = c.zm.entries[1].bond_length
                     g = r * np.sin(ph)
                     pos[0] += g * np.cos(th)
@@ -1127,15 +1182,21 @@ def buildChains(s, p, domain_index):
                             p,
                         )
                     ):
-                        pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                        pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                        pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                        pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                            d.max[0] - d.min[0]
+                        )  # noqa: F405
+                        pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                            d.max[1] - d.min[1]
+                        )  # noqa: F405
+                        pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                            d.max[2] - d.min[2]
+                        )  # noqa: F405
                         c.zm.setPosition(0, pos)
                         # Select a random orientation of the atom 0 - atom 1 bond;
                         # by convention, getPosition() orients this bond along x
                         # if the atom 1 position is not set.
-                        th = 2.0 * np.pi * random.random()
-                        ph = np.arccos(2.0 * random.random() - 1.0)
+                        th = 2.0 * np.pi * random.random()  # noqa: F405
+                        ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                         r = c.zm.entries[1].bond_length
                         g = r * np.sin(ph)
                         pos[0] += g * np.cos(th)
@@ -1221,7 +1282,7 @@ def buildChains(s, p, domain_index):
                             torsion_offset,
                             rng,
                             Eb,
-                            NULL,
+                            NULL,  # noqa: F405
                             0.0,
                         )
                         Ef = Eb + sumInteractions(
@@ -1238,7 +1299,10 @@ def buildChains(s, p, domain_index):
                         if Ef > Emax:
                             Emax = Ef
                         dE = Ef - Ei
-                        if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                        if (
+                            dE > 0
+                            and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                        ):  # noqa: F405
                             # Reject configuration
                             for k in range(num_torsions):
                                 c.zm.entries[i_mon + k].torsion_angle = prev_angles[k]
@@ -1265,15 +1329,21 @@ def buildChains(s, p, domain_index):
                         start_unset = 2
                         k = 0
                         # Force single chain backbone to lie along x
-                        pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                        pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                        pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                        pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                            d.max[0] - d.min[0]
+                        )  # noqa: F405
+                        pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                            d.max[1] - d.min[1]
+                        )  # noqa: F405
+                        pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                            d.max[2] - d.min[2]
+                        )  # noqa: F405
                         c.zm.setPosition(0, pos)
                         # Select a random orientation of the atom 0 - atom 1 bond;
                         # by convention, getPosition() orients this bond along x
                         # if the atom 1 position is not set.
-                        th = 2.0 * np.pi * random.random()
-                        ph = np.arccos(2.0 * random.random() - 1.0)
+                        th = 2.0 * np.pi * random.random()  # noqa: F405
+                        ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                         r = c.zm.entries[1].bond_length
                         g = r * np.sin(ph)
                         pos[0] += g * np.cos(th)
@@ -1289,7 +1359,7 @@ def buildChains(s, p, domain_index):
                             start_unset,
                             store_positions,
                             p,
-                            energySelfAvoid,
+                            energySelfAvoid,  # noqa: F405
                         )
                         while k < p.num_configs and (
                             Ei > 0.0
@@ -1303,15 +1373,21 @@ def buildChains(s, p, domain_index):
                             )
                         ):
                             k += 1
-                            pos[0] = d.min[0] + random.random() * (d.max[0] - d.min[0])
-                            pos[1] = d.min[1] + random.random() * (d.max[1] - d.min[1])
-                            pos[2] = d.min[2] + random.random() * (d.max[2] - d.min[2])
+                            pos[0] = d.min[0] + random.random() * (  # noqa: F405
+                                d.max[0] - d.min[0]
+                            )  # noqa: F405
+                            pos[1] = d.min[1] + random.random() * (  # noqa: F405
+                                d.max[1] - d.min[1]
+                            )  # noqa: F405
+                            pos[2] = d.min[2] + random.random() * (  # noqa: F405
+                                d.max[2] - d.min[2]
+                            )  # noqa: F405
                             c.zm.setPosition(0, pos)
                             # Select a random orientation of the atom 0 - atom 1 bond;
                             # by convention, getPosition() orients this bond along x
                             # if the atom 1 position is not set.
-                            th = 2.0 * np.pi * random.random()
-                            ph = np.arccos(2.0 * random.random() - 1.0)
+                            th = 2.0 * np.pi * random.random()  # noqa: F405
+                            ph = np.arccos(2.0 * random.random() - 1.0)  # noqa: F405
                             r = c.zm.entries[1].bond_length
                             g = r * np.sin(ph)
                             pos[0] += g * np.cos(th)
@@ -1399,7 +1475,7 @@ def buildChains(s, p, domain_index):
                                 torsion_offset,
                                 rng,
                                 Eb,
-                                NULL,
+                                NULL,  # noqa: F405
                                 0.0,
                             )
                             Ef = Eb + sumInteractions(
@@ -1416,7 +1492,10 @@ def buildChains(s, p, domain_index):
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
-                            if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                            if (
+                                dE > 0
+                                and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                            ):  # noqa: F405
                                 # Reject configuration
                                 for k in range(num_torsions):
                                     c.zm.entries[i_mon + k].torsion_angle = prev_angles[
@@ -1513,7 +1592,10 @@ def buildChains(s, p, domain_index):
                             if Ef > Emax:
                                 Emax = Ef
                             dE = Ef - Ei
-                            if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                            if (
+                                dE > 0
+                                and np.exp(-dE * kT_inv) < random.random()  # noqa: F405
+                            ):  # noqa: F405
                                 # Reject configuration
                                 for k in range(num_torsions):
                                     c.zm.entries[i_mon + k].torsion_angle = prev_angles[
@@ -1603,7 +1685,11 @@ def buildChains(s, p, domain_index):
                                 if Ef > Emax:
                                     Emax = Ef
                                 dE = Ef - Ei
-                                if dE > 0 and np.exp(-dE * kT_inv) < random.random():
+                                if (
+                                    dE > 0
+                                    and np.exp(-dE * kT_inv)
+                                    < random.random()  # noqa: F405
+                                ):  # noqa: F405
                                     # Reject configuration
                                     for k in range(num_torsions):
                                         c.zm.entries[
@@ -1642,7 +1728,7 @@ def buildChains(s, p, domain_index):
                                 pos = c.zm.getPosition(j, pos)
                                 c.zm.setPosition(j, pos)
                                 # Add folded positions to grid
-                                foldPosition(
+                                foldPosition(  # noqa: F405
                                     pos, p.system_min, p.system_max, p.system_size
                                 )
                                 if (
@@ -1694,7 +1780,9 @@ def buildChains(s, p, domain_index):
                 # fflush(stdout);
 
                 pos = c.zm.getPosition(j, pos)
-                foldPosition(pos, p.system_min, p.system_max, p.system_size)
+                foldPosition(  # noqa: F405
+                    pos, p.system_min, p.system_max, p.system_size
+                )  # noqa: F405
                 if (
                     pos[0] > d.max[0]
                     or pos[0] < d.min[0]
@@ -1725,8 +1813,8 @@ def buildChains(s, p, domain_index):
             # fflush(stdout);
 
             pos = c.zm.getPosition(c.tail_index, pos)
-            foldPosition(pos, p.system_min, p.system_max, p.system_size)
-            c.domain = hashBin(
+            foldPosition(pos, p.system_min, p.system_max, p.system_size)  # noqa: F405
+            c.domain = hashBin(  # noqa: F405
                 pos, p.system_min, p.domain_size, p.num_domains_x, p.num_domains_y
             )
         # End loop over Chains

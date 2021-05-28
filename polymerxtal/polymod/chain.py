@@ -12,18 +12,20 @@ import copy
 import numpy as np
 
 from .element import getElementName
-from .energy import Energy
-from .monomer import Bond, Monomer, createBond
+
+# from .energy import Energy
+from .monomer import Bond, createBond  # Monomer,
 from .params import Params
-from .stdio import FILE
+
+# from .stdio import FILE
 from .stereo import Stereo
 from .utils import foldPosition, openFile
-from .zmatrix import *
+from .zmatrix import *  # noqa: F403
 
 
 class Chain:
     def __init__(self):
-        self.zm = ZMatrix()
+        self.zm = ZMatrix()  # noqa: F405
         self.stereo = Stereo()
         self.num_monomers = 0
         self.curr_monomer = 0
@@ -94,13 +96,13 @@ class Chain:
         else:
             old_tail_index = self.tail_index
             cze = czm.entries[old_tail_index]
-            mze = ZEntry()
+            mze = ZEntry()  # noqa: F405
 
             offset = na - 2
             # Replace current tail of c with new monomer head neighbor
             cze.type = mzm.entries[1].type  # struct copy
             cze.bond_length = bond_length
-            if self.zm.num_positions > MIN_POSITIONS:
+            if self.zm.num_positions > MIN_POSITIONS:  # noqa: F405
                 # Storing positions -- update previous tail atom position
                 czm.clearPosition(old_tail_index)
                 pos = czm.getPosition(old_tail_index, pos)
@@ -210,7 +212,7 @@ class Chain:
 def createChain(stereo, num_monomers, num_atoms, store_positions):
     c = Chain()
 
-    c.zm = createZMatrix(num_atoms, store_positions)
+    c.zm = createZMatrix(num_atoms, store_positions)  # noqa: F405
     c.stereo = stereo
     for i in range(num_monomers):
         c.i_monomer[i] = 0
@@ -288,7 +290,7 @@ def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
                         pk = c.zm.getPosition(k, pk)
                         tk = c.zm.entries[k].type.element_index
                         r2 = np.linalg.norm(pj - pk) ** 2
-                        E += energyLJ(tj, tk, r2)
+                        E += energyLJ(tj, tk, r2)  # noqa: F405
         f.printf("%3d  %.2f\n" % (i, E))
 
     del c
@@ -304,7 +306,7 @@ def calculateTorsionEnergies(m, index, num_bonds, bond_length, path):
 # ============================================================================
 def writeInternalRotationPDB(m, index, step, basename):
     c = createChain(Stereo(), 1, m.num_atoms, 0)
-    leng = len(basename) + 8  # basename_xxx.pdb
+    # leng = len(basename) + 8  # basename_xxx.pdb
 
     c.addMonomer(m, 0.0, 0)
     for i in range(0, 360, step):

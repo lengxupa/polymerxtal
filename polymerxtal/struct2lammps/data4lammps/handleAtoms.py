@@ -1,7 +1,7 @@
-import os
+# import os
 
 ###########################################################
-##min
+# min
 def minCoords(atoms):
     xmin = 1e10
     ymin = 1e10
@@ -20,7 +20,7 @@ def minCoords(atoms):
 
 
 ###########################################################
-##max
+# max
 def maxCoords(atoms):
     xmax = -1e10
     ymax = -1e10
@@ -40,14 +40,14 @@ def maxCoords(atoms):
 
 
 ##############################################################
-##get atomtype information
+# get atomtype information
 def Atomtypes(inpfile):
     atomtypes = []
 
     fin = open(inpfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n":
-        words = dataline[0 : len(dataline) - 1].split()
+        words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         atomtypeID = eval(words[0])
         atomtype = words[1]
         if atomtype == "H__HB":
@@ -61,7 +61,7 @@ def Atomtypes(inpfile):
 
 
 ##############################################################
-##Sort atom information
+# Sort atom information
 def AtomsInfo(inpfile):
     fin = open(inpfile, "r")
     dataline = fin.readline()
@@ -78,7 +78,9 @@ def AtomsInfo(inpfile):
             dataline = fin.readline()
             dataline = fin.readline()
             while dataline != "\n" and dataline != "":
-                words = dataline[0 : len(dataline) - 1].split("#")[0].split()
+                words = (
+                    dataline[0 : len(dataline) - 1].split("#")[0].split()  # noqa: E203
+                )  # noqa: E203
                 natom = eval(str(words[0]))
                 nmolecule = eval(str.strip(str(words[1])))
                 atomtype = eval(str(words[2]))
@@ -123,7 +125,7 @@ def AtomsInfo(inpfile):
 
 
 ##############################################################
-##Find links to each atom
+# Find links to each atom
 def AtomLink(atoms, bonds):
     totalatoms = len(atoms)
     nlink = []

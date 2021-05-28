@@ -8,8 +8,9 @@
 # file and for a DISCLAIMER OF ALL WARRANTIES.
 # ============================================================================
 
-import errno, os, random
-import numpy as np
+import errno, os, random  # noqa: E401
+
+# import numpy as np
 
 from .stdio import FILE
 

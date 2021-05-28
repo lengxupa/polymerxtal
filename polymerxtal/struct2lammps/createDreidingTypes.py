@@ -1,20 +1,20 @@
-import os
+# import os
 
 try:
     from openbabel import openbabel as ob
 
     OB_version = 3
-except:
+except:  # noqa: E722
     try:
         import openbabel as ob
 
         OB_version = 2
-    except:
+    except:  # noqa: E722
         try:
-            import ovito
+            import ovito  # noqa: F401
 
             use_ovito = True
-        except:
+        except:  # noqa: E722
             use_ovito = False
 
         from polymerxtal.io import check_nanohub
@@ -24,7 +24,7 @@ except:
         if not (use_ovito and use_nanohub):
             import openbabel as ob
 
-from .readFiles import read_atoms_pdb, read_atoms_lmpdat, read_image_info
+from .readFiles import read_atoms_pdb, read_image_info, read_atoms_lmpdat
 
 
 def create_dreiding_types(pdb_file, outputname, infile_is_pdb, ffname):
@@ -34,9 +34,9 @@ def create_dreiding_types(pdb_file, outputname, infile_is_pdb, ffname):
     path = pdb_file
     s = read_structure(path)
     create_bonds_obabel(s)
-    nmol = s.NumResidues()
-    natoms = s.NumAtoms()
-    nbonds = s.NumBonds()
+    # nmol = s.NumResidues()
+    # natoms = s.NumAtoms()
+    # nbonds = s.NumBonds()
 
     # Identify atom types
     id_Hbonds = False
@@ -122,7 +122,7 @@ def write_atoms_dat(s, atom_types, infile_is_pdb, infile_pdb, infile_lmpdat):
         f.write("%d atoms\n\nATOMS\n\n" % natoms)
 
         if not infile_is_pdb:
-            id_dict = read_atoms_lmpdat("./bonds/new.lmpdat")
+            # id_dict = read_atoms_lmpdat("./bonds/new.lmpdat")
             images_dict = read_image_info("./bonds/bonded.lmpdat")
 
         for i in range(natoms):
@@ -150,7 +150,7 @@ def write_atoms_dat(s, atom_types, infile_is_pdb, infile_pdb, infile_lmpdat):
                     images[2],
                 )
             )
-            if res == True:
+            if res:
                 siz = -1
             f1.write("%d %d\n" % (atoms[atom_x, atom_y, atom_z], siz))
 
@@ -305,13 +305,13 @@ def create_bonds_obabel(s):
                 s.AddBond(i + 1, j + 1, 1)
 
             elif (not (ajID in connectivity[aiID])) and (
-                s.GetBond(i + 1, j + 1) != None
+                s.GetBond(i + 1, j + 1) is not None
             ):
                 ghost_bond = s.GetBond(i + 1, j + 1)
                 s.DeleteBond(ghost_bond)
 
             elif (not (ajID in connectivity[aiID])) and (
-                s.GetBond(i + 1, j + 1) != None
+                s.GetBond(i + 1, j + 1) is not None
             ):
                 ghost_bond = s.GetBond(i + 1, j + 1)
                 s.DeleteBond(ghost_bond)
@@ -351,8 +351,8 @@ def create_ID_dictionary1(infile_pdb, infile_lmpdat):
 
     # ID dict: key = pdb ID
     #         value = lmpdat ID
-    pdb_atoms = readFiles.read_atoms_pdb(infile_pdb)
-    lmpdat_atoms = readFiles.read_atoms_lmpdat(infile_lmpdat)
+    pdb_atoms = read_atoms_pdb(infile_pdb)
+    lmpdat_atoms = read_atoms_lmpdat(infile_lmpdat)
     ID_dict1 = {}
 
     for key in lmpdat_atoms.keys():

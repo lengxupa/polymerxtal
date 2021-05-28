@@ -6,17 +6,17 @@ try:
     from openbabel import openbabel as ob
 
     OB_version = 3
-except:
+except:  # noqa: E722
     try:
         import openbabel as ob
 
         OB_version = 2
-    except:
+    except:  # noqa: E722
         try:
-            import ovito
+            import ovito  # noqa: F401
 
             use_ovito = True
-        except:
+        except:  # noqa: E722
             use_ovito = False
 
         from polymerxtal.io import check_nanohub

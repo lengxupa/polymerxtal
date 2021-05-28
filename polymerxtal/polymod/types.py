@@ -9,7 +9,7 @@
 # ============================================================================
 
 from .element import getElementName
-from .stdio import FILE, fputc
+from .stdio import fputc  # FILE,
 
 
 class AtomType:

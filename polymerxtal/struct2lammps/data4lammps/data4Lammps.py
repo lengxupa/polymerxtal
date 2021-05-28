@@ -2,9 +2,9 @@ import os
 import string
 
 from .Gasteiger import getGasteiger_parameters, getGasteigerCharge
-from .getForcefield import *
+from .getForcefield import *  # noqa: F403
 from .handleAtoms import Atomtypes, AtomsInfo, AtomLink
-from .handleBonds import *
+from .handleBonds import *  # noqa: F403
 from .PCFF import (
     PCFF_getAngletypes,
     PCFF_getDihstypes,
@@ -27,10 +27,11 @@ from .PCFF import (
 )
 from .qeq import Qeq_charge_equilibration
 
+
 ##############################################################################################
 def checkAtomtype(inpfile):
     atomtypes = Atomtypes(inpfile)
-    Forcefieldfile = getDreidingParamFile()
+    Forcefieldfile = getDreidingParamFile()  # noqa: F405
     typedefault = ("H_", "C_3", "N_3", "O_3", "F_", "S_3", "Cl", "I_", "Br_")
 
     atypes = []
@@ -39,16 +40,16 @@ def checkAtomtype(inpfile):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and dataline != "\n" and flag == 0:
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "ATOMTYPES":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype = str(words[0])
                 atypes.append(atype)
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
 
@@ -130,7 +131,9 @@ def printCoeffs(fout, ptitle, ptypes, ptypecoeffs):
 ##############################################################################################
 # Write out force field parameters.
 def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, impstypes):
-    warning1 = getPairCoeffs(atomtypes)  # coeffs are in file "paircoeffs.txt"
+    warning1 = getPairCoeffs(  # noqa: F405
+        atomtypes
+    )  # coeffs are in file "paircoeffs.txt"  # noqa: F405
     paircoeffs = readPairCoeffs()
     fout.write("\n")
     # print >>fout
@@ -150,14 +153,15 @@ def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, imps
             )
             + "\n"
         )
-        # print >>fout,'%3i  %12.6f %12.6f   %s %s' % (paircoeffs[i][0],paircoeffs[i][1],paircoeffs[i][2],paircoeffs[i][3],paircoeffs[i][4])
+        # print >>fout,'%3i  %12.6f %12.6f   %s %s' % \
+        #   (paircoeffs[i][0],paircoeffs[i][1],paircoeffs[i][2],paircoeffs[i][3],paircoeffs[i][4])
     fout.write("\n")
     # print >>fout
     fout.write("Bond Coeffs" + "\n")
     # print >>fout,"Bond Coeffs"
     fout.write("\n")
     # print >>fout
-    bondcoeffs, warning2 = getBondCoeffs(bondtypes)
+    bondcoeffs, warning2 = getBondCoeffs(bondtypes)  # noqa: F405
     for i in range(len(bondtypes)):
         fout.write(
             "%3i  %12.6f  %12.6f  %s%s%s%s"
@@ -172,14 +176,15 @@ def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, imps
             )
             + "\n"
         )
-        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s%s' % (bondcoeffs[i][0],bondcoeffs[i][1],bondcoeffs[i][2],str("  # "),bondcoeffs[i][3],str(" "),bondcoeffs[i][4])
+        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s%s' % (bondcoeffs[i][0],bondcoeffs[i][1],bondcoeffs[i][2],str("  \
+        #   # "),bondcoeffs[i][3],str(" "),bondcoeffs[i][4])
     fout.write("\n")
     # print >>fout
     fout.write("Angle Coeffs" + "\n")
     # print >>fout,"Angle Coeffs"
     fout.write("\n")
     # print >>fout
-    anglecoeffs, warning3 = getAngleCoeffs(angletypes)
+    anglecoeffs, warning3 = getAngleCoeffs(angletypes)  # noqa: F405
     for i in range(len(angletypes)):
         fout.write(
             "%3i  %12.6f  %12.6f  %s%s%s"
@@ -193,14 +198,15 @@ def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, imps
             )
             + "\n"
         )
-        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s' % (anglecoeffs[i][0],anglecoeffs[i][1],anglecoeffs[i][2],str("  # X "),anglecoeffs[i][3],str(" X "))
+        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s' % (anglecoeffs[i][0],anglecoeffs[i][1],anglecoeffs[i][2],str("  #\
+        #    X "),anglecoeffs[i][3],str(" X "))
     fout.write("\n")
     # print >>fout
     fout.write("Dihedral Coeffs" + "\n")
     # print >>fout,"Dihedral Coeffs"
     fout.write("\n")
     # print >>fout
-    dihscoeffs, warning4 = getDihsCoeffs(dihstypes)
+    dihscoeffs, warning4 = getDihsCoeffs(dihstypes)  # noqa: F405
     for i in range(len(dihstypes)):
         fout.write(
             "%3i  %12.6f  %3i %3i %s%s%s%s%s%s%s%s"
@@ -220,14 +226,16 @@ def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, imps
             )
             + "\n"
         )
-        # print >>fout,'%3i  %12.6f  %3i %3i %s%s%s%s%s%s%s%s' % (dihscoeffs[i][0],dihscoeffs[i][1],dihscoeffs[i][3],dihscoeffs[i][2],str("  # "),dihscoeffs[i][4],str(" "),dihscoeffs[i][5],str(" "),dihscoeffs[i][6],str(" "),dihscoeffs[i][7])
+        # print >>fout,'%3i  %12.6f  %3i %3i %s%s%s%s%s%s%s%s' % \
+        #   (dihscoeffs[i][0],dihscoeffs[i][1],dihscoeffs[i][3],dihscoeffs[i][2],str("  # "),dihscoeffs[i][4],str(" \
+        #   "),dihscoeffs[i][5],str(" "),dihscoeffs[i][6],str(" "),dihscoeffs[i][7])
     fout.write("\n")
     # print >>fout
     fout.write("Improper Coeffs" + "\n")
     # print >>fout,"Improper Coeffs"
     fout.write("\n")
     # print >>fout
-    impscoeffs, warning5 = getImpsCoeffs(impstypes)
+    impscoeffs, warning5 = getImpsCoeffs(impstypes)  # noqa: F405
     for i in range(len(impscoeffs)):
         fout.write(
             "%3i  %12.6f  %12.6f  %s%s%s"
@@ -241,7 +249,8 @@ def outputDreidingCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, imps
             )
             + "\n"
         )
-        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s' % (impscoeffs[i][0],impscoeffs[i][1],impscoeffs[i][2],str("  #  "),impscoeffs[i][3],str(" X X X "))
+        # print >>fout,'%3i  %12.6f  %12.6f  %s%s%s' % (impscoeffs[i][0],impscoeffs[i][1],impscoeffs[i][2],str("  #  \
+        #   "),impscoeffs[i][3],str(" X X X "))
 
     if (
         warning1 != ""
@@ -317,7 +326,7 @@ def outputPCFFCoeffs(fout, atomtypes, bondtypes, angletypes, dihstypes, impstype
 def getFileName():
     fin = open("structure.name", "r")
     dataline = fin.readline()
-    words = dataline[0 : len(dataline) - 1].split()
+    words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
     structureName = words[0]
     return structureName
 
@@ -326,7 +335,7 @@ def getFileName():
 def getForcefield():
     fin = open("forcefield.name", "r")
     dataline = fin.readline()
-    words = dataline[0 : len(dataline) - 1].split()
+    words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
     forcefieldName = words[0]
     return forcefieldName
 
@@ -338,7 +347,7 @@ def readPairCoeffs():
     fin = open("LJpaircoeffs.txt", "r")
     dataline = fin.readline()
     while dataline != "":
-        words = dataline[0 : len(dataline) - 1].split()
+        words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         atomtype = eval(words[1])
         D0 = eval(words[2])
         R0 = eval(words[3])
@@ -359,7 +368,7 @@ def createReaxDatafile(
         atomtypes, anychange = checkAtomtype(inpfile)
     else:
         atomtypes = Atomtypes(inpfile)
-        anychange = []
+        # anychange = []
 
     print("Atomtypes total=", len(atomtypes))
     inpfile = "atoms.dat"
@@ -368,7 +377,7 @@ def createReaxDatafile(
     natomtype = len(atomtypes)
     totalatoms = len(baseatoms)
 
-    atommass = getAtommass(atomtypes)
+    atommass = getAtommass(atomtypes)  # noqa: F405
     ####################################################################
     # Output reaxFF data file for lammps
     datafile = structureName + "_reaxFF.data"
@@ -415,7 +424,7 @@ def createReaxDatafile(
     # print >>fout
     for i in range(len(baseatoms)):
         dataline = str(baseatoms[i])
-        w = string.split(dataline[1 : len(dataline) - 1], ",")
+        w = string.split(dataline[1 : len(dataline) - 1], ",")  # noqa: E203
         fout.write(
             (
                 "%6d %3d %3d %10.5f %15.8f %15.8f %15.8f"
@@ -454,7 +463,7 @@ def createDatafile(
     baseatoms = AtomsInfo(inpfile)
     # Update bondtype if default types used
     inpfile = ".tmp/types/newbond_type.dat"
-    bondtypes = getBondtypes(inpfile)
+    bondtypes = getBondtypes(inpfile)  # noqa: F405
     for i in range(len(bondtypes)):
         atom1type = bondtypes[i][1]
         atom2type = bondtypes[i][2]
@@ -466,7 +475,7 @@ def createDatafile(
             if atom2type.upper() == replaced.upper():
                 bondtypes[i][2] = defatype
     inpfile = ".tmp/types/newbonds.dat"
-    basebonds = getBonds(inpfile, 0, 1)
+    basebonds = getBonds(inpfile, 0, 1)  # noqa: F405
 
     print("Equilibrating charge... \n")
 
@@ -482,28 +491,30 @@ def createDatafile(
     atomlinks = AtomLink(baseatoms, basebonds)
     # print("Links generated")
 
-    baseangles = createAngles(atomlinks)
+    baseangles = createAngles(atomlinks)  # noqa: F405
     # print("Angles generated")
     if str(forcefield).upper() == "PCFF":
         angletypes, baseangles = PCFF_getAngletypes(baseangles, baseatoms, atomtypes)
     if str(forcefield).upper() == "DREIDING":
-        angletypes, baseangles = getAngletypes(baseangles, baseatoms, atomtypes)
+        angletypes, baseangles = getAngletypes(  # noqa: F405
+            baseangles, baseatoms, atomtypes
+        )  # noqa: F405
     # print("Angles updated")
 
-    basedihs = createDihedrals(atomlinks, basebonds)
+    basedihs = createDihedrals(atomlinks, basebonds)  # noqa: F405
     # print("Dihs generated")
     if str(forcefield).upper() == "PCFF":
         dihstypes, basedihs = PCFF_getDihstypes(basedihs, baseatoms, atomtypes)
     if str(forcefield).upper() == "DREIDING":
-        dihstypes, basedihs = getDihstypes(basedihs, baseatoms, atomtypes)
+        dihstypes, basedihs = getDihstypes(basedihs, baseatoms, atomtypes)  # noqa: F405
     # print("Dihs updated")
 
-    baseimps = createImpropers(atomlinks)
+    baseimps = createImpropers(atomlinks)  # noqa: F405
     # print("Imps generated")
     if str(forcefield).upper() == "PCFF":
         impstypes, baseimps = PCFF_getImpstypes(baseimps, baseatoms, atomtypes)
     if str(forcefield).upper() == "DREIDING":
-        impstypes, baseimps = getImpstypes(baseimps, baseatoms, atomtypes)
+        impstypes, baseimps = getImpstypes(baseimps, baseatoms, atomtypes)  # noqa: F405
     # print("Imps updated")
 
     ####################################################################
@@ -520,7 +531,7 @@ def createDatafile(
     totaldihs = len(basedihs)
     totalimps = len(baseimps)
     ####################################################################
-    atommass = getAtommass(atomtypes)
+    atommass = getAtommass(atomtypes)  # noqa: F405
     if str(forcefield).upper() == "PCFF":
         atommass = PCFF_getAtommass(atomtypes)
 
@@ -594,7 +605,7 @@ def createDatafile(
     # print >>fout
     for i in range(len(baseatoms)):
         dataline = str(baseatoms[i])
-        w = dataline[1 : len(dataline) - 1].split(",")
+        w = dataline[1 : len(dataline) - 1].split(",")  # noqa: E203
         fout.write(
             (
                 "%6d %3d %3d %10.5f %15.8f %15.8f %15.8f %3d %3d %3d"
@@ -614,7 +625,8 @@ def createDatafile(
             + "\n"
         )
         # print >>fout, ('%6d %3d %3d %10.5f %15.8f %15.8f %15.8f %3d %3d %3d' %
-        #               (eval(w[0]),eval(w[1]),eval(w[2]),Q[i+1],eval(w[4]),eval(w[5]),eval(w[6]), eval(w[7]), eval(w[8]), eval(w[9])))
+        #               (eval(w[0]),eval(w[1]),eval(w[2]),Q[i+1],eval(w[4]),eval(w[5]),eval(w[6]), eval(w[7]), \
+        #                   eval(w[8]), eval(w[9])))
     fout.write("\n")
     # print >>fout
     fout.write("Bonds" + "\n")
@@ -623,7 +635,7 @@ def createDatafile(
     # print >>fout
     for i in range(len(basebonds)):
         dataline = str(basebonds[i])
-        words = dataline[1 : len(dataline) - 1].split(",")
+        words = dataline[1 : len(dataline) - 1].split(",")  # noqa: E203
         outline = ""
         for i in range(len(words)):
             outline = outline + str(words[i]) + " "
@@ -637,7 +649,7 @@ def createDatafile(
     # print >>fout
     for i in range(len(baseangles)):
         dataline = str(baseangles[i])
-        words = dataline[1 : len(dataline) - 1].split(",")
+        words = dataline[1 : len(dataline) - 1].split(",")  # noqa: E203
         outline = ""
         for i in range(len(words)):
             outline = outline + str(words[i]) + " "
@@ -651,7 +663,7 @@ def createDatafile(
     # print >>fout
     for i in range(len(basedihs)):
         dataline = str(basedihs[i])
-        words = dataline[1 : len(dataline) - 1].split(",")
+        words = dataline[1 : len(dataline) - 1].split(",")  # noqa: E203
         outline = ""
         for i in range(len(words)):
             outline = outline + str(words[i]) + " "
@@ -665,7 +677,7 @@ def createDatafile(
     # print >>fout
     for i in range(len(baseimps)):
         dataline = str(baseimps[i])
-        words = dataline[1 : len(dataline) - 1].split(",")
+        words = dataline[1 : len(dataline) - 1].split(",")  # noqa: E203
         outline = ""
         for i in range(len(words)):
             outline = outline + str(words[i]) + " "
