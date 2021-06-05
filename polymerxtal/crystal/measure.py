@@ -93,9 +93,9 @@ def calculate_volume(a, b, c, alpha, beta, gamma):
     c_z = np.sqrt(c * c - c_x * c_x - c_y * c_y)
     return a * b * c_z * np.sin(DEG2RAD(gamma))
 
+
 def calculate_rotation(vk):
     z = np.array([0, 0, 1])
     axis = np.cross(vk, z)
     theta = np.arccos(np.dot(z, vk))
     return axis, theta
-    

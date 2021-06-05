@@ -1,8 +1,10 @@
-import math, os
+import math, os  # noqa: E401
 
 current_location = os.path.dirname(__file__)
+
+
 #####################################################################################
-##get parameter file name, with installed path
+# get parameter file name, with installed path
 def getPCFFParamFile():
     datadir = os.path.join(current_location, "..", "..", "data")
     # cwd = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -12,7 +14,7 @@ def getPCFFParamFile():
 
 
 #####################################################################################
-##get atom mass
+# get atom mass
 def PCFF_getAtommass(atomtypes):
     atommass = []
     flag = 0
@@ -22,11 +24,11 @@ def PCFF_getAtommass(atomtypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "ATOMTYPES":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype = str(words[0]).upper()
                 amass = eval(words[2])
@@ -38,14 +40,14 @@ def PCFF_getAtommass(atomtypes):
                             masslist.append(atomtypeID)
                             atommass.append([atomtypeID, amass, atomtype])
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return atommass
 
 
 #####################################################################################
-##get bond coeffs
+# get bond coeffs
 def PCFF_getBondCoeffs(bondtypes):
     bondcoeffs = []
     flag = 0
@@ -56,18 +58,18 @@ def PCFF_getBondCoeffs(bondtypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "BOND_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
 
                 k2 = 0.5 * eval(
                     words[3]
-                )  ##here 1/2*kr*(r-r0)^2, in Lammps using kr*(r-r0)^2
+                )  # here 1/2*kr*(r-r0)^2, in Lammps using kr*(r-r0)^2
                 b0 = 1.0 * eval(words[4])
                 if len(words) > 5:
                     c3 = 1.0 * eval(words[5])
@@ -120,11 +122,11 @@ def PCFF_getBondCoeffs(bondtypes):
                             )
                             bond_ids.append(bondtypeID)
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
 
-    ##Generate bond coeffs for input scripts
+    # Generate bond coeffs for input scripts
     bondcoeffs_all = []
     for i in range(len(bondtypes) + 1):
         bondcoeffs_all.append([i, 0, 0, 0, 0, "#", "0", "0"])
@@ -157,7 +159,7 @@ def PCFF_getAngletypes(angles, atoms, atomtypes):
 
     nangle = len(angles)
     for i in range(nangle):
-        ##angles[i]: angleID,angletype,atom1,atom2,atom3
+        # angles[i]: angleID,angletype,atom1,atom2,atom3
         latomID = angles[i][2]
         catomID = angles[i][3]
         ratomID = angles[i][4]
@@ -171,9 +173,9 @@ def PCFF_getAngletypes(angles, atoms, atomtypes):
             angletype.append([latomtypeID, catomtypeID, ratomtypeID])
             angletypes.append([angletypeID, latomtypeID, catomtypeID, ratomtypeID])
     outputtypes("angletypes", angletypes)
-    ##update angletype in angles
+    # update angletype in angles
     for i in range(nangle):
-        ##angles[i]: angleID,angletype,atom1,atom2,atom3
+        # angles[i]: angleID,angletype,atom1,atom2,atom3
         latomID = angles[i][2]
         catomID = angles[i][3]
         ratomID = angles[i][4]
@@ -211,7 +213,7 @@ def PCFF_getAngletypes(angles, atoms, atomtypes):
 
 
 #####################################################################################
-##get angle coeffs
+# get angle coeffs
 def PCFF_getAngleCoeffs(angletypes):
     anglecoeffs = []
     flag = 0
@@ -222,11 +224,11 @@ def PCFF_getAngleCoeffs(angletypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "ANGLE_BEND":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -315,11 +317,11 @@ def PCFF_getAngleCoeffs(angletypes):
                             )
                             angle_ids.append(angletypeID)
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
 
-    ##Generate angle coeffs for input scripts
+    # Generate angle coeffs for input scripts
     anglecoeffs_all = [0]
     for i in range(len(angletypes)):
         at1 = angletypes[i][1]
@@ -335,7 +337,7 @@ def PCFF_getAngleCoeffs(angletypes):
 
 
 #####################################################################################
-##get angle coeffs
+# get angle coeffs
 def getBBCoeffs(angletypes, bondtypes, bondcoeffs):
     BBcoeffs = [0]
     flag = 0
@@ -361,11 +363,11 @@ def getBBCoeffs(angletypes, bondtypes, bondcoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "STRETCH_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -391,14 +393,14 @@ def getBBCoeffs(angletypes, bondtypes, bondcoeffs):
                     ):
                         BBcoeffs[angletypeID][1] = kv
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return BBcoeffs
 
 
 #####################################################################################
-##get bond-angle coeffs
+# get bond-angle coeffs
 def getBACoeffs(angletypes, bondtypes, bondcoeffs):
     BAcoeffs = [0]
     flag = 0
@@ -424,11 +426,11 @@ def getBACoeffs(angletypes, bondtypes, bondcoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "STRETCH_BEND_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -460,7 +462,7 @@ def getBACoeffs(angletypes, bondtypes, bondcoeffs):
                         BAcoeffs[angletypeID][1] = kv2
                         BAcoeffs[angletypeID][2] = kv1
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return BAcoeffs
@@ -474,7 +476,7 @@ def PCFF_getDihstypes(dihs, atoms, atomtypes):
 
     ndihs = len(dihs)
     for i in range(ndihs):
-        ##dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
+        # dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
         catom1ID = dihs[i][3]
         catom2ID = dihs[i][4]
         eatom1ID = dihs[i][2]
@@ -511,9 +513,9 @@ def PCFF_getDihstypes(dihs, atoms, atomtypes):
         dihstypes[i][2] = atom2type
         dihstypes[i][3] = atom3type
         dihstypes[i][4] = atom4type
-    ##update dihstype in dihss
+    # update dihstype in dihss
     for i in range(ndihs):
-        ##dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
+        # dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
         catom1ID = dihs[i][3]
         atom1typeID = atoms[catom1ID - 1][2]
         atom1type = atomtypes[atom1typeID - 1][1]
@@ -547,7 +549,7 @@ def PCFF_getDihstypes(dihs, atoms, atomtypes):
 
 
 #####################################################################################
-##get dihs coeffs: harmonic
+# get dihs coeffs: harmonic
 def PCFF_getDihsCoeffs(dihstypes):
     type_done = []
     flag = 0
@@ -582,11 +584,11 @@ def PCFF_getDihsCoeffs(dihstypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "TORSIONS":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[1])
                 atype2 = str(words[2])
@@ -598,28 +600,28 @@ def PCFF_getDihsCoeffs(dihstypes):
                 kv = 0.5 * eval(words[5])
                 n = int(eval(words[6])) - 1
                 cfv = eval(words[7])
-                fv = math.acos(cfv) / math.pi * 180.0  ##angle
+                fv = math.acos(cfv) / math.pi * 180.0  # angle
                 tp[n][0] = kv
                 tp[n][1] = fv
                 if len(words) > 11:
                     k2 = 0.5 * eval(words[8])
                     n2 = int(eval(words[9])) - 1
                     cf2 = eval(words[10])
-                    f2 = math.acos(cf2) / math.pi * 180.0  ##angle
+                    f2 = math.acos(cf2) / math.pi * 180.0  # angle
                     tp[n2][0] = k2
                     tp[n2][1] = f2
 
                     k3 = 0.5 * eval(words[11])
                     n3 = int(eval(words[12])) - 1
                     cf3 = eval(words[13])
-                    f3 = math.acos(cf3) / math.pi * 180.0  ##angle
+                    f3 = math.acos(cf3) / math.pi * 180.0  # angle
                     tp[n3][0] = k3
                     tp[n3][1] = f3
                 if len(words) > 8 and len(words) < 12 and words[8] != "P*":
                     k2 = 0.5 * eval(words[8])
                     n2 = int(eval(words[9])) - 1
                     cf2 = eval(words[10])
-                    f2 = math.acos(cf2) / math.pi * 180.0  ##angle
+                    f2 = math.acos(cf2) / math.pi * 180.0  # angle
                     tp[n2][0] = k2
                     tp[n2][1] = f2
 
@@ -698,7 +700,7 @@ def PCFF_getDihsCoeffs(dihstypes):
                             dihscoeffs[dihstypeID][5] = k3
                             dihscoeffs[dihstypeID][6] = f3
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return dihscoeffs
@@ -728,11 +730,11 @@ def getMBTCoeffs(dihstypes, bondtypes, bondcoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "TORSION_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -740,11 +742,11 @@ def getMBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                 atype3 = str(words[3])
 
                 if len(words) > 5:
-                    n1 = eval(words[5])
+                    # n1 = eval(words[5])
                     A1 = eval(words[6])
-                    n2 = eval(words[7])
+                    # n2 = eval(words[7])
                     A2 = eval(words[8])
-                    n3 = eval(words[9])
+                    # n3 = eval(words[9])
                     A3 = eval(words[10])
 
                 for i in range(len(dihstypes)):
@@ -766,7 +768,7 @@ def getMBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                             MBTcoeffs[dihstypeID][2] = A2
                             MBTcoeffs[dihstypeID][3] = A3
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return MBTcoeffs
@@ -816,11 +818,11 @@ def getEBTCoeffs(dihstypes, bondtypes, bondcoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "STRETCH_TORSION_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -828,13 +830,13 @@ def getEBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                 atype3 = str(words[3])
 
                 if len(words) > 5:
-                    n1 = eval(words[5])
+                    # n1 = eval(words[5])
                     B1 = eval(words[6])
                     C1 = eval(words[7])
-                    n2 = eval(words[8])
+                    # n2 = eval(words[8])
                     B2 = eval(words[9])
                     C2 = eval(words[10])
-                    n3 = eval(words[11])
+                    # n3 = eval(words[11])
                     B3 = eval(words[12])
                     C3 = eval(words[13])
 
@@ -869,7 +871,7 @@ def getEBTCoeffs(dihstypes, bondtypes, bondcoeffs):
                             EBTcoeffs[dihstypeID][5] = B2
                             EBTcoeffs[dihstypeID][6] = B3
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return EBTcoeffs
@@ -924,11 +926,11 @@ def getATCoeffs(dihstypes, angletypes, anglecoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "BEND_TORSION_BEND":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -936,13 +938,13 @@ def getATCoeffs(dihstypes, angletypes, anglecoeffs):
                 atype3 = str(words[3])
 
                 if len(words) > 5:
-                    n1 = eval(words[5])
+                    # n1 = eval(words[5])
                     D1 = eval(words[6])
                     E1 = eval(words[7])
-                    n2 = eval(words[8])
+                    # n2 = eval(words[8])
                     D2 = eval(words[9])
                     E2 = eval(words[10])
-                    n3 = eval(words[11])
+                    # n3 = eval(words[11])
                     D3 = eval(words[12])
                     E3 = eval(words[13])
 
@@ -977,7 +979,7 @@ def getATCoeffs(dihstypes, angletypes, anglecoeffs):
                             ATcoeffs[dihstypeID][5] = D2
                             ATcoeffs[dihstypeID][6] = D3
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return ATcoeffs
@@ -1015,11 +1017,11 @@ def getAATCoeffs(dihstypes, angletypes, anglecoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "TORSION_BEND_BEND":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -1046,7 +1048,7 @@ def getAATCoeffs(dihstypes, angletypes, anglecoeffs):
                             type_done.append(dihstypeID)
                             AATcoeffs[dihstypeID][1] = M
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return AATcoeffs
@@ -1079,11 +1081,11 @@ def getBB13Coeffs(dihstypes, bondtypes, bondcoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "SEPARATED_STRETCH_STRETCH":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype0 = str(words[0])
                 atype1 = str(words[1])
@@ -1110,7 +1112,7 @@ def getBB13Coeffs(dihstypes, bondtypes, bondcoeffs):
                             type_done.append(dihstypeID)
                             BB13coeffs[dihstypeID][1] = M
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return BB13coeffs
@@ -1124,7 +1126,7 @@ def PCFF_getImpstypes(imps, atoms, atomtypes):
 
     nimps = len(imps)
     for i in range(nimps):
-        ##impss[i]: impsID,impstype,atom1,atom2,atom3,atom4
+        # impss[i]: impsID,impstype,atom1,atom2,atom3,atom4
         atom1ID = imps[i][2]
         atom2ID = imps[i][3]
         atom3ID = imps[i][4]
@@ -1139,7 +1141,7 @@ def PCFF_getImpstypes(imps, atoms, atomtypes):
             impstypes.append(
                 [impstypeID, atom1typeID, atom2typeID, atom3typeID, atom4typeID]
             )
-    ##replace atomtypeID with atomtype
+    # replace atomtypeID with atomtype
     for i in range(len(impstypes)):
         for k in range(1, 5):
             atomtypeID = impstypes[i][k]
@@ -1148,9 +1150,9 @@ def PCFF_getImpstypes(imps, atoms, atomtypes):
                 if atomtypeID == atomtypeID0:
                     atomtype = atomtypes[j][1]
             impstypes[i][k] = atomtype
-    ##update impstype in imps list
+    # update impstype in imps list
     for i in range(nimps):
-        ##imps[i]: impsID,impstype,atom1,atom2,atom3,atom4
+        # imps[i]: impsID,impstype,atom1,atom2,atom3,atom4
         impstype = []
         for k in range(1, 5):
             catomID = imps[i][k]
@@ -1189,20 +1191,20 @@ def PCFF_getImpsCoeffs(impstypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "INVERSIONS":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
                 atype3 = str(words[2])
                 atype4 = str(words[3])
                 ki = 0.5 * eval(words[5])
-                if len(words) > 6:
-                    if words[6] != "P*":
-                        fi = eval(words[6])
+                # if len(words) > 6:
+                #    if words[6] != "P*":
+                #        fi = eval(words[6])
                 for i in range(len(impstypes)):
                     impstypeID = impstypes[i][0]
                     atomtype1 = impstypes[i][1]
@@ -1236,7 +1238,7 @@ def PCFF_getImpsCoeffs(impstypes):
                         if impstypeID not in imps_ids:
                             impscoeffs[impstypeID][1] = ki
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return impscoeffs
@@ -1284,11 +1286,11 @@ def getAACoeffs(impstypes, angletypes, anglecoeffs):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "BEND_BEND":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype1 = str(words[0])
                 atype2 = str(words[1])
@@ -1325,14 +1327,14 @@ def getAACoeffs(impstypes, angletypes, anglecoeffs):
                         type_done.append(impstypeID)
                         AAcoeffs[impstypeID][3] = M
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
     return AAcoeffs
 
 
 #####################################################################################
-##get bond coeffs
+# get bond coeffs
 def PCFF_getPairCoeffs(atomtypes):
     n = len(atomtypes)
     vdws = []
@@ -1342,11 +1344,11 @@ def PCFF_getPairCoeffs(atomtypes):
     fin = open(Forcefieldfile, "r")
     dataline = fin.readline()
     while dataline != "" and flag == 0:  # and dataline != "\n"
-        words = dataline[0 : len(dataline) - 1]
+        words = dataline[0 : len(dataline) - 1]  # noqa: E203
         if str(words).upper() == "DIAGONAL_VDW":
             flag = 1
             dataline = fin.readline()
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while str(words[0]).upper() != "END":
                 atype = str(words[0])
                 R0 = eval(words[2])
@@ -1356,14 +1358,16 @@ def PCFF_getPairCoeffs(atomtypes):
                     atomtype = atomtypes[i][1]
                     if atomtype == "c3" or atomtype == "c2":
                         atomtype = "c"
+                    if atomtype == "oh":
+                        atomtype = "o"
                     if atype == atomtype:
                         vdws.append([atomtypeID, R0, D0, atomtype])
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         dataline = fin.readline()
     fin.close()
-    ##Generate pair coeffs for input scripts
-    paircoeffs = []
+    # Generate pair coeffs for input scripts
+    # paircoeffs = []
     R0 = []
     D0 = []
     atype = []
@@ -1378,7 +1382,7 @@ def PCFF_getPairCoeffs(atomtypes):
         D0[atomtypeID] = vdws[j][2]
         atype[atomtypeID] = vdws[j][3]
 
-    ##LJ pair
+    # LJ pair
     filename = "PCFF_LJpaircoeffs.txt"
     fout = open(filename, "w")
     for i in range(1, n + 1):
@@ -1407,7 +1411,7 @@ def PCFF_readPairCoeffs():
     fin = open("PCFF_LJpaircoeffs.txt", "r")
     dataline = fin.readline()
     while dataline != "":
-        words = dataline[0 : len(dataline) - 1].split()
+        words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         atomtype = eval(words[1])
         D0 = eval(words[2])
         R0 = eval(words[3])
