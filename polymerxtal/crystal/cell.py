@@ -216,6 +216,8 @@ class UnitCell:
         bondscale=1.1,
         ffield="Dreiding",
         charge="Gasteiger",
+        lammps_min=False,
+        lammps_min_levels=1,
     ):
         """polymerxtal.crystal.cell.UnitCell.build_unit_cell function builds a unit cell of a polymer crystal with
         specified information
@@ -269,6 +271,8 @@ class UnitCell:
                     ffield=ffield,
                     datafile=self.crystal_name + ".data",
                     potentialfile="X6paircoeffs.txt",
+                    lammps_min=lammps_min,
+                    lammps_min_levels=lammps_min_levels,
                 )
 
         # View chain structure

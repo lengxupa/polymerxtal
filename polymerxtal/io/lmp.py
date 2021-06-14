@@ -94,6 +94,8 @@ def write_lmp_ifile(
     potential_headfile="",
     datafile="",
     potentialfile="",
+    lammps_min=False,
+    lammps_min_levels=1,
 ):
     """Write a LAMMPS input file given a file location and datafile.
 
@@ -151,8 +153,8 @@ def write_lmp_ifile(
         des.write("read_data       %s\n" % datafile)
     des.write("neighbor          0.3 bin\n")
     des.write(
-        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz \
-            pxy pxz pyz lx ly lz vol density\n"
+        "thermo_style      custom step etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press pxx pyy pzz"
+        + " pxy pxz pyz lx ly lz vol density\n"
     )
     des.write("thermo            10\n")
     des.write("thermo_modify     flush yes\n")
@@ -165,15 +167,14 @@ def write_lmp_ifile(
         des.write("\n")
     des.write("fix 1 all nve\n")
     des.write("run               0\n")
+    des.write("unfix 1\n")
     des.write("\n")
-    des.write("# Minimization parameters\n")
-    des.write("minimize          1.0e-9 1.0e-9 5000 100000\n")
     des.write("# Dump minimized system\n")
     des.write("dump              1 all atom 1 min.dump\n")
     des.write("dump_modify       1 image yes scale no\n")
-    des.write("fix 1 all nve\n")
-    des.write("run               0\n")
-    des.write("unfix 1\n")
+    des.write("\n")
+    des.write("# Minimization parameters\n")
+    des.write("minimize          1.0e-9 1.0e-9 5000 100000\n")
     des.write("\n")
     des.write("undump            1\n")
     des.write("write_data min.data\n")

@@ -40,9 +40,9 @@ def open_pdb(file_location):
 
         elif "CONECT" in line[0:6]:
             atom1 = eval(line[6:11])
-            for str_id in range(17, len(line), 5):
+            for str_id in range(15, len(line), 5):
                 if line[str_id].isnumeric():
-                    atom2 = eval(line[str_id - 5 : str_id])  # noqa: E203
+                    atom2 = eval(line[str_id - 4 : str_id + 1])  # noqa: E203
                     if ([atom1, atom2] not in bonds) and ([atom2, atom1] not in bonds):
                         bonds.append([atom1, atom2])
 

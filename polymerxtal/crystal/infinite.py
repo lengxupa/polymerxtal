@@ -26,7 +26,7 @@ def create_atom_list(holder, num_monomers):
         + [i for i in range(holder.num_atoms - num_atoms + 1, holder.num_atoms + 1)]
     )
 
-    atom_link_list = [4, holder.num_atoms - 2 * num_atoms + 1]
+    atom_link_list = [[4, holder.num_atoms - 2 * num_atoms + 1]]
 
     return atom_remove_list, atom_link_list
 

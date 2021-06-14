@@ -2,6 +2,8 @@
 Temporary structure used to hold atomic positions and atom types while creating and filling a crystal structure
 """
 
+import numpy as np
+
 from polymerxtal.io import readbond
 from polymerxtal.polymod import createHolder
 
@@ -61,10 +63,16 @@ def build_bonds_data(
         else:
             bonds_file.write("%d 1 %d %d\n" % (bond_id, atom1, atom2))
         bond_id += 1
-    bonds_file.write(
-        "%d 1 %d %d\n"
-        % (bond_id, atom_ids[atom_link_list[0]], atom_ids[atom_link_list[1]])
-    )
+    if atom_link_list:
+        if sort_ids:
+            for link_list in atom_link_list:
+                bonds_file.write(
+                    "%d 1 %d %d\n"
+                    % (bond_id, atom_ids[link_list[0]], atom_ids[link_list[1]])
+                )
+        else:
+            for link_list in atom_link_list:
+                bonds_file.write("%d 1 %d %d\n" % (bond_id, link_list[0], link_list[1]))
     bonds_file.close()
     return holder
 
@@ -84,6 +92,9 @@ def combine_holders(
     holder1_bond_path=".tmp/bonds.dat",
     holder2_bond_path=".tmp/bonds.dat",
     out_path=".tmp/bonds.dat",
+    vector=np.zeros(3),
+    atom_link_list=[],
+    opt_ids=False,
 ):
     holder1, atom_ids1 = reassign_atom_ids(holder1)
     bonds1 = readbond(holder1_bond_path)
@@ -98,7 +109,7 @@ def combine_holders(
         holder_new.atom_types[atom_id] = holder1.atom_types[i]
         atom_id += 1
     for i in sorted(holder2.pos):
-        holder_new.pos[atom_id] = holder2.pos[i]
+        holder_new.pos[atom_id] = holder2.pos[i] + vector
         holder_new.el_names[atom_id] = holder2.el_names[i]
         holder_new.atom_types[atom_id] = holder2.atom_types[i]
         atom_id += 1
@@ -117,6 +128,15 @@ def combine_holders(
         atom2 = bond[1]
         bonds_file.write("%d 1 %d %d\n" % (bond_id, atom_ids2[atom1], atom_ids2[atom2]))
         bond_id += 1
+    if atom_link_list:
+        for link_list in atom_link_list:
+            bonds_file.write(
+                "%d 1 %d %d\n"
+                % (bond_id, atom_ids1[link_list[0]], atom_ids2[link_list[1]])
+            )
     bonds_file.close()
 
-    return holder_new
+    if opt_ids:
+        return holder_new, atom_ids1, atom_ids2
+    else:
+        return holder_new

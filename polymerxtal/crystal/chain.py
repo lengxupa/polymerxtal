@@ -59,7 +59,7 @@ def get_mininum_position(positions):
     return np.array([min(x), min(y), min(z)])
 
 
-def correct_chain_position(holder):
+def correct_chain_position(holder, cell=True):
     mini_array = get_mininum_position(holder.pos)
     chain_cluster = Cluster()
 
@@ -67,7 +67,10 @@ def correct_chain_position(holder):
         chain_cluster.add_particle(Sphere(holder.pos[atom]))
 
     translator = Translator()
-    chain_cluster.move(translator, array=-mini_array)
+    if cell:
+        chain_cluster.move(translator, array=-mini_array)
+    else:
+        chain_cluster.move(translator, array=-mini_array + 15 * np.ones(3))
 
     for i in range(holder.num_atoms):
         holder.pos[i] = chain_cluster.particles[i].center
@@ -140,7 +143,7 @@ class Chain:
 
         polymer_type = "PE"
         helice = Helice()
-        num_monomers = 1
+        num_monomers = 30
         tacticity = ""
         chiriality = ""
         head_tail_defect_ratio = 0
@@ -192,6 +195,22 @@ class Chain:
         if self.custom:
             print("Warning: Custom type, only read helice motifs and turns info")
             self.helice = helice
+
+            if not 0 <= (head_tail_defect_ratio) <= 1:
+                raise ValueError(
+                    "Defect ratio of head to head and tail to tail connections is",
+                    head_tail_defect_ratio,
+                    "and should be in the range of [0,1]",
+                )
+            self.head_tail_defect_ratio = head_tail_defect_ratio
+
+            self.unit_num_monomers = 1
+            if "num_monomers" not in kwargs:
+                if infinite:
+                    num_monomers = 2
+                else:
+                    num_monomers = 1
+
             self.num_monomers = num_monomers
 
             self.tacticity = tacticity
@@ -827,7 +846,9 @@ class Chain:
         self.find_configurations()
 
         if self.custom:
-            holder, unit_vector, unit_distance=custom_build_helix(self.polymer_type,self.num_monomers)
+            holder, unit_vector, unit_distance = custom_build_helix(
+                self.polymer_type, self.num_monomers, self.infinite
+            )
             return holder, unit_vector, unit_distance
 
         else:
@@ -843,7 +864,8 @@ class Chain:
                 # Build polymod input file
                 self.input_polymod(".tmp/run_polymod.txt", config_index)
                 # input_polymod('run_polymod.txt',monomer_path,helice,backbone_atoms=backbone_atoms,tacticity=tacticity,side_atom=side_atom,chiriality=chiriality,num_monomers=num_monomers)
-                # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, num_monomers=num_monomers)
+                # input_polymod('run_polymod.txt',monomer_path, helice, tacticity, chiriality, \
+                #   num_monomers=num_monomers)
 
                 # Run polymod
                 run_polymod(".tmp/run_polymod.txt", validate_bond=True)  # noqa: F405
@@ -860,7 +882,8 @@ class Chain:
                 return readPDB(".tmp/chains_unwrapped.pdb")
             else:
                 raise Exception(
-                    "Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of atoms."
+                    "Unable to generate a successful Helice_%s configuration with %s due to unavoided overlap of \
+                        atoms."
                     % (self.helice, self.polymer_type.name)
                 )
 
@@ -872,6 +895,9 @@ class Chain:
         bondscale=1.1,
         ffield="Dreiding",
         charge="Gasteiger",
+        cell=True,
+        lammps_min=False,
+        lammps_min_levels=1,
     ):  # **kwargs):
         """polymerxtal.crystal.chain.Chain.build_chain function builds a polymer chain with specified information
 
@@ -895,20 +921,11 @@ class Chain:
         # in_path = os.path.join(current_location, '..', 'data', 'polymod_input', 'sample_chain.txt')
         # monomer_path = os.path.join(current_location, '..', 'data', 'pdb', 'monomer', 'PAN.pdb')
 
+        # Build helix
         if self.custom:
             holder, unit_vector, unit_distance = self.build_helix()
 
-            # Correct chain orientation
-            holder = correct_chain_orientation(holder, unit_vector)
-
-            helix_name = (
-                self.polymer_type.name + "_custom" + ("_inf" if self.infinite else "")
-            )
-            self.helix_name = helix_name
-            write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
-
         else:
-            # Build helix
             holder = self.build_helix()
 
             # Calculate unit distance and unit vector
@@ -916,16 +933,23 @@ class Chain:
                 holder, self.num_monomers, self.unit_num_monomers
             )
 
-            # Correct chain orientation
-            holder = correct_chain_orientation(holder, unit_vector)
+        # Correct chain orientation
+        holder = correct_chain_orientation(holder, unit_vector)
 
-            # Create infinite periodic polymer helix chain
-            if self.infinite:
+        # Create infinite periodic polymer helix chain
+        if self.infinite:
+            if not self.custom:
                 holder = create_infinite_chain(holder, self.num_monomers)
 
-            # Correct chain position
-            holder = correct_chain_position(holder)
+        # Correct chain position
+        holder = correct_chain_position(holder, cell)
 
+        if self.custom:
+            helix_name = (
+                self.polymer_type.name + "_custom" + ("_inf" if self.infinite else "")
+            )
+
+        else:
             # Further correct chain position for infinite chain
             if self.infinite:
                 holder = correct_infinite_chain_position(holder)
@@ -941,19 +965,23 @@ class Chain:
                 "_custom" if self.head_tail_defect_ratio else "",
                 "_inf" if self.infinite else "",
             )
-            self.helix_name = helix_name
-            write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
 
-        self.built = 1
+        self.helix_name = helix_name
+        write_pdb(helix_name + ".pdb", holder.el_names, holder.pos)  # noqa: F405
+
+        if cell:
+            self.built = 1
+        else:
+            self.built = 0
         self.holder = holder
 
         maxi_array = get_maximum_position(holder.pos)
-        self.x = maxi_array[0]
-        self.y = maxi_array[1]
+        self.x = maxi_array[0] if cell else maxi_array[0] + 15
+        self.y = maxi_array[1] if cell else maxi_array[1] + 15
         if self.infinite:
             self.z = unit_distance * (self.num_monomers - 2) / self.unit_num_monomers
         else:
-            self.z = maxi_array[2]
+            self.z = maxi_array[2] if cell else maxi_array[2] + 15
         self.alpha = 90
         self.beta = 90
         self.gamma = 90
@@ -1006,6 +1034,8 @@ class Chain:
                     ffield=ffield,
                     datafile=helix_name + ".data",
                     potentialfile="X6paircoeffs.txt",
+                    lammps_min=lammps_min,
+                    lammps_min_levels=lammps_min_levels,
                 )
 
         # View chain structure

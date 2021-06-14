@@ -1,6 +1,7 @@
 import os
 import string
 
+
 ########################################################################
 def outputtypes(title, typelist):
     filename = str(title) + ".index"
@@ -18,14 +19,20 @@ def outputtypes(title, typelist):
 def createBonds(atoms, bondlength):
     totalatoms = len(atoms)
     fout = open("atoms.data", "w")
-    print >> fout, "Totalatoms: ", totalatoms
-    print >> fout, "Bondlength: ", bondlength
+    fout.write(
+        "Totalatoms: " + str(totalatoms) + "\n"
+    )  # print >> fout, "Totalatoms: ", totalatoms
+    fout.write(
+        "Bondlength: " + str(bondlength) + "\n"
+    )  # print >> fout, "Bondlength: ", bondlength
     for i in range(totalatoms):
         k = atoms[i][0]
         x = atoms[i][4]
         y = atoms[i][5]
         z = atoms[i][6]
-        print >> fout, "%8d %15.8e %15.8e %15.8e" % (k, x, y, z)
+        fout.write(
+            "%8d %15.8e %15.8e %15.8e\n" % (k, x, y, z)
+        )  # print >> fout, "%8d %15.8e %15.8e %15.8e" % (k, x, y, z)
     fout.close()
     os.system("./findBonds")  # read 'atoms.data' and generate 'bonds.data'
 
@@ -60,14 +67,14 @@ def createAngles(atomlinks):
 
 
 ###################################################################
-## create dihedrals
+# create dihedrals
 def createDihedrals(atomlinks, bonds):
     totalbonds = len(bonds)
     ndihs = 0
     dihs = []
     for i in range(totalbonds):
-        bondID = bonds[i][0]
-        bondtype = bonds[i][1]
+        # bondID = bonds[i][0]
+        # bondtype = bonds[i][1]
         atom1 = bonds[i][2]
         atom2 = bonds[i][3]
         n1 = len(atomlinks[atom1 - 1])
@@ -122,7 +129,7 @@ def createImpropers(atomlinks):
 
 
 ##############################################################
-##Read angles from datafile
+# Read angles from datafile
 def getBondtypes(inpfile):
     fin = open(inpfile, "r")
     bondtypes = []
@@ -130,7 +137,7 @@ def getBondtypes(inpfile):
     dataline = fin.readline()
     words = dataline.split("\n")
     while dataline != "\n" and dataline != "":
-        words = dataline[0 : len(dataline) - 1].split()
+        words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
         bondtypeID = eval(str(words[0]))
         atom1type = str(words[1])
         atom2type = str(words[2])
@@ -141,7 +148,7 @@ def getBondtypes(inpfile):
 
 
 ##############################################################
-##Read angles from datafile
+# Read angles from datafile
 def getBonds(inpfile, fout, getorout):
     fin = open(inpfile, "r")
     bonds = []
@@ -153,7 +160,7 @@ def getBonds(inpfile, fout, getorout):
             dataline = fin.readline()
             dataline = fin.readline()
             bondID = 0
-            words = dataline[0 : len(dataline) - 1].split()
+            words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
             while words != []:
                 bondtype = eval(str(words[1]))
                 atom1 = eval(str(words[2]))
@@ -164,12 +171,12 @@ def getBonds(inpfile, fout, getorout):
                     bonds.append([bondID, bondtype, atom1, atom2])
                 else:
                     fout.write(
-                        "%8d %8d %8d %8d" % (bondID, bondtype, atom1, atom2) + "\n"
+                        "%8d %8d %8d %8d\n" % (bondID, bondtype, atom1, atom2) + "\n"
                     )
                     # print >>fout,'%8d %8d %8d %8d' % (bondID,bondtype,atom1,atom2)
 
                 dataline = fin.readline()
-                words = dataline[0 : len(dataline) - 1].split()
+                words = dataline[0 : len(dataline) - 1].split()  # noqa: E203
 
         dataline = fin.readline()
         words = dataline.split("\n")
@@ -181,7 +188,7 @@ def getBonds(inpfile, fout, getorout):
 
 
 ##############################################################
-##Read angles from datafile
+# Read angles from datafile
 def getAngles(inpfile, fout, getorout):
     fin = open(inpfile, "r")
     angles = []
@@ -193,7 +200,7 @@ def getAngles(inpfile, fout, getorout):
             dataline = fin.readline()
             dataline = fin.readline()
             angleID = 0
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
             while words != []:
                 angletype = eval(str(words[1]))
                 atom1 = eval(str(words[2]))
@@ -201,18 +208,28 @@ def getAngles(inpfile, fout, getorout):
                 atom3 = eval(str(words[4]))
 
                 angleID = angleID + 1
-                if getorout == 1:  ##get
+                if getorout == 1:  # get
                     angles.append([angleID, angletype, atom1, atom2, atom3])
                 else:
-                    print >> fout, "%8d %8d %8d %8d %8d" % (
-                        angleID,
-                        angletype,
-                        atom1,
-                        atom2,
-                        atom3,
+                    fout.write(
+                        "%8d %8d %8d %8d %8d\n"
+                        % (
+                            angleID,
+                            angletype,
+                            atom1,
+                            atom2,
+                            atom3,
+                        )
                     )
+                    # print >> fout, "%8d %8d %8d %8d %8d" % (
+                    #    angleID,
+                    #    angletype,
+                    #    atom1,
+                    #    atom2,
+                    #    atom3,
+                    # )
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
 
         dataline = fin.readline()
         words = string.split(dataline, sep="\n")
@@ -231,7 +248,7 @@ def getAngletypes(angles, atoms, atomtypes):
 
     nangle = len(angles)
     for i in range(nangle):
-        ##angles[i]: angleID,angletype,atom1,atom2,atom3
+        # angles[i]: angleID,angletype,atom1,atom2,atom3
         catomID = angles[i][3]
         atomtypeID = atoms[catomID - 1][2]
         if atomtypeID not in angletype:
@@ -247,9 +264,9 @@ def getAngletypes(angles, atoms, atomtypes):
             if atomtypeID == atomtypeID0:
                 atomtype = atomtypes[j][1]
         angletypes[i][1] = atomtype
-    ##update angletype in angles
+    # update angletype in angles
     for i in range(nangle):
-        ##angles[i]: angleID,angletype,atom1,atom2,atom3
+        # angles[i]: angleID,angletype,atom1,atom2,atom3
         catomID = angles[i][3]
         atomtypeID = atoms[catomID - 1][2]
         atomtype = atomtypes[atomtypeID - 1][1]
@@ -275,7 +292,7 @@ def getDihs(inpfile, fout, getorout):
             dataline = fin.readline()
             dataline = fin.readline()
             dihID = 0
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
             while words != []:
                 dihtype = eval(str(words[1]))
                 atom1 = eval(str(words[2]))
@@ -287,16 +304,20 @@ def getDihs(inpfile, fout, getorout):
                 if getorout == 1:
                     dihs.append([dihID, dihtype, atom1, atom2, atom3, atom4])
                 else:
-                    print >> fout, "%8d %8d %8d %8d %8d %8d" % (
-                        dihID,
-                        dihtype,
-                        atom1,
-                        atom2,
-                        atom3,
-                        atom4,
+                    fout.write(
+                        "%8d %8d %8d %8d %8d %8d\n"
+                        % (dihID, dihtype, atom1, atom2, atom3, atom4)
                     )
+                    # print >> fout, "%8d %8d %8d %8d %8d %8d" % (
+                    #    dihID,
+                    #    dihtype,
+                    #    atom1,
+                    #    atom2,
+                    #    atom3,
+                    #    atom4,
+                    # )
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
 
         dataline = fin.readline()
         words = string.split(dataline, sep="\n")
@@ -315,7 +336,7 @@ def getDihstypes(dihs, atoms, atomtypes):
 
     ndihs = len(dihs)
     for i in range(ndihs):
-        ##dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
+        # dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
         catom1ID = dihs[i][3]
         catom2ID = dihs[i][4]
         eatom1ID = dihs[i][2]
@@ -360,9 +381,9 @@ def getDihstypes(dihs, atoms, atomtypes):
         dihstypes[i][2] = atom2type
         dihstypes[i][3] = atom3type
         dihstypes[i][4] = atom4type
-    ##update dihstype in dihss
+    # update dihstype in dihss
     for i in range(ndihs):
-        ##dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
+        # dihss[i]: dihsID,dihstype,atom1,atom2,atom3,atom4
         catom1ID = dihs[i][3]
         atom1typeID = atoms[catom1ID - 1][2]
         atom1type = atomtypes[atom1typeID - 1][1]
@@ -415,7 +436,7 @@ def getImps(inpfile, fout, getorout):
             dataline = fin.readline()
             dataline = fin.readline()
             impID = 0
-            words = string.split(dataline[0 : len(dataline) - 1])
+            words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
             while words != []:
                 imptype = eval(str(words[1]))
                 atom1 = eval(str(words[2]))
@@ -427,17 +448,21 @@ def getImps(inpfile, fout, getorout):
                 if getorout == 1:
                     imps.append([impID, imptype, atom1, atom2, atom3, atom4])
                 else:
-                    print >> fout, "%8d %8d %8d %8d %8d %8d" % (
-                        impID,
-                        imptype,
-                        atom1,
-                        atom2,
-                        atom3,
-                        atom4,
+                    fout.write(
+                        "%8d %8d %8d %8d %8d %8d\n"
+                        % (impID, imptype, atom1, atom2, atom3, atom4)
                     )
+                    # print >> fout, "%8d %8d %8d %8d %8d %8d" % (
+                    #    impID,
+                    #    imptype,
+                    #    atom1,
+                    #    atom2,
+                    #    atom3,
+                    #    atom4,
+                    # )
 
                 dataline = fin.readline()
-                words = string.split(dataline[0 : len(dataline) - 1])
+                words = string.split(dataline[0 : len(dataline) - 1])  # noqa: E203
 
         dataline = fin.readline()
         words = string.split(dataline, sep="\n")
@@ -456,7 +481,7 @@ def getImpstypes(imps, atoms, atomtypes):
 
     nimps = len(imps)
     for i in range(nimps):
-        ##impss[i]: impsID,impstype,atom1,atom2,atom3,atom4
+        # impss[i]: impsID,impstype,atom1,atom2,atom3,atom4
         catomID = imps[i][2]
         atomtypeID = atoms[catomID - 1][2]
         if atomtypeID not in impstype:
@@ -471,9 +496,9 @@ def getImpstypes(imps, atoms, atomtypes):
             if atomtypeID == atomtypeID0:
                 atomtype = atomtypes[j][1]
         impstypes[i][1] = atomtype
-    ##update impstype in impss
+    # update impstype in impss
     for i in range(nimps):
-        ##impss[i]: impsID,impstype,atom1,atom2,atom3
+        # impss[i]: impsID,impstype,atom1,atom2,atom3
         catomID = imps[i][2]
         atomtypeID = atoms[catomID - 1][2]
         atomtype = atomtypes[atomtypeID - 1][1]

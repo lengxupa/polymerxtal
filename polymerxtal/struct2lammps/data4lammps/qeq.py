@@ -6,16 +6,17 @@ https://github.com/openbabel/openbabel/blob/master/src/charges/qeq.cpp
 
 import os
 import numpy as np
-import string
+
+# import string
 
 try:
     from scipy.special import erf
-except:
+except:  # noqa: E722
     try:
-        import ovito
+        import ovito  # noqa: F401
 
         use_ovito = True
-    except:
+    except:  # noqa: E722
         use_ovito = False
 
     from polymerxtal.io import check_nanohub
@@ -103,7 +104,7 @@ def fill_J(atoms, J, BasisSet, CoulombMaxDistance):
     nAtoms = len(atoms)
 
     for k in range(1, nAtoms):
-        for l in range(k + 1, nAtoms):
+        for l in range(k + 1, nAtoms):  # noqa: E741
 
             atom1 = atoms[k]
             atom2 = atoms[l]
@@ -131,12 +132,12 @@ def fill_J(atoms, J, BasisSet, CoulombMaxDistance):
         J[i][nAtoms] = 1.0
 
 
-def create_C(Q_total, Q_past, fixed, J):
+# def create_C(Q_total, Q_past, fixed, J):
 
-    C = np.zeros((nAtoms, nAtoms))
+#    C = np.zeros((nAtoms, nAtoms))
 
-    for i in range(nAtoms):
-        C[0][i] = Q_past[i]
+#    for i in range(nAtoms):
+#        C[0][i] = Q_past[i]
 
 
 def compute_QEq_charges(atoms, charges_past):
