@@ -5,13 +5,15 @@ This module is for functions which perform measurements.
 import numpy as np
 
 
-def calculate_distance(rA, rB):
+def calculate_distance(rA, rB, dimensions="xyz"):
     """Calculate the distance between two points.
 
     Parameters
     ----------
     rA, rB : np.ndarray
         The coordinates of each point.
+    dimensions : str (optional)
+        The distance projection on the specified dimensions. Default: "xyz"
 
     Returns
     -------
@@ -30,6 +32,11 @@ def calculate_distance(rA, rB):
         raise TypeError("rA and rB must be numpy arrays")
 
     dist_vec = rA - rB
+
+    for i, d in enumerate("xyz"):
+        if d not in dimensions:
+            dist_vec[0][i] = 0
+
     distance = np.linalg.norm(dist_vec)
 
     if distance == 0.0:
